@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Operativni centar palette — disciplined navy/steel, red reserved for alarms */
+  --color-ink-50: #f6f8fb;
+  --color-ink-100: #eaeef4;
+  --color-ink-200: #d3dbe6;
+  --color-ink-300: #a9b6c8;
+  --color-ink-400: #7788a0;
+  --color-ink-500: #526278;
+  --color-ink-600: #3a475a;
+  --color-ink-700: #263041;
+  --color-ink-800: #182031;
+  --color-ink-900: #0d1424;
+
+  --color-signal-alarm: #d1332e;
+  --color-signal-warn: #c58a1a;
+  --color-signal-ok: #2f8a5a;
+}
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-ink-800);
+    background: var(--color-ink-50);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}

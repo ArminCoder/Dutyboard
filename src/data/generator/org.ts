@@ -21,21 +21,22 @@ export function buildOrgTree(): OrgNode[] {
   nodes.push({ id: 'mup', kind: 'mup', name: 'MUP Demo kantona', parentId: null });
   nodes.push({ id: 'up', kind: 'uprava', name: 'Uprava policije', parentId: 'mup' });
 
+  // `est` = sistematizovan broj izvršilaca po PS (malo iznad stvarne popune → vidljiva upražnjena mjesta).
   const pus = [
     { id: 'pu-centar', name: 'PU Centar', pss: [
-      { id: 'ps-centar', name: 'PS Centar' },
-      { id: 'ps-stari-grad', name: 'PS Stari Grad' },
+      { id: 'ps-centar', name: 'PS Centar', est: 24 },
+      { id: 'ps-stari-grad', name: 'PS Stari Grad', est: 23 },
     ] },
     { id: 'pu-novi-grad', name: 'PU Novi Grad', pss: [
-      { id: 'ps-novi-grad', name: 'PS Novi Grad' },
-      { id: 'ps-dobrinja', name: 'PS Dobrinja' },
+      { id: 'ps-novi-grad', name: 'PS Novi Grad', est: 26 },
+      { id: 'ps-dobrinja', name: 'PS Dobrinja', est: 22 },
     ] },
   ];
 
   for (const pu of pus) {
     nodes.push({ id: pu.id, kind: 'pu', name: pu.name, parentId: 'up' });
     for (const ps of pu.pss) {
-      nodes.push({ id: ps.id, kind: 'ps', name: ps.name, parentId: pu.id });
+      nodes.push({ id: ps.id, kind: 'ps', name: ps.name, parentId: pu.id, establishment: ps.est });
       for (const s of SMJENE) {
         nodes.push({
           id: `${ps.id}-smjena-${s.toLowerCase()}`,
@@ -53,9 +54,16 @@ export function buildOrgTree(): OrgNode[] {
     name: 'Posebna jedinica',
     parentId: 'up',
     exclusiveRoles: true,
+    establishment: 14,
   });
 
   return nodes;
+}
+
+/** Zbraja sistematizaciju (establishment) svih čvorova u scope-u — koristi za popunjenost vs sistematizacija. */
+export function establishmentUnder(nodes: OrgNode[], rootId: string): number {
+  const inScope = descendantsOf(nodes, rootId);
+  return nodes.reduce((sum, n) => (inScope.has(n.id) ? sum + (n.establishment ?? 0) : sum), 0);
 }
 
 /** Vraća skup ID-eva svih descendenata čvora (uključujući i sam čvor). */

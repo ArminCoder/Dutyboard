@@ -1,3 +1,6 @@
+// Provider + useStore hook co-located (standard React context pattern); the
+// fast-refresh rule is a false positive since the hook depends on this context.
+/* oxlint-disable react/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { CourtSummons, LeaveRequest, Notification } from '../data/types';
 import { world } from '../data/world';

@@ -1,3 +1,6 @@
+// Provider + hooks co-located (standard React context pattern); the fast-refresh
+// rule is a false positive here since the hooks depend on this file's context.
+/* oxlint-disable react/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { Session } from './session';
 

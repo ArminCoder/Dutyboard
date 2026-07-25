@@ -20,6 +20,11 @@ export function addDays(dateStr: string, days: number): string {
   return toISO(d);
 }
 
+/** Decimalne godine između dva ISO datuma (from → to). Koristi se za staž i dob. */
+export function yearsBetween(fromISO: string, toISO: string): number {
+  return (parseISO(toISO).getTime() - parseISO(fromISO).getTime()) / (365.25 * 24 * 3600 * 1000);
+}
+
 export function formatBs(dateStr: string): string {
   const [y, m, d] = dateStr.split('-');
   return `${d}.${m}.${y}`;

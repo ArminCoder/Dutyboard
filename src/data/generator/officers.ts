@@ -1,6 +1,7 @@
 import type { Officer, OfficerCertificate, OfficerStatus, OperationalRole, OrgNode, Rank } from '../types';
 import { chance, intBetween, mulberry32, pick } from './prng';
 import { FIRST_NAMES_F, FIRST_NAMES_M, LAST_NAMES } from './names';
+import { DEMO_TODAY, addDays } from './dates';
 
 // Raspodjela činova ~ realistična piramida.
 const RANK_WEIGHTS: Array<[Rank, number]> = [
@@ -13,6 +14,29 @@ const RANK_WEIGHTS: Array<[Rank, number]> = [
   ['stariji_inspektor', 3],
   ['glavni_inspektor', 1],
 ];
+
+// Staž (godine službe) po činu — viši čin = duži staž. Koristi se za dob i penzionisanje.
+const RANK_SENIORITY: Record<Rank, [number, number]> = {
+  policajac: [0, 6],
+  stariji_policajac: [4, 12],
+  narednik: [8, 18],
+  stariji_narednik: [12, 24],
+  mladji_inspektor: [10, 20],
+  inspektor: [14, 26],
+  stariji_inspektor: [18, 30],
+  glavni_inspektor: [22, 35],
+};
+
+/** Deterministički datum zaposlenja + rođenja, sidreni na DEMO_TODAY i korelirani s činom. */
+function demographics(rand: () => number, rank: Rank): { hireDate: string; birthDate: string } {
+  const [minS, maxS] = RANK_SENIORITY[rank];
+  const serviceYears = intBetween(rand, minS, maxS);
+  const hireAge = intBetween(rand, 20, 26);
+  const ageNow = hireAge + serviceYears;
+  const birthDate = addDays(DEMO_TODAY, -(Math.round(ageNow * 365.25) + intBetween(rand, 0, 300)));
+  const hireDate = addDays(DEMO_TODAY, -(Math.round(serviceYears * 365.25) + intBetween(rand, 0, 300)));
+  return { hireDate, birthDate };
+}
 
 function pickRank(rand: () => number): Rank {
   const total = RANK_WEIGHTS.reduce((s, [, w]) => s + w, 0);
@@ -115,6 +139,7 @@ export function generateOfficers(
       clearanceLevel: 'interno',
       equipmentAssigned: [],
       status: 'aktivan',
+      ...demographics(rand, d.rank),
     });
   }
 
@@ -139,16 +164,18 @@ export function generateOfficers(
         expires: certExpiryDate(rand, forceOneExpired && idx === 0),
       }));
 
+      const rank = pickRank(rand);
       officers.push({
         id: `off-${String(idCounter++).padStart(4, '0')}`,
         name: `${first} ${last}`,
-        rank: pickRank(rand),
+        rank,
         orgNodeId: smjena.id,
         operationalRoleIds: roleIds,
         certifications: certObjs,
         clearanceLevel: 'interno',
         equipmentAssigned: [],
         status: statusForOfficer(rand),
+        ...demographics(rand, rank),
       });
     }
   }
@@ -160,10 +187,11 @@ export function generateOfficers(
   for (let i = 0; i < 12; i++) {
     const first = pick(rand, FIRST_NAMES_M);
     const last = pick(rand, LAST_NAMES);
+    const rank = pickRank(rand);
     officers.push({
       id: `off-${String(idCounter++).padStart(4, '0')}`,
       name: `${first} ${last}`,
-      rank: pickRank(rand),
+      rank,
       orgNodeId: posebna.id,
       operationalRoleIds: [`${posebna.id}:specijalci`],
       certifications: [
@@ -174,6 +202,7 @@ export function generateOfficers(
       clearanceLevel: 'povjerljivo',
       equipmentAssigned: [],
       status: chance(rand, 0.1) ? 'godisnji' : 'aktivan',
+      ...demographics(rand, rank),
     });
   }
 
@@ -195,6 +224,7 @@ export function generateOfficers(
       clearanceLevel: 'interno',
       equipmentAssigned: [],
       status: 'aktivan',
+      ...demographics(rand, 'stariji_narednik'),
     });
   }
 

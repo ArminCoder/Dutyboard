@@ -1,15 +1,17 @@
 import type { Officer, PerformanceMonth } from '../types';
 import { intBetween, mulberry32 } from './prng';
+import { DEMO_TODAY, parseISO } from './dates';
 
-const YEARS_BACK = 1;
+const MONTHS_BACK = 24;
 
-/** Generiše 12 mjeseci istorije za sve policajce, koreliranu s primarnom operativnom ulogom.
- *  Za Phase 2 dovoljno; Phase 5 ovo koristi za analitiku. */
+/** Generiše 24 mjeseca istorije za sve policajce, koreliranu s primarnom operativnom ulogom.
+ *  Sidrimo na DEMO_TODAY (ne na stvarni datum) da exec grafovi i period-over-period budu deterministični
+ *  i puni za 2026. Koriste ga N01/N02/C01/M01 analitike i period-over-period strelice. */
 export function generatePerformance(seed: number, officers: Officer[]): PerformanceMonth[] {
   const out: PerformanceMonth[] = [];
-  const today = new Date();
-  const startYear = today.getFullYear();
-  const startMonth = today.getMonth();
+  const anchor = parseISO(DEMO_TODAY);
+  const startYear = anchor.getFullYear();
+  const startMonth = anchor.getMonth();
 
   for (const officer of officers) {
     const rand = mulberry32(seed + hashCode(officer.id));
@@ -18,7 +20,7 @@ export function generatePerformance(seed: number, officers: Officer[]): Performa
     const isBicikl = officer.operationalRoleIds.some((r) => r.endsWith(':bicikl'));
     const isCivilna = officer.operationalRoleIds.some((r) => r.endsWith(':civilna'));
 
-    for (let backMonths = 12 * YEARS_BACK; backMonths >= 1; backMonths--) {
+    for (let backMonths = MONTHS_BACK; backMonths >= 1; backMonths--) {
       const totalMonthsFromStart = startYear * 12 + startMonth - backMonths;
       const y = Math.floor(totalMonthsFromStart / 12);
       const m = (totalMonthsFromStart % 12) + 1;

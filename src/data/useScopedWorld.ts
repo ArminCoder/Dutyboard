@@ -43,6 +43,11 @@ export function scopeWorld(w: World, scopeNodeId: string): World {
     performance: w.performance.filter((p) => officerIds.has(p.officerId)),
     payslips: w.payslips.filter((p) => officerIds.has(p.officerId)),
     vehicles: w.vehicles.filter((v) => psIds.has(v.psId)),
+    // Strateški podaci su kantonalne konstante/politike — prolaze kroz scope neizmijenjeni.
+    // (unitBudgets ostaju cijeli; nijedan scoped ekran ih ne prikazuje ispod komesara.)
+    finance: w.finance,
+    targets: w.targets,
+    restRules: w.restRules,
   };
 }
 

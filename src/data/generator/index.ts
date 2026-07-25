@@ -7,6 +7,8 @@ import { generatePerformance } from './performance';
 import { generateSoftićPayslip } from './payslip';
 import { generateSoftićCourt } from './court';
 import { generateVehicles } from './vehicles';
+import { buildFinance } from './finance';
+import { buildRestRules, buildTargets } from './targets';
 
 const SEED = 20260723; // fiksni seed — SPEC: "isti svijet na svakom deployu"
 
@@ -32,5 +34,8 @@ export function generateWorld(): World {
     performance,
     payslips,
     vehicles,
+    finance: buildFinance(puIds),
+    targets: buildTargets(),
+    restRules: buildRestRules(),
   };
 }

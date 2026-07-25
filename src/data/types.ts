@@ -18,6 +18,8 @@ export interface OrgNode {
   parentId: string | null;
   /** Ako je true, ova uloga/jedinica je ekskluzivna (specijalci ne rade druge poslove). */
   exclusiveRoles?: boolean;
+  /** Sistematizovan broj izvršilaca za ovaj čvor (postavljen na PS/posebna; više čvorove zbraja `establishmentUnder`). */
+  establishment?: number;
 }
 
 export type Rank =
@@ -93,6 +95,10 @@ export interface Officer {
   clearanceLevel: 'interno' | 'povjerljivo' | 'tajno';
   equipmentAssigned: EquipmentAssignment[];
   status: OfficerStatus;
+  /** "YYYY-MM-DD" — datum zaposlenja (staž, projekcija penzionisanja). */
+  hireDate: string;
+  /** "YYYY-MM-DD" — datum rođenja (dobna piramida, penzionisanje). */
+  birthDate: string;
 }
 
 export type AccessRole =
@@ -251,6 +257,46 @@ export interface Vehicle {
   registrationDue?: string;
 }
 
+// --- Strateški podaci (finansije, ciljevi, pravila) — Phase 1 seed enrichment ---
+
+export interface UnitBudget {
+  puId: string;
+  /** Godišnji budžet za plate (KM). */
+  annualPersonnelKM: number;
+  /** Godišnji budžet za prekovremeni rad (KM). */
+  annualOvertimeKM: number;
+}
+
+export interface FinanceConfig {
+  /** KM po satu prekovremenog rada. */
+  overtimeRateKM: number;
+  /** Prosječna mjesečna osnovna plata (modeliranje troška ljudstva). */
+  avgMonthlyBaseKM: number;
+  unitBudgets: UnitBudget[];
+}
+
+/** Ciljne vrijednosti za semafor-indikatore (Compstat, ministarske table). */
+export interface KpiTargets {
+  /** Ciljna popunjenost smjena (%). */
+  coveragePct: number;
+  /** Maksimalna prihvatljiva stopa bolovanja (%). */
+  sickLeavePctMax: number;
+  /** Ciljna važnost certifikata (%). */
+  certValidityPct: number;
+  /** Maksimum prekovremenih sati po policajcu mjesečno. */
+  overtimeHoursPerOfficerMax: number;
+}
+
+/** Pravila radnog vremena (EU direktiva) — usklađenost i zaštita odmora. */
+export interface RestRules {
+  /** Maksimum uzastopnih noćnih smjena. */
+  maxConsecutiveNights: number;
+  /** Minimum sati odmora između smjena. */
+  minRestHours: number;
+  /** Maksimum radnih sati sedmično. */
+  maxWeeklyHours: number;
+}
+
 // --- World envelope ---
 
 export interface World {
@@ -263,4 +309,7 @@ export interface World {
   performance: PerformanceMonth[];
   payslips: Payslip[];
   vehicles: Vehicle[];
+  finance: FinanceConfig;
+  targets: KpiTargets;
+  restRules: RestRules;
 }

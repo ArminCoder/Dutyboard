@@ -12,12 +12,12 @@ export function PageShell({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-ink-50 text-ink-800">
-      <header className="border-b border-ink-200 bg-white">
+    <div className="min-h-screen bg-paper-50 text-ink-800">
+      <header className="border-b border-paper-200 bg-paper-0">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div>
             <div className="text-xs font-medium uppercase tracking-wider text-ink-400">Dutyboard</div>
-            <h1 className="text-lg font-semibold text-ink-900">{title}</h1>
+            <h1 className="text-lg font-heading font-medium text-ink-800">{title}</h1>
             {subtitle ? <div className="text-sm text-ink-500">{subtitle}</div> : null}
           </div>
           <div className="flex items-center gap-3">{right}</div>

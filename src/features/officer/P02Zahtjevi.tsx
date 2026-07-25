@@ -29,37 +29,37 @@ export function P02Zahtjevi() {
     <div className="space-y-4 p-4">
       <div>
         <div className="text-xs uppercase tracking-wider text-ink-400">Odsustva i zahtjevi</div>
-        <h1 className="mt-0.5 text-xl font-semibold text-ink-900">Moji zahtjevi</h1>
+        <h1 className="mt-0.5 text-xl font-heading font-medium text-ink-800">Moji zahtjevi</h1>
       </div>
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink-100">
+      <section className=" bg-paper-0 p-4 border border-paper-200">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-xs uppercase tracking-wider text-ink-400">Godišnji odmor 2026.</div>
-            <div className="mt-1 text-2xl font-semibold text-ink-900">
+            <div className="mt-1 text-2xl font-heading font-medium text-ink-800">
               {GODISNJI_UKUPNO - GODISNJI_ISKORISTENO}{' '}
               <span className="text-sm font-normal text-ink-500">/ {GODISNJI_UKUPNO} dana ostalo</span>
             </div>
           </div>
           <button
             onClick={() => setOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-ink-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-ink-800"
+            className="inline-flex items-center gap-1.5  bg-navy-900 px-3 py-2 text-sm font-medium text-paper-50 transition hover:bg-navy-800"
           >
             <Plus className="h-4 w-4" />
             Novi zahtjev
           </button>
         </div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink-100">
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-paper-100">
           <div
-            className="h-full rounded-full bg-ink-900"
+            className="h-full rounded-full bg-navy-900"
             style={{ width: `${(GODISNJI_ISKORISTENO / GODISNJI_UKUPNO) * 100}%` }}
           />
         </div>
       </section>
 
       {my.length === 0 ? (
-        <section className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center">
-          <CalendarOff className="mx-auto h-8 w-8 text-ink-300" />
+        <section className=" border border-dashed border-paper-200 bg-paper-0 p-8 text-center">
+          <CalendarOff className="mx-auto h-8 w-8 text-paper-400" />
           <div className="mt-2 text-sm font-medium text-ink-700">Nema podnesenih zahtjeva</div>
           <div className="mt-1 text-xs text-ink-500">Kad podneseš zahtjev, pojavit će se ovdje.</div>
         </section>
@@ -86,25 +86,25 @@ function RequestCard({ req }: { req: LeaveRequest }) {
       : '—';
 
   return (
-    <li className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-ink-100">
+    <li className="overflow-hidden  bg-paper-0 border border-paper-200">
       <button
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center gap-3 p-4 text-left"
       >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-ink-900">{KIND_LABELS[req.kind]}</span>
+            <span className="text-sm font-heading font-medium text-ink-800">{KIND_LABELS[req.kind]}</span>
             <StatusBadge status={req.status} />
           </div>
           <div className="mt-0.5 text-xs text-ink-500">{range}</div>
           {req.reason ? <div className="mt-1 truncate text-xs text-ink-400">„{req.reason}"</div> : null}
         </div>
         <ChevronRight
-          className={`h-4 w-4 text-ink-300 transition ${expanded ? 'rotate-90' : ''}`}
+          className={`h-4 w-4 text-paper-400 transition ${expanded ? 'rotate-90' : ''}`}
         />
       </button>
       {expanded && (
-        <div className="border-t border-ink-100 bg-ink-50 p-4">
+        <div className="border-t border-paper-200 bg-paper-50 p-4">
           <div className="mb-2 text-xs uppercase tracking-wider text-ink-400">Lanac odobravanja</div>
           <ol className="space-y-2">
             {req.approvalChain.map((step, i) => (
@@ -136,13 +136,13 @@ function StatusBadge({ status }: { status: LeaveRequest['status'] }) {
 
 function ChainRow({ step }: { step: ApprovalStep }) {
   const map: Record<ApprovalStep['status'], { Icon: typeof Clock; cls: string }> = {
-    ceka: { Icon: Clock, cls: 'text-ink-300' },
+    ceka: { Icon: Clock, cls: 'text-paper-400' },
     odobreno: { Icon: CheckCircle2, cls: 'text-signal-ok' },
     odbijeno: { Icon: XCircle, cls: 'text-signal-alarm' },
   };
   const { Icon, cls } = map[step.status];
   return (
-    <li className="flex items-center gap-3 rounded-lg bg-white p-2.5">
+    <li className="flex items-center gap-3  bg-paper-0 p-2.5">
       <Icon className={`h-4 w-4 ${cls}`} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between">
@@ -193,14 +193,14 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-30 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-30 flex items-end justify-center bg-black/50  sm:items-center"
     >
-      <div className="w-full max-w-md rounded-t-2xl bg-white p-5 shadow-2xl sm:rounded-2xl">
+      <div className="w-full max-w-md rounded-t-2xl bg-paper-0 p-5  sm:">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-ink-900">Novi zahtjev</h3>
+          <h3 className="text-base font-heading font-medium text-ink-800">Novi zahtjev</h3>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-ink-400 transition hover:bg-ink-100 hover:text-ink-800"
+            className=" p-1 text-ink-400 transition hover:bg-paper-100 hover:text-navy-900"
             aria-label="Zatvori"
           >
             <X className="h-4 w-4" />
@@ -214,10 +214,10 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
               <button
                 key={k}
                 onClick={() => setKind(k)}
-                className={`rounded-lg border px-3 py-2 text-sm transition ${
+                className={` border px-3 py-2 text-sm transition ${
                   kind === k
-                    ? 'border-ink-900 bg-ink-900 text-white'
-                    : 'border-ink-200 bg-white text-ink-700 hover:border-ink-400'
+                    ? 'border-navy-900 bg-navy-900 text-paper-50'
+                    : 'border-paper-200 bg-paper-0 text-ink-700 hover:border-navy-500'
                 }`}
               >
                 {KIND_LABELS[k]}
@@ -237,7 +237,7 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
                 setFromDate(e.target.value);
                 setToDate(e.target.value);
               }}
-              className="w-full rounded-lg border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-900"
+              className="w-full  border border-paper-200 bg-paper-50 px-3 py-2 text-sm text-ink-800"
             />
           </label>
         ) : (
@@ -249,7 +249,7 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
                 value={fromDate}
                 min={DEMO_TODAY}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="w-full rounded-lg border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-900"
+                className="w-full  border border-paper-200 bg-paper-50 px-3 py-2 text-sm text-ink-800"
               />
             </label>
             <label>
@@ -259,7 +259,7 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
                 value={toDate}
                 min={fromDate}
                 onChange={(e) => setToDate(e.target.value)}
-                className="w-full rounded-lg border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-900"
+                className="w-full  border border-paper-200 bg-paper-50 px-3 py-2 text-sm text-ink-800"
               />
             </label>
           </div>
@@ -271,13 +271,13 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={2}
-            className="w-full resize-none rounded-lg border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-900"
+            className="w-full resize-none  border border-paper-200 bg-paper-50 px-3 py-2 text-sm text-ink-800"
             placeholder="Kratko obrazloženje…"
           />
         </label>
 
         {kind !== 'slobodan_dan' && (
-          <div className="mb-3 rounded-md border border-signal-warn/20 bg-signal-warn/10 px-3 py-2 text-xs text-signal-warn">
+          <div className="mb-3  border border-signal-warn/20 bg-signal-warn/10 px-3 py-2 text-xs text-signal-warn">
             {kind === 'premjestaj' || kind === 'ostalo'
               ? 'Ova vrsta zahtjeva će biti dostupna u sljedećoj fazi. Podnošenje je omogućeno kao mockup.'
               : 'Zahtjev prolazi trostepeni lanac: šef smjene → komandir → načelnik.'}
@@ -285,13 +285,13 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
         )}
 
         <div className="flex items-center justify-end gap-2">
-          <button onClick={onClose} className="rounded-md px-3 py-2 text-sm text-ink-600 hover:bg-ink-100">
+          <button onClick={onClose} className=" px-3 py-2 text-sm text-ink-600 hover:bg-paper-100">
             Odustani
           </button>
           <button
             onClick={submit}
             disabled={!canSubmit}
-            className="rounded-md bg-ink-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className=" bg-navy-900 px-4 py-2 text-sm font-medium text-paper-50 disabled:opacity-50"
           >
             Pošalji zahtjev
           </button>

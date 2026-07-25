@@ -51,7 +51,7 @@ export interface OperationalRole {
   /** Ako sezonski, prozor "od-do" u obliku dd.mm. */
   seasonWindow?: { fromMonth: number; toMonth: number };
   requiredCertIds: string[];
-  requiredEquipmentType?: 'vozilo' | 'motocikl' | 'bicikl' | 'niti_jedno';
+  requiredEquipmentType?: 'auto' | 'motocikl' | 'bicikl';
   /** Ako true, oficir sa ovom ulogom ne može biti dodijeljen drugoj u istoj smjeni. */
   exclusive: boolean;
   /** Uloge s kojima se ova može kombinovati u istom slot-u (npr. pješačka + interventna). */
@@ -235,6 +235,22 @@ export interface Payslip {
   net: number;
 }
 
+export type VehicleKind = 'auto' | 'motocikl' | 'bicikl';
+
+export type VehicleStatus = 'ispravno' | 'servis' | 'ostecen';
+
+export interface Vehicle {
+  id: string;
+  kind: VehicleKind;
+  plate: string; // "A-311-K-121"
+  model: string;
+  psId: string; // gdje je vozilo stacionirano
+  status: VehicleStatus;
+  /** "YYYY-MM-DD". */
+  serviceDue?: string;
+  registrationDue?: string;
+}
+
 // --- World envelope ---
 
 export interface World {
@@ -242,9 +258,9 @@ export interface World {
   officers: Officer[];
   operationalRoles: OperationalRole[];
   certifications: Certification[];
-  // Phase 2 dodaci — za sad detaljno samo za Softića (P01-P05), agregatno za ostale.
   shifts: Shift[];
   courtSummonses: CourtSummons[];
   performance: PerformanceMonth[];
   payslips: Payslip[];
+  vehicles: Vehicle[];
 }

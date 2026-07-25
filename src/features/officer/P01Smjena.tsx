@@ -60,13 +60,13 @@ export function P01Smjena() {
     <div className="space-y-4 p-4">
       <div>
         <div className="text-xs uppercase tracking-wider text-ink-400">{longBs(DEMO_TODAY)}</div>
-        <h1 className="mt-1 text-xl font-semibold text-ink-900">
+        <h1 className="mt-1 text-xl font-heading font-medium text-ink-800">
           {greeting}, {firstName}.
         </h1>
       </div>
 
       {nextShift ? (
-        <section className="rounded-2xl bg-gradient-to-br from-ink-900 to-ink-700 p-5 text-white shadow-lg">
+        <section className=" bg-gradient-to-br from-navy-900 to-navy-700 p-5 text-paper-50 ">
           <div className="mb-1 flex items-center gap-1.5 text-xs uppercase tracking-wider text-ink-200">
             <Calendar className="h-3.5 w-3.5" />
             Sljedeća smjena
@@ -95,9 +95,9 @@ export function P01Smjena() {
         <EmptyCard title="Nema zakazanih smjena" body="Raspored za naredni period još nije objavljen." />
       )}
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink-100">
+      <section className=" bg-paper-0 p-4 border border-paper-200">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-ink-900">Sedmični pregled</h2>
+          <h2 className="text-sm font-heading font-medium text-ink-800">Sedmični pregled</h2>
           <span className="text-xs text-ink-400">
             {formatBsShort(DEMO_TODAY)} – {formatBsShort(addDays(DEMO_TODAY, 6))}
           </span>
@@ -107,12 +107,12 @@ export function P01Smjena() {
             <div key={d.date} className="flex flex-col items-center gap-1">
               <div className="text-[10px] uppercase text-ink-400">{d.label}</div>
               <div
-                className={`flex h-9 w-full items-center justify-center rounded-lg text-xs font-medium ${
+                className={`flex h-9 w-full items-center justify-center  text-xs font-medium ${
                   d.kind === 'radi'
-                    ? 'bg-ink-900 text-white'
+                    ? 'bg-navy-900 text-paper-50'
                     : d.kind === 'godisnji'
                     ? 'bg-signal-warn/15 text-signal-warn'
-                    : 'bg-ink-100 text-ink-500'
+                    : 'bg-paper-100 text-ink-500'
                 }`}
               >
                 {d.date.slice(-2)}
@@ -121,25 +121,25 @@ export function P01Smjena() {
           ))}
         </div>
         <div className="mt-3 flex items-center gap-4 text-xs text-ink-500">
-          <LegendDot color="bg-ink-900" label="rad" />
-          <LegendDot color="bg-ink-200" label="slobodan" />
+          <LegendDot color="bg-navy-900" label="rad" />
+          <LegendDot color="bg-paper-200" label="slobodan" />
         </div>
       </section>
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink-100">
+      <section className=" bg-paper-0 p-4 border border-paper-200">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-ink-500" />
-            <h2 className="text-sm font-semibold text-ink-900">Obavještenja</h2>
+            <h2 className="text-sm font-heading font-medium text-ink-800">Obavještenja</h2>
             {unread > 0 && (
-              <span className="rounded-full bg-signal-alarm px-1.5 py-0.5 text-[10px] font-semibold text-white">
+              <span className="rounded-full bg-signal-alarm px-1.5 py-0.5 text-[10px] font-semibold text-paper-50">
                 {unread}
               </span>
             )}
           </div>
           <span className="text-xs text-ink-400">{notifications.length} ukupno</span>
         </div>
-        <ul className="divide-y divide-ink-100">
+        <ul className="divide-y divide-paper-200">
           {notifications.length === 0 ? (
             <li className="py-4 text-center text-xs text-ink-400">Nema obavještenja.</li>
           ) : null}
@@ -194,7 +194,7 @@ function LegendDot({ color, label }: { color: string; label: string }) {
 
 function EmptyCard({ title, body }: { title: string; body: string }) {
   return (
-    <section className="rounded-2xl border border-dashed border-ink-200 bg-white p-6 text-center">
+    <section className=" border border-dashed border-paper-200 bg-paper-0 p-6 text-center">
       <div className="text-sm font-semibold text-ink-700">{title}</div>
       <div className="mt-1 text-xs text-ink-500">{body}</div>
     </section>
@@ -215,26 +215,26 @@ function NotificationRow({ n }: { n: Notification }) {
         className="flex w-full items-start gap-3 text-left"
         onClick={() => store.markNotificationRead(n.id)}
       >
-        <span className={`mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg ${bgFor(n.severity)}`}>
+        <span className={`mt-0.5 flex h-8 w-8 flex-none items-center justify-center  ${bgFor(n.severity)}`}>
           <Icon className={`h-4 w-4 ${fgFor(n.severity)}`} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
-            <span className={`truncate text-sm ${n.read ? 'font-medium text-ink-700' : 'font-semibold text-ink-900'}`}>
+            <span className={`truncate text-sm ${n.read ? 'font-medium text-ink-700' : 'font-heading font-medium text-ink-800'}`}>
               {n.title}
             </span>
             {!n.read && <span className="h-2 w-2 flex-none rounded-full bg-signal-alarm" />}
           </span>
           <span className="mt-0.5 block text-xs text-ink-500">{n.body}</span>
         </span>
-        <ChevronRight className="mt-1 h-4 w-4 flex-none text-ink-300" />
+        <ChevronRight className="mt-1 h-4 w-4 flex-none text-paper-400" />
       </button>
       {n.action ? (
         <div className="mt-2 pl-11">
           {n.action.kind === 'court_confirm' && summonsId ? (
             <button
               onClick={() => store.confirmCourtSummons(summonsId)}
-              className="inline-flex items-center gap-1.5 rounded-md bg-ink-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-ink-800"
+              className="inline-flex items-center gap-1.5  bg-navy-900 px-3 py-1.5 text-xs font-medium text-paper-50 transition hover:bg-navy-800"
             >
               <ClipboardCheck className="h-3.5 w-3.5" />
               {n.action.label}
@@ -246,7 +246,7 @@ function NotificationRow({ n }: { n: Notification }) {
                 <select
                   value={hours}
                   onChange={(e) => setHours(e.target.value)}
-                  className="rounded-md border border-ink-200 bg-white px-2 py-1 text-xs"
+                  className=" border border-paper-200 bg-paper-0 px-2 py-1 text-xs"
                 >
                   <option value="1">1 sat</option>
                   <option value="2">2 sata</option>
@@ -258,7 +258,7 @@ function NotificationRow({ n }: { n: Notification }) {
                     store.logCourtHours(summonsId, Number(hours));
                     setLogging(false);
                   }}
-                  className="rounded-md bg-ink-900 px-3 py-1.5 text-xs font-medium text-white"
+                  className=" bg-navy-900 px-3 py-1.5 text-xs font-medium text-paper-50"
                 >
                   Evidentiraj
                 </button>
@@ -266,7 +266,7 @@ function NotificationRow({ n }: { n: Notification }) {
             ) : (
               <button
                 onClick={() => setLogging(true)}
-                className="inline-flex items-center gap-1.5 rounded-md bg-ink-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-ink-800"
+                className="inline-flex items-center gap-1.5  bg-navy-900 px-3 py-1.5 text-xs font-medium text-paper-50 transition hover:bg-navy-800"
               >
                 {n.action.label}
               </button>
@@ -275,7 +275,7 @@ function NotificationRow({ n }: { n: Notification }) {
           {n.action.kind === 'accept_overtime' ? (
             <button
               onClick={() => store.markNotificationRead(n.id)}
-              className="inline-flex items-center gap-1.5 rounded-md border border-ink-300 bg-white px-3 py-1.5 text-xs font-medium text-ink-800 transition hover:border-ink-500"
+              className="inline-flex items-center gap-1.5  border border-paper-300 bg-paper-0 px-3 py-1.5 text-xs font-medium text-ink-800 transition hover:border-navy-700"
             >
               {n.action.label}
             </button>
@@ -298,15 +298,15 @@ function iconFor(kind: Notification['kind']) {
 
 function bgFor(sev: Notification['severity']): string {
   switch (sev) {
-    case 'action': return 'bg-ink-900';
+    case 'action': return 'bg-navy-900';
     case 'warn': return 'bg-signal-warn/15';
-    default: return 'bg-ink-100';
+    default: return 'bg-paper-100';
   }
 }
 
 function fgFor(sev: Notification['severity']): string {
   switch (sev) {
-    case 'action': return 'text-white';
+    case 'action': return 'text-paper-50';
     case 'warn': return 'text-signal-warn';
     default: return 'text-ink-600';
   }

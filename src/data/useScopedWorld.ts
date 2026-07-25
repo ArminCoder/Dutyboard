@@ -42,6 +42,7 @@ export function scopeWorld(w: World, scopeNodeId: string): World {
     courtSummonses: w.courtSummonses.filter((c) => officerIds.has(c.officerId)),
     performance: w.performance.filter((p) => officerIds.has(p.officerId)),
     payslips: w.payslips.filter((p) => officerIds.has(p.officerId)),
+    vehicles: w.vehicles.filter((v) => psIds.has(v.psId)),
   };
 }
 

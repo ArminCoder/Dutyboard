@@ -20,22 +20,22 @@ export function P05Zaduzenja() {
     <div className="space-y-4 p-4">
       <div>
         <div className="text-xs uppercase tracking-wider text-ink-400">Oprema i certifikati</div>
-        <h1 className="mt-0.5 text-xl font-semibold text-ink-900">Moja zaduženja</h1>
+        <h1 className="mt-0.5 text-xl font-heading font-medium text-ink-800">Moja zaduženja</h1>
       </div>
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink-100">
-        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink-900">
+      <section className=" bg-paper-0 p-4 border border-paper-200">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-heading font-medium text-ink-800">
           <Backpack className="h-4 w-4 text-ink-500" />
           Zadužena oprema
         </h2>
-        <ul className="divide-y divide-ink-100">
+        <ul className="divide-y divide-paper-200">
           {SOFTIC_EQUIPMENT.map((e) => (
             <li key={e.type} className="flex items-center gap-3 py-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink-100 text-ink-700">
+              <span className="flex h-8 w-8 items-center justify-center  bg-paper-100 text-ink-700">
                 {e.type === 'radio' ? <Radio className="h-4 w-4" /> : e.type === 'vozilo' ? <Car className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-ink-900">{e.label}</div>
+                <div className="text-sm font-medium text-ink-800">{e.label}</div>
                 <div className="text-xs text-ink-500">{e.identifier}</div>
               </div>
             </li>
@@ -43,12 +43,12 @@ export function P05Zaduzenja() {
         </ul>
       </section>
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink-100">
-        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink-900">
+      <section className=" bg-paper-0 p-4 border border-paper-200">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-heading font-medium text-ink-800">
           <ShieldCheck className="h-4 w-4 text-ink-500" />
           Certifikati
         </h2>
-        <ul className="divide-y divide-ink-100">
+        <ul className="divide-y divide-paper-200">
           {officer.certifications.map((c) => {
             const cert = world.certifications.find((x) => x.id === c.certId)!;
             const days = daysBetween(today, c.expires);
@@ -57,7 +57,7 @@ export function P05Zaduzenja() {
             return (
               <li key={c.certId} className="flex items-center gap-3 py-2.5">
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium text-ink-900">{cert.name}</div>
+                  <div className="text-sm font-medium text-ink-800">{cert.name}</div>
                   <div className="text-xs text-ink-500">važi do {formatBs(c.expires)}</div>
                 </div>
                 {expired ? (

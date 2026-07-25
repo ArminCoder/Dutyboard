@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Lock, ShieldAlert } from 'lucide-react';
 import { useGate } from './useGate';
+import { Button } from '../../components/Button';
 
 interface Props {
   onAuthenticated: () => void;
@@ -12,14 +12,13 @@ export function GateScreen({ onAuthenticated }: Props) {
 
   if (gate.status === 'checking') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-ink-900 text-ink-100">
-        <div className="text-sm text-ink-300">Provjera sesije…</div>
+      <div className="paper-noise flex min-h-screen items-center justify-center bg-navy-900 text-paper-300">
+        <div className="text-sm">Provjera sesije…</div>
       </div>
     );
   }
 
   if (gate.status === 'authenticated') {
-    // Već autentifikovani — signal roditelju.
     queueMicrotask(onAuthenticated);
     return null;
   }
@@ -29,75 +28,120 @@ export function GateScreen({ onAuthenticated }: Props) {
     gate.lockedUntilMs != null ? Math.max(0, Math.ceil((gate.lockedUntilMs - Date.now()) / 60000)) : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-ink-900 to-ink-800 px-4 py-10">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-ink-900 text-white">
-            <ShieldAlert className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="text-xs font-medium uppercase tracking-wider text-ink-400">Dutyboard</div>
-            <div className="text-lg font-semibold text-ink-900">Demo okruženje</div>
-          </div>
+    <div className="paper-noise relative flex min-h-screen items-center justify-center bg-navy-900 px-4 py-10">
+      <BackgroundCrest />
+
+      <div className="relative w-full max-w-md">
+        {/* Header nad karticom */}
+        <div className="mb-6 text-center">
+          <Crest />
+          <div className="section-label mt-4 text-brass-300">Ministarstvo unutrašnjih poslova · Demo kanton</div>
+          <h1 className="mt-2 font-heading text-3xl font-medium text-paper-50">Dutyboard</h1>
+          <div className="mt-1 text-sm text-paper-300">Sistem za upravljanje ljudstvom</div>
+          <div className="mx-auto mt-4 h-[2px] w-16 bg-brass-500" />
         </div>
 
-        <p className="mb-6 text-sm leading-relaxed text-ink-600">
-          Demo okruženje je zaštićeno. Ključ ste dobili u pozivnom emailu.
-          Svi podaci u demonstraciji su izmišljeni.
-        </p>
+        {/* Kartica */}
+        <div className="border border-paper-200 bg-paper-0 px-8 py-8">
+          <p className="mb-6 text-center text-sm leading-relaxed text-ink-600">
+            Demo okruženje je zaštićeno. Ključ ste dobili u pozivnom emailu. Svi podaci u demonstraciji su izmišljeni.
+          </p>
 
-        <form
-          className="space-y-4"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const ok = await gate.submit(key.trim());
-            if (ok) onAuthenticated();
-          }}
-        >
-          <label className="block">
-            <div className="mb-2 text-sm font-medium text-ink-700">Pristupni ključ</div>
-            <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+          <form
+            className="space-y-5"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const ok = await gate.submit(key.trim());
+              if (ok) onAuthenticated();
+            }}
+          >
+            <label className="block">
+              <div className="section-label mb-2 text-ink-500">Pristupni ključ</div>
               <input
                 type="password"
                 autoComplete="off"
                 autoFocus
-                className="w-full rounded-lg border border-ink-200 bg-ink-50 py-2.5 pl-10 pr-3 text-base text-ink-900 outline-none transition focus:border-ink-400 focus:bg-white focus:ring-2 focus:ring-ink-300 disabled:opacity-60"
-                placeholder="unesi ključ"
+                spellCheck={false}
+                className="w-full border border-paper-300 bg-paper-50 px-4 py-3 text-center font-mono text-lg tracking-[0.35em] text-navy-900 outline-none transition placeholder:tracking-normal placeholder:text-paper-400 focus:border-brass-500 focus:bg-paper-0 disabled:opacity-60"
+                placeholder="•  •  •  •  •"
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
                 disabled={locked || gate.submitting}
                 aria-label="Pristupni ključ"
               />
-            </div>
-          </label>
+            </label>
 
-          {gate.error ? (
-            <div className="rounded-md border border-signal-alarm/20 bg-signal-alarm/10 px-3 py-2 text-sm text-signal-alarm">
-              {gate.error}
-            </div>
-          ) : null}
+            {gate.error ? (
+              <div className="border border-signal-alarm/30 bg-signal-alarm-soft px-3 py-2 text-center text-sm text-signal-alarm">
+                {gate.error}
+              </div>
+            ) : null}
 
-          {locked && lockedMinutesLeft != null ? (
-            <div className="rounded-md border border-signal-warn/20 bg-signal-warn/10 px-3 py-2 text-sm text-signal-warn">
-              Pristup privremeno zaključan. Pokušaj ponovo za {lockedMinutesLeft} min.
-            </div>
-          ) : null}
+            {locked && lockedMinutesLeft != null ? (
+              <div className="border border-signal-warn/30 bg-signal-warn-soft px-3 py-2 text-center text-sm text-signal-warn">
+                Pristup privremeno zaključan. Pokušaj ponovo za {lockedMinutesLeft} min.
+              </div>
+            ) : null}
 
-          <button
-            type="submit"
-            disabled={locked || gate.submitting || key.trim().length === 0}
-            className="w-full rounded-lg bg-ink-900 py-2.5 text-sm font-medium text-white transition hover:bg-ink-800 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {gate.submitting ? 'Provjera…' : 'Uđi u demo'}
-          </button>
-        </form>
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full"
+              disabled={locked || gate.submitting || key.trim().length === 0}
+            >
+              {gate.submitting ? 'Provjera…' : 'Uđi u demo'}
+            </Button>
+          </form>
+        </div>
 
-        <div className="mt-6 border-t border-ink-100 pt-4 text-xs leading-relaxed text-ink-400">
-          Produkcijski sistem koristi AD/LDAP autentifikaciju sa 2FA i hosting u BiH.
-          Ova demonstracija je izolovano okruženje sa isključivo izmišljenim podacima.
+        <div className="mt-6 text-center">
+          <div className="section-label text-brass-300">Napomena</div>
+          <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-paper-300">
+            Produkcijski sistem koristi AD/LDAP autentifikaciju sa 2FA i hosting u BiH.
+            Ova demonstracija je izolovano okruženje sa isključivo izmišljenim podacima.
+          </p>
         </div>
       </div>
     </div>
+  );
+}
+
+function Crest() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" className="mx-auto" aria-hidden>
+      <path
+        d="M28 6 L46 12 V28 C46 39 38 47 28 50 C18 47 10 39 10 28 V12 Z"
+        fill="none"
+        stroke="#b8935a"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M20 28 L26 34 L37 22"
+        fill="none"
+        stroke="#d6bd91"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function BackgroundCrest() {
+  return (
+    <svg
+      className="pointer-events-none absolute inset-0 mx-auto h-full w-full opacity-[0.04]"
+      viewBox="0 0 800 800"
+      aria-hidden
+    >
+      <path
+        d="M400 100 L620 180 V400 C620 540 520 640 400 680 C280 640 180 540 180 400 V180 Z"
+        fill="none"
+        stroke="#b8935a"
+        strokeWidth="1"
+      />
+    </svg>
   );
 }

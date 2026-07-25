@@ -2,10 +2,11 @@ import type { World } from '../types';
 import { buildOrgTree } from './org';
 import { CERTIFICATIONS, buildOperationalRoles } from './roles';
 import { generateOfficers } from './officers';
-import { generateSoftićShifts } from './shifts';
+import { generateRoster } from './shifts';
 import { generatePerformance } from './performance';
 import { generateSoftićPayslip } from './payslip';
 import { generateSoftićCourt } from './court';
+import { generateVehicles } from './vehicles';
 
 const SEED = 20260723; // fiksni seed — SPEC: "isti svijet na svakom deployu"
 
@@ -15,10 +16,11 @@ export function generateWorld(): World {
   const posebnaId = orgNodes.find((n) => n.kind === 'posebna')!.id;
   const operationalRoles = buildOperationalRoles(puIds, posebnaId);
   const officers = generateOfficers(SEED, orgNodes, operationalRoles);
-  const shifts = generateSoftićShifts(SEED + 1, officers);
+  const shifts = generateRoster(SEED + 1, officers);
   const courtSummonses = generateSoftićCourt();
   const performance = generatePerformance(SEED + 2, officers);
   const payslips = [generateSoftićPayslip()];
+  const vehicles = generateVehicles();
 
   return {
     orgNodes,
@@ -29,5 +31,6 @@ export function generateWorld(): World {
     courtSummonses,
     performance,
     payslips,
+    vehicles,
   };
 }

@@ -20,16 +20,16 @@ export function P04Plata() {
     <div className="space-y-4 p-4">
       <div>
         <div className="text-xs uppercase tracking-wider text-ink-400">Platna lista</div>
-        <h1 className="mt-0.5 text-xl font-semibold text-ink-900">Moja plata</h1>
+        <h1 className="mt-0.5 text-xl font-heading font-medium text-ink-800">Moja plata</h1>
       </div>
 
-      <div className="flex items-center gap-2 rounded-md border border-signal-warn/20 bg-signal-warn/10 px-3 py-2 text-xs text-signal-warn">
+      <div className="flex items-center gap-2  border border-signal-warn/20 bg-signal-warn/10 px-3 py-2 text-xs text-signal-warn">
         <Wrench className="h-3.5 w-3.5" />
         Integracija sa sistemom obračuna u razvoju — prikazani iznosi su mockup.
       </div>
 
       {payslip ? (
-        <section className="rounded-2xl bg-gradient-to-br from-ink-900 to-ink-700 p-5 text-white shadow-lg">
+        <section className=" bg-gradient-to-br from-navy-900 to-navy-700 p-5 text-paper-50 ">
           <div className="text-xs uppercase tracking-wider text-ink-200">
             {formatMonth(payslip.yearMonth)}
           </div>
@@ -49,21 +49,21 @@ export function P04Plata() {
         </section>
       ) : null}
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink-100">
-        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink-900">
+      <section className=" bg-paper-0 p-4 border border-paper-200">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-heading font-medium text-ink-800">
           <Calendar className="h-4 w-4 text-ink-500" />
           Kalendar isplata
         </h2>
-        <ul className="divide-y divide-ink-100">
+        <ul className="divide-y divide-paper-200">
           {HISTORY.map((h) => (
             <li key={h.yearMonth} className="flex items-center justify-between py-2.5">
               <div>
-                <div className="text-sm font-medium text-ink-900">{formatMonth(h.yearMonth)}</div>
+                <div className="text-sm font-medium text-ink-800">{formatMonth(h.yearMonth)}</div>
                 <div className="text-xs text-ink-500">isplaćeno 05.{h.yearMonth.slice(5, 7)}.{h.yearMonth.slice(0, 4)}.</div>
               </div>
               <div className="flex items-center gap-2 text-sm font-semibold text-ink-800">
                 {h.net.toLocaleString('bs-BA')} KM
-                <ArrowUpRight className="h-3.5 w-3.5 text-ink-300" />
+                <ArrowUpRight className="h-3.5 w-3.5 text-paper-400" />
               </div>
             </li>
           ))}

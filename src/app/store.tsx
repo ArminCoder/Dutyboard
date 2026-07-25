@@ -3,6 +3,36 @@ import type { CourtSummons, LeaveRequest, Notification } from '../data/types';
 import { world } from '../data/world';
 import { DEMO_TODAY, addDays } from '../data/generator/dates';
 
+// --- Phase 4 additions: overtime postings + active shift crisis + shift log ---
+
+export interface OvertimePosting {
+  id: string;
+  psId: string;
+  requiredRoleId: string;
+  when: string; // "YYYY-MM-DDTHH:mm"
+  duration: string; // "8 h", "12 h"
+  neededCount: number;
+  offerLog: Array<{ officerId: string; officerName: string; offeredAt: string; accepted?: boolean }>;
+  createdAt: string;
+}
+
+export interface ActivePatrolCard {
+  id: string;
+  callSign: string;
+  vehiclePlate?: string;
+  officers: string[]; // officer IDs
+  status: 'na_terenu' | 'pauza' | 'intervencija' | 'nepotpuna';
+  location?: string;
+  incompleteReason?: string;
+}
+
+export interface ShiftLogEntry {
+  id: string;
+  when: string;
+  who: string;
+  event: string;
+}
+
 // Sve mutabilne stvari (obavještenja, zahtjevi, sudski poziv statusi) žive ovdje.
 // Reset na reload je namjeran i prihvatljiv za demo.
 
@@ -10,12 +40,22 @@ interface Store {
   notifications: Notification[];
   leaveRequests: LeaveRequest[];
   courtSummonses: CourtSummons[];
+  overtimePostings: OvertimePosting[];
+  activePatrols: ActivePatrolCard[];
+  shiftLog: ShiftLogEntry[];
 
   markNotificationRead: (id: string) => void;
   confirmCourtSummons: (id: string) => void;
   logCourtHours: (id: string, hours: number) => void;
   submitLeaveRequest: (draft: DraftLeaveRequest) => LeaveRequest;
   advanceApproval: (id: string, decision: 'odobreno' | 'odbijeno', note?: string) => void;
+
+  createOvertimePosting: (input: Omit<OvertimePosting, 'id' | 'offerLog' | 'createdAt'>) => OvertimePosting;
+  offerOvertime: (postingId: string, officerId: string, officerName: string) => void;
+  acceptOvertime: (postingId: string, officerId: string) => void;
+
+  markOfficerSick: (patrolId: string, officerId: string) => void;
+  reassignOfficer: (patrolId: string, newOfficerId: string) => void;
 }
 
 export interface DraftLeaveRequest {
@@ -133,10 +173,76 @@ function seedLeaveRequests(): LeaveRequest[] {
   ];
 }
 
+function seedOvertimePostings(): OvertimePosting[] {
+  return [
+    {
+      id: 'ot-0001',
+      psId: 'ps-centar',
+      requiredRoleId: 'pu-centar:interventna',
+      when: `${addDays(DEMO_TODAY, 13)}T19:00`,
+      duration: '12 h',
+      neededCount: 2,
+      offerLog: [
+        { officerId: 'off-0001', officerName: 'Amar Softić', offeredAt: `${addDays(DEMO_TODAY, -1)}T18:40` },
+      ],
+      createdAt: `${addDays(DEMO_TODAY, -1)}T18:40`,
+    },
+  ];
+}
+
+function seedActivePatrols(): ActivePatrolCard[] {
+  return [
+    {
+      id: 'patrol-auto-2-1',
+      callSign: 'Auto-patrola 2-1 · Interventna',
+      vehiclePlate: 'A-311-K-121',
+      officers: ['off-0001', 'off-0005'],
+      status: 'na_terenu',
+      location: 'Ferhadija',
+    },
+    {
+      id: 'patrol-auto-2-2',
+      callSign: 'Auto-patrola 2-2',
+      vehiclePlate: 'A-311-K-122',
+      officers: ['off-0006', 'off-0007'],
+      status: 'pauza',
+      location: 'PS Centar',
+    },
+    {
+      id: 'patrol-moto-4-1',
+      callSign: 'Moto 4-1',
+      vehiclePlate: 'A-311-M-104',
+      officers: ['off-0008'],
+      status: 'na_terenu',
+      location: 'Marijin dvor',
+    },
+    {
+      id: 'patrol-pjes-1-1',
+      callSign: 'Pješačka 1-1',
+      officers: ['off-0009', 'off-0010'],
+      status: 'intervencija',
+      location: 'Titova',
+    },
+    {
+      id: 'patrol-pjes-1-2',
+      callSign: 'Pješačka 1-2',
+      officers: ['off-0011', 'off-0012'],
+      status: 'na_terenu',
+      location: 'Baščaršija',
+    },
+  ];
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>(() => seedNotifications());
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => seedLeaveRequests());
   const [courtSummonses, setCourtSummonses] = useState<CourtSummons[]>(() => world.courtSummonses);
+  const [overtimePostings, setOvertimePostings] = useState<OvertimePosting[]>(() => seedOvertimePostings());
+  const [activePatrols, setActivePatrols] = useState<ActivePatrolCard[]>(() => seedActivePatrols());
+  const [shiftLog, setShiftLog] = useState<ShiftLogEntry[]>(() => [
+    { id: 'log-init-1', when: `${DEMO_TODAY}T19:00`, who: 'Damir Kovač', event: 'Otvorena II smjena.' },
+    { id: 'log-init-2', when: `${DEMO_TODAY}T19:05`, who: 'Sistem', event: 'Sve patrole na terenu.' },
+  ]);
 
   const markNotificationRead = useCallback((id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -228,26 +334,128 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const createOvertimePosting = useCallback(
+    (input: Omit<OvertimePosting, 'id' | 'offerLog' | 'createdAt'>) => {
+      const p: OvertimePosting = {
+        ...input,
+        id: `ot-${Date.now()}`,
+        offerLog: [],
+        createdAt: new Date().toISOString().slice(0, 16),
+      };
+      setOvertimePostings((prev) => [p, ...prev]);
+      return p;
+    },
+    [],
+  );
+
+  const offerOvertime = useCallback((postingId: string, officerId: string, officerName: string) => {
+    setOvertimePostings((prev) =>
+      prev.map((p) =>
+        p.id !== postingId || p.offerLog.some((o) => o.officerId === officerId)
+          ? p
+          : { ...p, offerLog: [...p.offerLog, { officerId, officerName, offeredAt: new Date().toISOString().slice(0, 16) }] },
+      ),
+    );
+  }, []);
+
+  const acceptOvertime = useCallback((postingId: string, officerId: string) => {
+    setOvertimePostings((prev) =>
+      prev.map((p) =>
+        p.id !== postingId
+          ? p
+          : { ...p, offerLog: p.offerLog.map((o) => (o.officerId === officerId ? { ...o, accepted: true } : o)) },
+      ),
+    );
+  }, []);
+
+  const appendLog = useCallback((entry: Omit<ShiftLogEntry, 'id' | 'when'>) => {
+    setShiftLog((prev) => [
+      ...prev,
+      { id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, when: new Date().toISOString().slice(0, 16), ...entry },
+    ]);
+  }, []);
+
+  const markOfficerSick = useCallback(
+    (patrolId: string, officerId: string) => {
+      const officer = world.officers.find((o) => o.id === officerId);
+      setActivePatrols((prev) =>
+        prev.map((p) => {
+          if (p.id !== patrolId) return p;
+          const remaining = p.officers.filter((id) => id !== officerId);
+          return {
+            ...p,
+            officers: remaining,
+            status: 'nepotpuna',
+            incompleteReason: `${officer?.name ?? 'Policajac'} napustio smjenu (bolovanje)`,
+          };
+        }),
+      );
+      appendLog({
+        who: 'Damir Kovač',
+        event: `${officer?.name ?? 'Policajac'} napustio smjenu (bolovanje). ${patrolId} označen kao NEPOTPUNA.`,
+      });
+    },
+    [appendLog],
+  );
+
+  const reassignOfficer = useCallback(
+    (patrolId: string, newOfficerId: string) => {
+      const officer = world.officers.find((o) => o.id === newOfficerId);
+      setActivePatrols((prev) =>
+        prev.map((p) => {
+          if (p.id !== patrolId) return p;
+          return {
+            ...p,
+            officers: [...p.officers, newOfficerId],
+            status: 'na_terenu',
+            incompleteReason: undefined,
+          };
+        }),
+      );
+      appendLog({
+        who: 'Damir Kovač',
+        event: `${officer?.name ?? 'Policajac'} premješten u ${patrolId}. Patrola ponovo popunjena.`,
+      });
+    },
+    [appendLog],
+  );
+
   const value = useMemo<Store>(
     () => ({
       notifications,
       leaveRequests,
       courtSummonses,
+      overtimePostings,
+      activePatrols,
+      shiftLog,
       markNotificationRead,
       confirmCourtSummons,
       logCourtHours,
       submitLeaveRequest,
       advanceApproval,
+      createOvertimePosting,
+      offerOvertime,
+      acceptOvertime,
+      markOfficerSick,
+      reassignOfficer,
     }),
     [
       notifications,
       leaveRequests,
       courtSummonses,
+      overtimePostings,
+      activePatrols,
+      shiftLog,
       markNotificationRead,
       confirmCourtSummons,
       logCourtHours,
       submitLeaveRequest,
       advanceApproval,
+      createOvertimePosting,
+      offerOvertime,
+      acceptOvertime,
+      markOfficerSick,
+      reassignOfficer,
     ],
   );
 

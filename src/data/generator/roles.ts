@@ -40,7 +40,7 @@ export function buildOperationalRoles(puIds: string[], posebnaId: string): Opera
       name: 'Auto-patrola',
       orgNodeId: puId,
       requiredCertIds: ['cert-osnovna', 'cert-gadjanje', 'cert-vozac-b'],
-      requiredEquipmentType: 'vozilo',
+      requiredEquipmentType: 'auto',
       exclusive: false,
       combinableWith: [p('interventna')],
       minPerShift: 2,

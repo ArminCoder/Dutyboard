@@ -110,11 +110,21 @@ Driven by the approved master plan + [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md). P
   PS/posebna + `establishmentUnder()` rollup; new `FinanceConfig`/`KpiTargets`/`RestRules` on the `World`
   via `generator/finance.ts` + `generator/targets.ts`; `useScopedWorld` passes them through. Verified
   deterministic. **M01 still displays its old hardcodes — rewire to the new data when rebuilding M01 (Phase 3).**
+- ✅ **build-next #3 — Ministar *Simulacija „+20 policajaca"*:** interactive what-if. Two sliders
+  (dodatni policajci 0–40, limit prekovremenih h/officer) → live recompute of coverage %, annual OT cost
+  (KM), burnout index (zeleno/žuto/crveno), and a budget-tradeoff panel (nove plate vs OT ušteda → neto) +
+  a live Bosnian narrative. Model in `M02Simulacija.tsx` (`simulate()`), verified monotonic. Ministar role
+  converted to a tabbed shell (`MinisterShell.tsx`): **Strateška tabla | Simulacija**. Routes nested under
+  `/ministar`. **M01 rewired to real data** — establishment via `establishmentUnder`, staž/pension from
+  `hireDate`/`birthDate`, OT rate from `finance` (all former hardcodes gone).
 - ⏳ **Phase 1 remainder (staged with their screens):** populate `equipmentAssigned`; generate rosters for
   all PS (only PS Centar/Aug today); world-wide `leaveRequests`/`notifications`; aggregate complaints/UoF;
   PU boundary polygons for the choropleth.
-- ⬜ **Next up:** build-next #3 Ministar *Simulacija „+20 policajaca"* and #4 Komesar *Operativni pregled
-  (Compstat)* — see FEATURE-BACKLOG.md build-next table.
+- ⬜ **Next up:** build-next #4 Komesar *Operativni pregled (Compstat)* + drill-down — see FEATURE-BACKLOG.md.
+
+> ⚠️ **Not yet visually verified in a browser** — Ministar suite passes build/lint/typecheck and the
+> `simulate()` model is numerically verified, but the rendered screens (slider UX, layout, PDF export)
+> should be clicked through. Route: gate → role picker → *Ministar* → *Simulacija*.
 
 ## Continuity log
 

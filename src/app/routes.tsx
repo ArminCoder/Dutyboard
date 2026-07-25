@@ -12,6 +12,7 @@ import { K01Raspored } from '../features/shiftCommander/K01Raspored';
 import { K02Aktivna } from '../features/shiftCommander/K02Aktivna';
 import { K03Odobrenja } from '../features/shiftCommander/K03Odobrenja';
 import { ChiefShell } from '../components/ChiefShell';
+import { MinisterShell } from '../features/minister/MinisterShell';
 import { N01Komandna } from '../features/chief/N01Komandna';
 import { N04Oprema } from '../features/chief/N04Oprema';
 import { N05Uloge } from '../features/chief/N05Uloge';
@@ -26,6 +27,7 @@ const N02Analitika = lazy(() => import('../features/chief/N02Analitika').then((m
 const N03Kadar = lazy(() => import('../features/chief/N03Kadar').then((m) => ({ default: m.N03Kadar })));
 const C01Uprava = lazy(() => import('../features/commissioner/C01Uprava').then((m) => ({ default: m.C01Uprava })));
 const M01Strateska = lazy(() => import('../features/minister/M01Strateska').then((m) => ({ default: m.M01Strateska })));
+const M02Simulacija = lazy(() => import('../features/minister/M02Simulacija').then((m) => ({ default: m.M02Simulacija })));
 const D01Mapa = lazy(() => import('../features/dispatch/D01Mapa').then((m) => ({ default: m.D01Mapa })));
 
 type Gate = 'checking' | 'open';
@@ -113,13 +115,16 @@ export function AppRoutes() {
         />
 
         <Route
-          path="/ministar/*"
+          path="/ministar"
           element={
             <RequireRole roles={['ministar']}>
-              <M01Strateska />
+              <MinisterShell />
             </RequireRole>
           }
-        />
+        >
+          <Route index element={<M01Strateska />} />
+          <Route path="simulacija" element={<M02Simulacija />} />
+        </Route>
 
         <Route
           path="/mockup/pisarnica"

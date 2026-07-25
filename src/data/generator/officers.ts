@@ -15,25 +15,26 @@ const RANK_WEIGHTS: Array<[Rank, number]> = [
   ['glavni_inspektor', 1],
 ];
 
-// Staž (godine službe) po činu — viši čin = duži staž. Koristi se za dob i penzionisanje.
-const RANK_SENIORITY: Record<Rank, [number, number]> = {
-  policajac: [0, 6],
-  stariji_policajac: [4, 12],
-  narednik: [8, 18],
-  stariji_narednik: [12, 24],
-  mladji_inspektor: [10, 20],
-  inspektor: [14, 26],
-  stariji_inspektor: [18, 30],
-  glavni_inspektor: [22, 35],
+// Dob po činu — viši čin je stariji, s realnim repom pred penzijom (za projekciju penzionisanja).
+const RANK_AGE_RANGE: Record<Rank, [number, number]> = {
+  policajac: [22, 40],
+  stariji_policajac: [26, 50],
+  narednik: [30, 55],
+  stariji_narednik: [34, 60],
+  mladji_inspektor: [30, 52],
+  inspektor: [36, 58],
+  stariji_inspektor: [42, 62],
+  glavni_inspektor: [46, 63],
 };
 
-/** Deterministički datum zaposlenja + rođenja, sidreni na DEMO_TODAY i korelirani s činom. */
+/** Deterministički datum rođenja + zaposlenja, sidreni na DEMO_TODAY i korelirani s činom.
+ *  Dob se bira prvo (realan raspon po činu, uključujući pred-penzijski rep), staž = dob − dob pri zaposlenju. */
 function demographics(rand: () => number, rank: Rank): { hireDate: string; birthDate: string } {
-  const [minS, maxS] = RANK_SENIORITY[rank];
-  const serviceYears = intBetween(rand, minS, maxS);
-  const hireAge = intBetween(rand, 20, 26);
-  const ageNow = hireAge + serviceYears;
-  const birthDate = addDays(DEMO_TODAY, -(Math.round(ageNow * 365.25) + intBetween(rand, 0, 300)));
+  const [aMin, aMax] = RANK_AGE_RANGE[rank];
+  const age = intBetween(rand, aMin, aMax);
+  const hireAge = intBetween(rand, 21, Math.min(27, Math.max(21, age - 1)));
+  const serviceYears = Math.max(0, age - hireAge);
+  const birthDate = addDays(DEMO_TODAY, -(Math.round(age * 365.25) + intBetween(rand, 0, 300)));
   const hireDate = addDays(DEMO_TODAY, -(Math.round(serviceYears * 365.25) + intBetween(rand, 0, 300)));
   return { hireDate, birthDate };
 }

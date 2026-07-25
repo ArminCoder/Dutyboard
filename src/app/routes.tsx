@@ -27,6 +27,7 @@ const K03Prekovremeni = lazy(() => import('../features/shiftCommander/K03Prekovr
 const N02Analitika = lazy(() => import('../features/chief/N02Analitika').then((m) => ({ default: m.N02Analitika })));
 const N03Kadar = lazy(() => import('../features/chief/N03Kadar').then((m) => ({ default: m.N03Kadar })));
 const C01Operativni = lazy(() => import('../features/commissioner/C01Operativni').then((m) => ({ default: m.C01Operativni })));
+const C02Uskladjenost = lazy(() => import('../features/commissioner/C02Uskladjenost').then((m) => ({ default: m.C02Uskladjenost })));
 const M01Strateska = lazy(() => import('../features/minister/M01Strateska').then((m) => ({ default: m.M01Strateska })));
 const M02Simulacija = lazy(() => import('../features/minister/M02Simulacija').then((m) => ({ default: m.M02Simulacija })));
 const D01Mapa = lazy(() => import('../features/dispatch/D01Mapa').then((m) => ({ default: m.D01Mapa })));
@@ -115,6 +116,7 @@ export function AppRoutes() {
           }
         >
           <Route index element={<C01Operativni />} />
+          <Route path="radno-vrijeme" element={<C02Uskladjenost />} />
         </Route>
 
         <Route

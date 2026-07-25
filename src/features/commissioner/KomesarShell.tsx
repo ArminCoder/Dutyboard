@@ -1,10 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutGrid, LogOut } from 'lucide-react';
+import { LayoutGrid, Clock, LogOut } from 'lucide-react';
 import { useRoleActions, useSession } from '../../app/RoleContext';
 
 // Komesarski "suite" — komandna tabla cijele Uprave policije. Desktop/projektor.
-// Zasad jedan tab (Operativni pregled); dodatni tabovi se dodaju kako se grade.
-const NAV = [{ to: '/komesar', end: true, label: 'Operativni pregled', icon: LayoutGrid }];
+const NAV = [
+  { to: '/komesar', end: true, label: 'Operativni pregled', icon: LayoutGrid },
+  { to: '/komesar/radno-vrijeme', end: false, label: 'Radno vrijeme', icon: Clock },
+];
 
 export function KomesarShell() {
   const session = useSession();

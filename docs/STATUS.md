@@ -123,11 +123,17 @@ Driven by the approved master plan + [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md). P
   Reusable `src/domain/unitStats.ts` (unitStat / childUnitsOf / pathFromRoot / monthlyIntervencije). Komesar
   converted to `KomesarShell` (tabbed). **Posebna jedinica is now visible to the komesar** (was excluded).
   Old `C01Uprava.tsx` removed. Browser-verified (drill + PoP + lights, zero console errors).
+- ✅ **build-next #5 — Komesar *Usklađenost radnog vremena*:** EU working-time compliance as a KomesarShell
+  tab. `src/domain/workTime.ts` computes per-officer compliance from last-month hours (weekly hours healthy
+  ~38.5h; the real signal is overtime — 23 over the 16h limit, 10 clear breaches). Screen shows compliance %,
+  breaches, avg weekly, night share, a per-PU ranked table, and a color-coded overtime histogram (green→red
+  tail). Browser-verified, zero console errors. Note: viewport screenshots DO render animated bars — only
+  *fullPage* headless drops them.
 - ⏳ **Phase 1 remainder (staged with their screens):** populate `equipmentAssigned`; generate rosters for
   all PS (only PS Centar/Aug today); world-wide `leaveRequests`/`notifications`; aggregate complaints/UoF;
   PU boundary polygons for the choropleth.
-- ⬜ **Next up:** build-next #5 Komesar *Usklađenost radnog vremena* (EU rest rules) — add as a KomesarShell
-  tab; then #6 Ministar *Budžet* — see FEATURE-BACKLOG.md.
+- ⬜ **Next up:** build-next #6 Ministar *Budžet i troškovi ljudstva* (add as MinisterShell tab; `finance`
+  budgets seeded); then #7 Komesar *Kontrola prekovremenih* — see FEATURE-BACKLOG.md.
 
 > **Browser verification is set up** (Playwright via system Chrome). Pattern: `NODE_ENV=production PORT=3100
 > npx tsx server/index.ts` (bg), `npm i --no-save playwright-core`, drive with `channel:'chrome'`; gate key

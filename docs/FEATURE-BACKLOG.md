@@ -26,7 +26,7 @@
 | 1 | Seed fix: performance anchored to `DEMO_TODAY` + 24-mo history | seed | S | Fills every exec chart; prerequisite. |
 | 2 | Seed: `hireDate`/`birthDate` + `establishment` counts | seed | S | Kills M01 hardcodes; unlocks workforce planning. |
 | 3 | ✅ **Simulacija „+20 policajaca"** | ministar | M | Minister deciding on your screen = the close. **DONE** (`M02Simulacija.tsx`). |
-| 4 | **Operativni pregled (Compstat)** | komesar | M | Definitive command-accountability artifact + drill-down. |
+| 4 | ✅ **Operativni pregled (Compstat)** | komesar | M | Definitive command-accountability artifact + drill-down. **DONE** (`C01Operativni.tsx` + `domain/unitStats.ts`). |
 | 5 | **Usklađenost radnog vremena** | komesar | M | EU legal-risk + wellbeing in one number. |
 | 6 | **Budžet i troškovi ljudstva** | ministar | M | The money argument for the Vlada. |
 | 7 | **Kontrola prekovremenih (trošak + pravednost)** | komesar | M | Cost + anti-favoritism, handled safely. |

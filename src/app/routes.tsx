@@ -13,6 +13,7 @@ import { K02Aktivna } from '../features/shiftCommander/K02Aktivna';
 import { K03Odobrenja } from '../features/shiftCommander/K03Odobrenja';
 import { ChiefShell } from '../components/ChiefShell';
 import { MinisterShell } from '../features/minister/MinisterShell';
+import { KomesarShell } from '../features/commissioner/KomesarShell';
 import { N01Komandna } from '../features/chief/N01Komandna';
 import { N04Oprema } from '../features/chief/N04Oprema';
 import { N05Uloge } from '../features/chief/N05Uloge';
@@ -25,7 +26,7 @@ const P03Statistika = lazy(() => import('../features/officer/P03Statistika').the
 const K03Prekovremeni = lazy(() => import('../features/shiftCommander/K03Prekovremeni').then((m) => ({ default: m.K03Prekovremeni })));
 const N02Analitika = lazy(() => import('../features/chief/N02Analitika').then((m) => ({ default: m.N02Analitika })));
 const N03Kadar = lazy(() => import('../features/chief/N03Kadar').then((m) => ({ default: m.N03Kadar })));
-const C01Uprava = lazy(() => import('../features/commissioner/C01Uprava').then((m) => ({ default: m.C01Uprava })));
+const C01Operativni = lazy(() => import('../features/commissioner/C01Operativni').then((m) => ({ default: m.C01Operativni })));
 const M01Strateska = lazy(() => import('../features/minister/M01Strateska').then((m) => ({ default: m.M01Strateska })));
 const M02Simulacija = lazy(() => import('../features/minister/M02Simulacija').then((m) => ({ default: m.M02Simulacija })));
 const D01Mapa = lazy(() => import('../features/dispatch/D01Mapa').then((m) => ({ default: m.D01Mapa })));
@@ -106,13 +107,15 @@ export function AppRoutes() {
         </Route>
 
         <Route
-          path="/komesar/*"
+          path="/komesar"
           element={
             <RequireRole roles={['komesar']}>
-              <C01Uprava />
+              <KomesarShell />
             </RequireRole>
           }
-        />
+        >
+          <Route index element={<C01Operativni />} />
+        </Route>
 
         <Route
           path="/ministar"

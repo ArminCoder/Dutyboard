@@ -117,14 +117,22 @@ Driven by the approved master plan + [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md). P
   converted to a tabbed shell (`MinisterShell.tsx`): **Strateška tabla | Simulacija**. Routes nested under
   `/ministar`. **M01 rewired to real data** — establishment via `establishmentUnder`, staž/pension from
   `hireDate`/`birthDate`, OT rate from `finance` (all former hardcodes gone).
+- ✅ **build-next #4 — Komesar *Operativni pregled (Compstat)*:** ranked accountability board with real
+  **drill-down Kanton→PU→PS→smjena** (breadcrumb + focus state), traffic-light KPIs vs `targets`, and
+  **period-over-period** arrows (last complete month `2026-07` vs `2026-06`) with semantic coloring.
+  Reusable `src/domain/unitStats.ts` (unitStat / childUnitsOf / pathFromRoot / monthlyIntervencije). Komesar
+  converted to `KomesarShell` (tabbed). **Posebna jedinica is now visible to the komesar** (was excluded).
+  Old `C01Uprava.tsx` removed. Browser-verified (drill + PoP + lights, zero console errors).
 - ⏳ **Phase 1 remainder (staged with their screens):** populate `equipmentAssigned`; generate rosters for
   all PS (only PS Centar/Aug today); world-wide `leaveRequests`/`notifications`; aggregate complaints/UoF;
   PU boundary polygons for the choropleth.
-- ⬜ **Next up:** build-next #4 Komesar *Operativni pregled (Compstat)* + drill-down — see FEATURE-BACKLOG.md.
+- ⬜ **Next up:** build-next #5 Komesar *Usklađenost radnog vremena* (EU rest rules) — add as a KomesarShell
+  tab; then #6 Ministar *Budžet* — see FEATURE-BACKLOG.md.
 
-> ⚠️ **Not yet visually verified in a browser** — Ministar suite passes build/lint/typecheck and the
-> `simulate()` model is numerically verified, but the rendered screens (slider UX, layout, PDF export)
-> should be clicked through. Route: gate → role picker → *Ministar* → *Simulacija*.
+> **Browser verification is set up** (Playwright via system Chrome). Pattern: `NODE_ENV=production PORT=3100
+> npx tsx server/index.ts` (bg), `npm i --no-save playwright-core`, drive with `channel:'chrome'`; gate key
+> `DEMO-2026`; screenshot the **chart element** (fullPage headless drops animated SVG bars — a screenshot
+> quirk, not an app bug). Ministar + Komesar suites both browser-verified this way.
 
 ## Continuity log
 

@@ -1,9 +1,8 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { AlertTriangle, LogOut, ShieldCheck, Filter, Radio } from 'lucide-react';
+import { AlertTriangle, ShieldCheck, Filter, Radio } from 'lucide-react';
 import { UNITS } from './routes';
-import { useRoleActions } from '../../app/RoleContext';
 
 type Kind = 'auto' | 'motocikl' | 'pjesacka' | 'civilna' | 'interventna';
 const ALL_KINDS: Kind[] = ['auto', 'motocikl', 'pjesacka', 'civilna', 'interventna'];
@@ -40,7 +39,6 @@ function positionOnLine(line: Array<[number, number]>, t: number): [number, numb
 const NON_RESPONSIVE_UNIT_ID = 'u-5';
 
 export function D01Mapa() {
-  const { logout } = useRoleActions();
   const [now, setNow] = useState(Date.now());
   const [filter, setFilter] = useState<Set<Kind>>(new Set(ALL_KINDS));
   const [nonResp, setNonResp] = useState<{ startedMs: number; escalated: boolean; provjera: boolean } | null>(null);
@@ -86,35 +84,17 @@ export function D01Mapa() {
   const secondsSinceNoResp = nonResp ? Math.floor((now - nonResp.startedMs) / 1000) : 0;
 
   return (
-    <div className="min-h-screen bg-dark-bg text-dark-text">
-      <header className="border-b border-dark-border bg-dark-surface">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div>
-            <div className="section-label mb-1 text-brass-500">Operativni centar</div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-heading text-xl text-dark-text">PU Centar</h1>
-              <span className="section-label text-dark-muted">Live pregled</span>
-            </div>
-            <div className="mt-2 h-[2px] w-10 bg-brass-500" />
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-2 border border-brass-500/40 bg-brass-500/10 px-3 py-1 text-xs font-medium uppercase tracking-widest text-brass-300">
-              <span className="h-2 w-2 rounded-full bg-brass-500 shadow-[0_0_8px_rgba(184,147,90,0.8)] animate-pulse" />
-              live
-            </span>
-            <button
-              onClick={() => {
-                logout();
-                window.location.href = '/';
-              }}
-              className="inline-flex items-center gap-1.5 border border-dark-border bg-dark-surface px-3 py-1.5 text-xs text-dark-muted hover:border-brass-500 hover:text-brass-300"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              Odjava
-            </button>
-          </div>
+    <div className="text-dark-text">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-dark-border bg-dark-surface px-6 py-3">
+        <div>
+          <div className="section-label text-brass-500">Operativni centar</div>
+          <h1 className="font-heading text-lg text-dark-text">PU Centar · Live pregled</h1>
         </div>
-      </header>
+        <span className="inline-flex items-center gap-2 border border-brass-500/40 bg-brass-500/10 px-3 py-1 text-xs font-medium uppercase tracking-widest text-brass-300">
+          <span className="h-2 w-2 rounded-full bg-brass-500 shadow-[0_0_8px_rgba(184,147,90,0.8)] animate-pulse" />
+          live
+        </span>
+      </div>
 
       <div className="grid gap-4 px-6 py-5 lg:grid-cols-[1fr_340px]">
         <section>

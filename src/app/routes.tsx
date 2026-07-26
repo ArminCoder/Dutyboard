@@ -14,6 +14,7 @@ import { K03Odobrenja } from '../features/shiftCommander/K03Odobrenja';
 import { ChiefShell } from '../components/ChiefShell';
 import { MinisterShell } from '../features/minister/MinisterShell';
 import { KomesarShell } from '../features/commissioner/KomesarShell';
+import { DispatchShell } from '../features/dispatch/DispatchShell';
 import { N01Komandna } from '../features/chief/N01Komandna';
 import { N04Oprema } from '../features/chief/N04Oprema';
 import { N05Uloge } from '../features/chief/N05Uloge';
@@ -84,13 +85,15 @@ export function AppRoutes() {
         </Route>
 
         <Route
-          path="/dezurni/*"
+          path="/dezurni"
           element={
             <RequireRole roles={['dezurni']}>
-              <D01Mapa />
+              <DispatchShell />
             </RequireRole>
           }
-        />
+        >
+          <Route index element={<D01Mapa />} />
+        </Route>
 
         <Route
           path="/nacelnik"

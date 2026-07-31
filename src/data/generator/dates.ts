@@ -5,6 +5,16 @@
 /** "Danas" u demo svijetu — fiksirano da vikend/radni dani ostanu konzistentni. */
 export const DEMO_TODAY = '2026-08-24'; // ponedjeljak
 
+/** Demo "sada" — datum iz demo svijeta + stvarno vrijeme sata.
+ *  Sve mutacije u sesiji koriste ovo umjesto new Date() da bi pretraga po datumu
+ *  (knjiga događaja, bilteni) ostala u istom vremenskom univerzumu kao seed. */
+export function demoNow(): string {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${DEMO_TODAY}T${hh}:${mm}`;
+}
+
 export function parseISO(dateStr: string): Date {
   const [y, m, d] = dateStr.split('-').map(Number);
   return new Date(y, m - 1, d);

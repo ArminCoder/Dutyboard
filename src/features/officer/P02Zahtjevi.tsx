@@ -8,7 +8,7 @@ import type { ApprovalStep, LeaveRequest, LeaveRequestKind } from '../../data/ty
 const KIND_LABELS: Record<LeaveRequestKind, string> = {
   slobodan_dan: 'Slobodan dan',
   godisnji: 'Godišnji odmor',
-  premjestaj: 'Premještaj',
+  bolovanje: 'Bolovanje',
   ostalo: 'Ostalo',
 };
 
@@ -278,9 +278,11 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
 
         {kind !== 'slobodan_dan' && (
           <div className="mb-3  border border-signal-warn/20 bg-signal-warn/10 px-3 py-2 text-xs text-signal-warn">
-            {kind === 'premjestaj' || kind === 'ostalo'
+            {kind === 'ostalo'
               ? 'Ova vrsta zahtjeva će biti dostupna u sljedećoj fazi. Podnošenje je omogućeno kao mockup.'
-              : 'Zahtjev prolazi trostepeni lanac: šef smjene → komandir → načelnik.'}
+              : kind === 'bolovanje'
+                ? 'Prijava bolovanja ide šefu smjene odmah; ljekarsko uvjerenje se dostavlja naknadno.'
+                : 'Zahtjev prolazi trostepeni lanac: šef smjene → komandir → načelnik.'}
           </div>
         )}
 

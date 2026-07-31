@@ -124,6 +124,12 @@ export const ACCESS_ROLE_LABEL: Record<AccessRole, string> = {
 
 export type ShiftKind = 'I' | 'II'; // I: 07-19, II: 19-07
 
+/** Jedinstveni izvor za trajanje i oznaku smjene (izbjegava duplirane stringove po ekranima). */
+export const SHIFT_TIME: Record<ShiftKind, { label: string; hours: number; night: boolean }> = {
+  I: { label: '07:00 – 19:00', hours: 12, night: false },
+  II: { label: '19:00 – 07:00', hours: 12, night: true },
+};
+
 export interface Shift {
   id: string;
   /** "YYYY-MM-DD" — datum početka smjene. */
@@ -143,7 +149,8 @@ export interface ShiftSlot {
   callSign?: string; // "Auto-patrola 2-1" i sl.
 }
 
-export type LeaveRequestKind = 'slobodan_dan' | 'godisnji' | 'premjestaj' | 'ostalo';
+// Premještaj je izbačen — rijedak je i vodi se kroz e-Pisarnicu (X01), ne kroz ovaj tok.
+export type LeaveRequestKind = 'slobodan_dan' | 'godisnji' | 'bolovanje' | 'ostalo';
 
 export type ApprovalStepStatus = 'ceka' | 'odobreno' | 'odbijeno';
 

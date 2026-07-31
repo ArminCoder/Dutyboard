@@ -4,7 +4,7 @@ import { CERTIFICATIONS, buildOperationalRoles } from './roles';
 import { generateOfficers } from './officers';
 import { generateRoster } from './shifts';
 import { generatePerformance } from './performance';
-import { generateSoftićPayslip } from './payslip';
+import { generateSoftićPayslips } from './payslip';
 import { generateSoftićCourt } from './court';
 import { generateVehicles } from './vehicles';
 import { buildFinance } from './finance';
@@ -21,7 +21,7 @@ export function generateWorld(): World {
   const shifts = generateRoster(SEED + 1, officers);
   const courtSummonses = generateSoftićCourt();
   const performance = generatePerformance(SEED + 2, officers);
-  const payslips = [generateSoftićPayslip()];
+  const payslips = generateSoftićPayslips(performance, shifts);
   const vehicles = generateVehicles();
 
   return {

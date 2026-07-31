@@ -59,13 +59,12 @@ function statusForOfficer(rand: () => number): OfficerStatus {
 
 /** Datum isteka certifikata — "YYYY-MM-DD". Većina buduća, ~3-4 istekla / uskoro isticu (za K01 demo momenat). */
 function certExpiryDate(rand: () => number, forceExpired: boolean): string {
-  const today = new Date();
+  // Sidreno na DEMO_TODAY (ne na stvarni datum) — inače bi se istekli/uskoro-ističu
+  // certifikati mijenjali iz dana u dan i demo ne bi bio deterministički.
   const daysDelta = forceExpired
     ? -intBetween(rand, 30, 300) // već istekao
     : intBetween(rand, 45, 600); // vazi
-  const d = new Date(today);
-  d.setDate(d.getDate() + daysDelta);
-  return d.toISOString().slice(0, 10);
+  return addDays(DEMO_TODAY, daysDelta);
 }
 
 /** Raspodjela operativnih uloga po SPEC K01 podaci (linija 133):
@@ -135,7 +134,12 @@ export function generateOfficers(
       operationalRoleIds: roleIds,
       certifications: certs.map((certId) => ({
         certId,
-        expires: certExpiryDate(rand, false),
+        // Softiću gađanje ističe za 21 dan — unutar praga upozorenja (30 dana),
+        // pa P05 pokazuje narandžasti bedž, a P01 odgovarajuće obavještenje.
+        expires:
+          d.name === 'Amar Softić' && certId === 'cert-gadjanje'
+            ? addDays(DEMO_TODAY, 21)
+            : certExpiryDate(rand, false),
       })),
       clearanceLevel: 'interno',
       equipmentAssigned: [],
@@ -145,7 +149,9 @@ export function generateOfficers(
   }
 
   // Popunjavanje smjena
-  const forcedExpiredTargets = new Set<number>([12, 47, 89, 134]); // 3-4 istekla — SPEC linija 268
+  // Namjerno istekli certifikati (SPEC linija 268) — brojevi moraju biti unutar
+  // generisanog opsega (~99 policajaca) da bi K01/N01 imali stvarne alarme.
+  const forcedExpiredTargets = new Set<number>([12, 31, 47, 68, 89]);
 
   for (const smjena of smjene) {
     for (let i = 0; i < SMJENSKE_PO_PS / 4; i++) {

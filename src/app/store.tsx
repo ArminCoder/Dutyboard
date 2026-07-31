@@ -4,7 +4,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { CourtSummons, LeaveRequest, Notification } from '../data/types';
 import { world } from '../data/world';
-import { DEMO_TODAY, addDays } from '../data/generator/dates';
+import { DEMO_TODAY, addDays, demoNow } from '../data/generator/dates';
 
 // --- Phase 4 additions: overtime postings + active shift crisis + shift log ---
 
@@ -115,7 +115,7 @@ function seedNotifications(): Notification[] {
       officerId: 'off-0001',
       kind: 'certifikat_upozorenje',
       severity: 'warn',
-      title: 'Godišnje gađanje ističe za 34 dana',
+      title: 'Godišnje gađanje ističe za 21 dan',
       body: 'Rezerviši termin kod komandira PS Centar.',
       createdAt: twoDaysAgoIso,
       read: true,
@@ -171,6 +171,25 @@ function seedLeaveRequests(): LeaveRequest[] {
         },
         { role: 'komandir', approverName: 'Adnan Softić', status: 'ceka' },
         { role: 'nacelnik', approverName: 'Samir Begić', status: 'ceka' },
+      ],
+    },
+    {
+      // Odobreno bolovanje usred avgusta — vidljivo u mjesečnom kalendaru (P01).
+      id: 'lr-0003',
+      officerId: 'off-0001',
+      kind: 'bolovanje',
+      submittedAt: `${addDays(DEMO_TODAY, -13)}T07:40`,
+      fromDate: addDays(DEMO_TODAY, -12),
+      toDate: addDays(DEMO_TODAY, -11),
+      reason: 'Prehlada — ljekarsko uvjerenje dostavljeno',
+      status: 'odobren',
+      approvalChain: [
+        {
+          role: 'sefSmjene',
+          approverName: 'Damir Kovač',
+          status: 'odobreno',
+          resolvedAt: `${addDays(DEMO_TODAY, -12)}T08:10`,
+        },
       ],
     },
   ];
@@ -291,7 +310,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       id: `lr-${Date.now()}`,
       officerId: draft.officerId,
       kind: draft.kind,
-      submittedAt: new Date().toISOString().slice(0, 16),
+      submittedAt: demoNow(),
       fromDate: draft.fromDate,
       toDate: draft.toDate,
       reason: draft.reason,
@@ -320,7 +339,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           chain[idx] = {
             ...chain[idx],
             status: decision,
-            resolvedAt: new Date().toISOString().slice(0, 16),
+            resolvedAt: demoNow(),
             note,
           };
           const rejected = decision === 'odbijeno';
@@ -343,7 +362,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ...input,
         id: `ot-${Date.now()}`,
         offerLog: [],
-        createdAt: new Date().toISOString().slice(0, 16),
+        createdAt: demoNow(),
       };
       setOvertimePostings((prev) => [p, ...prev]);
       return p;
@@ -356,7 +375,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       prev.map((p) =>
         p.id !== postingId || p.offerLog.some((o) => o.officerId === officerId)
           ? p
-          : { ...p, offerLog: [...p.offerLog, { officerId, officerName, offeredAt: new Date().toISOString().slice(0, 16) }] },
+          : { ...p, offerLog: [...p.offerLog, { officerId, officerName, offeredAt: demoNow() }] },
       ),
     );
   }, []);
@@ -374,7 +393,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const appendLog = useCallback((entry: Omit<ShiftLogEntry, 'id' | 'when'>) => {
     setShiftLog((prev) => [
       ...prev,
-      { id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, when: new Date().toISOString().slice(0, 16), ...entry },
+      { id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, when: demoNow(), ...entry },
     ]);
   }, []);
 

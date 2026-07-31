@@ -8,7 +8,7 @@ import type { ApprovalStep, LeaveRequest } from '../../data/types';
 const KIND_LABELS: Record<LeaveRequest['kind'], string> = {
   slobodan_dan: 'Slobodan dan',
   godisnji: 'Godišnji odmor',
-  premjestaj: 'Premještaj',
+  bolovanje: 'Bolovanje',
   ostalo: 'Ostalo',
 };
 

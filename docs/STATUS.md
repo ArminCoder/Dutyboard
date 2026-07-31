@@ -129,11 +129,20 @@ Driven by the approved master plan + [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md). P
   breaches, avg weekly, night share, a per-PU ranked table, and a color-coded overtime histogram (green→red
   tail). Browser-verified, zero console errors. Note: viewport screenshots DO render animated bars — only
   *fullPage* headless drops them.
+- ✅ **App-wide sidebar unification:** all six roles now use one `components/SidebarShell` (desktop sidebar
+  + mobile top-strip or bottom-tabs; light + dark variants; `print:hidden` so PDF exports stay clean).
+  Komesar/Ministar moved from top-bar to sidebar (badges C0x/M0x); Officer got a desktop sidebar (mobile
+  bottom-tabs kept); Dežurni got a dark sidebar (D01Mapa refactored to shed its own chrome). Browser-verified
+  all six, zero console errors.
+- ✅ **build-next #6 — Ministar *Budžet i troškovi ljudstva*:** MinisterShell tab (M03). Per-PU personnel/OT
+  budget vs actual, OT-budget utilization with traffic lights (Novi Grad 109% = over budget, red), grouped
+  budget-vs-cost chart, and the "OT cost ≈ N salaries" hiring argument tied to the simulator. PDF export.
+  **`finance.ts` budgets rescaled** to the ~99-officer demo (were placeholder-large). Browser-verified.
 - ⏳ **Phase 1 remainder (staged with their screens):** populate `equipmentAssigned`; generate rosters for
   all PS (only PS Centar/Aug today); world-wide `leaveRequests`/`notifications`; aggregate complaints/UoF;
   PU boundary polygons for the choropleth.
-- ⬜ **Next up:** build-next #6 Ministar *Budžet i troškovi ljudstva* (add as MinisterShell tab; `finance`
-  budgets seeded); then #7 Komesar *Kontrola prekovremenih* — see FEATURE-BACKLOG.md.
+- ⬜ **Next up:** build-next #7 Komesar *Kontrola prekovremenih (trošak + pravednost)*; then #8 *Indeks
+  spremnosti*, #10 choropleth — see FEATURE-BACKLOG.md.
 
 > **Browser verification is set up** (Playwright via system Chrome). Pattern: `NODE_ENV=production PORT=3100
 > npx tsx server/index.ts` (bg), `npm i --no-save playwright-core`, drive with `channel:'chrome'`; gate key

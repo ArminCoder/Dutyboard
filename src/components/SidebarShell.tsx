@@ -78,7 +78,7 @@ export function SidebarShell({
   return (
     <div className={`flex min-h-screen ${t.root}`}>
       {/* Desktop sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r ${t.aside} lg:flex`}>
+      <aside className={`fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r ${t.aside} lg:flex print:hidden`}>
         <div className={`border-b ${t.border} px-5 py-4`}>
           <div className={`text-[10px] font-medium uppercase tracking-wider ${t.kicker}`}>Dutyboard</div>
           <div className={`mt-0.5 text-sm font-heading font-medium ${t.title}`}>{roleTitle}</div>
@@ -111,9 +111,9 @@ export function SidebarShell({
       </aside>
 
       {/* Content column */}
-      <div className="flex min-h-screen flex-1 flex-col lg:ml-64">
+      <div className="flex min-h-screen flex-1 flex-col lg:ml-64 print:ml-0">
         {/* Mobile header */}
-        <header className={`sticky top-0 z-10 flex items-center justify-between border-b ${t.border} ${t.headerBg} px-4 py-3 lg:hidden`}>
+        <header className={`sticky top-0 z-10 flex items-center justify-between border-b ${t.border} ${t.headerBg} px-4 py-3 lg:hidden print:hidden`}>
           <div className="min-w-0">
             <div className={`text-[11px] uppercase tracking-wider ${t.kicker}`}>{roleTitle}</div>
             <div className={`truncate text-sm font-heading font-medium ${t.title}`}>{sub}</div>
@@ -125,7 +125,7 @@ export function SidebarShell({
 
         {/* Mobile strip nav */}
         {mobileNav === 'strip' ? (
-          <nav className={`flex gap-1 overflow-x-auto border-b ${t.border} ${t.headerBg} px-3 py-2 lg:hidden`}>
+          <nav className={`flex gap-1 overflow-x-auto border-b ${t.border} ${t.headerBg} px-3 py-2 lg:hidden print:hidden`}>
             {nav.map(({ to, end, label, icon: Icon }) => (
               <NavLink
                 key={to}
@@ -148,7 +148,7 @@ export function SidebarShell({
 
         {/* Mobile bottom tabs (policajac) */}
         {mobileNav === 'bottom' ? (
-          <nav className={`fixed bottom-0 left-0 z-20 flex w-full items-stretch border-t ${t.border} ${t.headerBg} lg:hidden`}>
+          <nav className={`fixed bottom-0 left-0 z-20 flex w-full items-stretch border-t ${t.border} ${t.headerBg} lg:hidden print:hidden`}>
             {nav.map(({ to, end, label, icon: Icon }) => (
               <NavLink
                 key={to}

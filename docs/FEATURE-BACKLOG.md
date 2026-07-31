@@ -28,7 +28,7 @@
 | 3 | ✅ **Simulacija „+20 policajaca"** | ministar | M | Minister deciding on your screen = the close. **DONE** (`M02Simulacija.tsx`). |
 | 4 | ✅ **Operativni pregled (Compstat)** | komesar | M | Definitive command-accountability artifact + drill-down. **DONE** (`C01Operativni.tsx` + `domain/unitStats.ts`). |
 | 5 | ✅ **Usklađenost radnog vremena** | komesar | M | EU legal-risk + wellbeing in one number. **DONE** (`C02Uskladjenost.tsx` + `domain/workTime.ts`). |
-| 6 | **Budžet i troškovi ljudstva** | ministar | M | The money argument for the Vlada. |
+| 6 | ✅ **Budžet i troškovi ljudstva** | ministar | M | The money argument for the Vlada. **DONE** (`M03Budzet.tsx`). |
 | 7 | **Kontrola prekovremenih (trošak + pravednost)** | komesar | M | Cost + anti-favoritism, handled safely. |
 | 8 | **Indeks spremnosti** | komesar | S | One defensible composite number, drills to detail. |
 | 9 | **Brifing za sjednicu (auto-brief PDF)** | ministar | S | "Parliamentary answer in 10 seconds." |

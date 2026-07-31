@@ -31,6 +31,7 @@ const C01Operativni = lazy(() => import('../features/commissioner/C01Operativni'
 const C02Uskladjenost = lazy(() => import('../features/commissioner/C02Uskladjenost').then((m) => ({ default: m.C02Uskladjenost })));
 const M01Strateska = lazy(() => import('../features/minister/M01Strateska').then((m) => ({ default: m.M01Strateska })));
 const M02Simulacija = lazy(() => import('../features/minister/M02Simulacija').then((m) => ({ default: m.M02Simulacija })));
+const M03Budzet = lazy(() => import('../features/minister/M03Budzet').then((m) => ({ default: m.M03Budzet })));
 const D01Mapa = lazy(() => import('../features/dispatch/D01Mapa').then((m) => ({ default: m.D01Mapa })));
 
 type Gate = 'checking' | 'open';
@@ -132,6 +133,7 @@ export function AppRoutes() {
         >
           <Route index element={<M01Strateska />} />
           <Route path="simulacija" element={<M02Simulacija />} />
+          <Route path="budzet" element={<M03Budzet />} />
         </Route>
 
         <Route

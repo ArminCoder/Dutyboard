@@ -1,7 +1,7 @@
 import { AlertTriangle, ShieldCheck, Radio, Car, Backpack } from 'lucide-react';
 import { world } from '../../data/world';
 import { useSoftić } from './useOfficer';
-import { formatBs } from '../../data/generator/dates';
+import { DEMO_TODAY, formatBs } from '../../data/generator/dates';
 
 // Za Phase 2: statična oprema — Softićev inventar. Kasnije faze povezuju sa vozilima/opremom u worldu.
 const SOFTIC_EQUIPMENT = [
@@ -14,7 +14,7 @@ const SOFTIC_EQUIPMENT = [
 
 export function P05Zaduzenja() {
   const officer = useSoftić();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = DEMO_TODAY;
 
   return (
     <div className="space-y-4 p-4">
@@ -68,10 +68,13 @@ export function P05Zaduzenja() {
                 ) : warn ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-signal-warn/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-signal-warn">
                     <AlertTriangle className="h-3 w-3" />
-                    {days} d
+                    ističe uskoro
                   </span>
                 ) : (
-                  <span className="text-[11px] text-ink-400">{days} d</span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-signal-ok/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-signal-ok">
+                    <ShieldCheck className="h-3 w-3" />
+                    važeći
+                  </span>
                 )}
               </li>
             );

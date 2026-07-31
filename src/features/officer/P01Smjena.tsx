@@ -3,17 +3,9 @@ import { Bell, Calendar, ChevronRight, MapPin, Users, Car, Gavel, ClipboardCheck
 import { useSoftić } from './useOfficer';
 import { world } from '../../data/world';
 import { useStore } from '../../app/store';
-import {
-  DEMO_TODAY,
-  addDays,
-  dayNameBs,
-  dayNameBsShort,
-  formatBs,
-  formatBsShort,
-  longBs,
-  monthNameBs,
-} from '../../data/generator/dates';
-import type { Notification } from '../../data/types';
+import { DEMO_TODAY, dayNameBs, formatBs, longBs, monthNameBs } from '../../data/generator/dates';
+import { SHIFT_TIME, type Notification } from '../../data/types';
+import { ScheduleSection } from './ScheduleSection';
 
 export function P01Smjena() {
   const officer = useSoftić();
@@ -27,28 +19,16 @@ export function P01Smjena() {
     return upcoming[0] ?? null;
   }, [officer.id]);
 
-  const partnerName = useMemo(() => {
-    if (!nextShift) return null;
-    const slot = nextShift.slots.find((sl) => sl.assignedOfficerIds.includes(officer.id));
-    const partnerId = slot?.assignedOfficerIds.find((id) => id !== officer.id);
-    return partnerId ? world.officers.find((o) => o.id === partnerId)?.name ?? null : null;
-  }, [nextShift, officer.id]);
+  /** Slot u kojem je policajac — ne slots[0]; on nije uvijek auto-patrola. */
+  const mySlot = useMemo(
+    () => nextShift?.slots.find((sl) => sl.assignedOfficerIds.includes(officer.id)) ?? null,
+    [nextShift, officer.id],
+  );
 
-  const weekly = useMemo(() => {
-    const days: Array<{ date: string; label: string; kind: 'radi' | 'slobodan' | 'godisnji' }> = [];
-    for (let i = 0; i < 7; i++) {
-      const date = addDays(DEMO_TODAY, i);
-      const worksThatDay = world.shifts.some(
-        (s) => s.date === date && s.slots.some((sl) => sl.assignedOfficerIds.includes(officer.id)),
-      );
-      days.push({
-        date,
-        label: dayNameBsShort(date),
-        kind: worksThatDay ? 'radi' : 'slobodan',
-      });
-    }
-    return days;
-  }, [officer.id]);
+  const partnerName = useMemo(() => {
+    const partnerId = mySlot?.assignedOfficerIds.find((id) => id !== officer.id);
+    return partnerId ? world.officers.find((o) => o.id === partnerId)?.name ?? null : null;
+  }, [mySlot, officer.id]);
 
   const notifications = store.notifications.filter((n) => n.officerId === officer.id);
   const unread = notifications.filter((n) => !n.read).length;
@@ -76,18 +56,18 @@ export function P01Smjena() {
             <span className="text-ink-100">{formatBs(nextShift.date)}</span>
           </div>
           <div className="mb-4 text-sm text-ink-100">
-            {nextShift.kind === 'I' ? '07:00 – 19:00 (I smjena)' : '19:00 – 07:00 (II smjena)'}
+            {SHIFT_TIME[nextShift.kind].label} ({nextShift.kind} smjena)
           </div>
 
           <dl className="space-y-2 text-sm">
             <ShiftMeta icon={<MapPin className="h-3.5 w-3.5" />} label="Uloga">
-              {nextShift.slots[0]?.callSign ?? '—'}
+              {mySlot?.callSign ?? '—'}
             </ShiftMeta>
             <ShiftMeta icon={<Users className="h-3.5 w-3.5" />} label="Partner">
-              {partnerName ?? '—'}
+              {partnerName ?? 'samostalno'}
             </ShiftMeta>
             <ShiftMeta icon={<Car className="h-3.5 w-3.5" />} label="Vozilo">
-              {nextShift.slots[0]?.vehiclePlate ?? '—'}
+              {mySlot?.vehiclePlate ?? '—'}
             </ShiftMeta>
           </dl>
         </section>
@@ -95,36 +75,7 @@ export function P01Smjena() {
         <EmptyCard title="Nema zakazanih smjena" body="Raspored za naredni period još nije objavljen." />
       )}
 
-      <section className=" bg-paper-0 p-4 border border-paper-200">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-heading font-medium text-ink-800">Sedmični pregled</h2>
-          <span className="text-xs text-ink-400">
-            {formatBsShort(DEMO_TODAY)} – {formatBsShort(addDays(DEMO_TODAY, 6))}
-          </span>
-        </div>
-        <div className="grid grid-cols-7 gap-1.5">
-          {weekly.map((d) => (
-            <div key={d.date} className="flex flex-col items-center gap-1">
-              <div className="text-[10px] uppercase text-ink-400">{d.label}</div>
-              <div
-                className={`flex h-9 w-full items-center justify-center  text-xs font-medium ${
-                  d.kind === 'radi'
-                    ? 'bg-navy-900 text-paper-50'
-                    : d.kind === 'godisnji'
-                    ? 'bg-signal-warn/15 text-signal-warn'
-                    : 'bg-paper-100 text-ink-500'
-                }`}
-              >
-                {d.date.slice(-2)}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-3 flex items-center gap-4 text-xs text-ink-500">
-          <LegendDot color="bg-navy-900" label="rad" />
-          <LegendDot color="bg-paper-200" label="slobodan" />
-        </div>
-      </section>
+      <ScheduleSection officerId={officer.id} />
 
       <section className=" bg-paper-0 p-4 border border-paper-200">
         <div className="mb-3 flex items-center justify-between">
@@ -150,7 +101,7 @@ export function P01Smjena() {
       </section>
 
       <p className="pt-2 text-center text-[11px] text-ink-400">
-        {monthNameBs(new Date().getMonth())} {new Date().getFullYear()}. · Dutyboard demo
+        {monthNameBs(Number(DEMO_TODAY.slice(5, 7)) - 1)} {DEMO_TODAY.slice(0, 4)}. · Dutyboard demo
       </p>
     </div>
   );
@@ -180,15 +131,6 @@ function ShiftMeta({
       </div>
       <div className="flex-1 font-medium">{children}</div>
     </div>
-  );
-}
-
-function LegendDot({ color, label }: { color: string; label: string }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <span className={`h-2.5 w-2.5 rounded ${color}`} />
-      <span>{label}</span>
-    </span>
   );
 }
 

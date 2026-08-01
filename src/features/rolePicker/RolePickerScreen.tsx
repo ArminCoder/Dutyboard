@@ -6,6 +6,7 @@ import { useRoleActions } from '../../app/RoleContext';
 const HOME_BY_ROLE: Record<RoleChoice['role'], string> = {
   policajac: '/policajac',
   sefSmjene: '/sef-smjene',
+  komandir: '/komandir',
   dezurni: '/dezurni',
   nacelnik: '/nacelnik',
   komesar: '/komesar',
@@ -14,7 +15,7 @@ const HOME_BY_ROLE: Record<RoleChoice['role'], string> = {
 };
 
 const OPERATIVA: RoleChoice['role'][] = ['policajac', 'sefSmjene', 'dezurni'];
-const RUKOVODSTVO: RoleChoice['role'][] = ['nacelnik', 'komesar', 'ministar'];
+const RUKOVODSTVO: RoleChoice['role'][] = ['komandir', 'nacelnik', 'komesar', 'ministar'];
 
 export function RolePickerScreen() {
   const nav = useNavigate();

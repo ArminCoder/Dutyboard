@@ -138,6 +138,25 @@ Driven by the approved master plan + [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md). P
   budget vs actual, OT-budget utilization with traffic lights (Novi Grad 109% = over budget, red), grouped
   budget-vs-cost chart, and the "OT cost ≈ N salaries" hiring argument tied to the simulator. PDF export.
   **`finance.ts` budgets rescaled** to the ~99-officer demo (were placeholder-large). Browser-verified.
+### Domain-feedback wave (v2 plan — police-insider corrections)
+
+- ✅ **WP1 — Officer pack:** P01 gained a **Sedmica | Mjesec** schedule (month calendar with per-day
+  detail: shift, role/callSign, partner(s), vehicle, hours) + a **monthly hours summary** (radnih/noćnih
+  sati, godišnji/bolovanje/slobodan days, leave excluded from hour totals). P04 lists **six generated
+  payslips**, any month opens its full platna lista (current month badged as an estimate). P05 dropped the
+  day counters for VAŽEĆI / ISTIČE USKORO badges. P02 dropped *premještaj*, added *bolovanje*.
+  Bugs fixed: hero card used `slots[0]` regardless of the officer's actual slot; cert expiry + store
+  timestamps ran on the real clock (non-deterministic) → now `DEMO_TODAY` / `demoNow()`.
+- ✅ **WP2 — Knjiga dnevnih događaja + komandir:** `KddEntry` type + store slice (`addKddEntry` /
+  `updateKddEntry`, 13 seeded entries across all 4 PS). `src/features/kdd/useScopedKdd.ts` is the
+  **isolation seam** — screens must never read `store.kddEntries` directly. `KddBook.tsx` serves all roles
+  (date filter, full-text search, type chips, station chips when scope > 1 PS, expandable rows, "Novi upis"
+  + "Zaključi upis" when `canWrite`). New **komandir** role (Adnan Softić, `off-0100`, PS Centar) on
+  ChiefShell with `showN05={false}`. Access verified: šef smjene 7 (writes) · komandir 7 (read-only) ·
+  načelnik 9 (2 PS) · komesar 12 (4 PS).
+  **Also fixed:** Odjava did `window.location.href` (hard reload) which wiped the in-session store, so
+  cross-role flows silently lost data — including the spec's signature P02→K03 request round-trip. Now
+  router navigation; a real refresh still resets, as intended.
 - ⏳ **Phase 1 remainder (staged with their screens):** populate `equipmentAssigned`; generate rosters for
   all PS (only PS Centar/Aug today); world-wide `leaveRequests`/`notifications`; aggregate complaints/UoF;
   PU boundary polygons for the choropleth.

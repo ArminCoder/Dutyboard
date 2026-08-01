@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { LogOut } from 'lucide-react';
@@ -67,12 +67,16 @@ export function SidebarShell({
 }: Props) {
   const session = useSession();
   const { logout } = useRoleActions();
+  const navigate = useNavigate();
   const sub = subtitle ?? session.scopeLabel;
   const t = dark ? DARK : LIGHT;
 
+  // Router navigacija, ne window.location — tvrdi reload bi obrisao sve izmjene
+  // napravljene u sesiji (zahtjevi, upisi u knjigu), pa bi demo tok kroz više
+  // uloga ("podnesi zahtjev → prebaci se u šefa smjene → odobri") pukao.
   const doLogout = () => {
     logout();
-    window.location.href = '/';
+    navigate('/');
   };
 
   return (

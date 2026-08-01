@@ -104,6 +104,7 @@ export interface Officer {
 export type AccessRole =
   | 'policajac'
   | 'sefSmjene'
+  | 'komandir'
   | 'dezurni'
   | 'nacelnik'
   | 'komesar'
@@ -113,6 +114,7 @@ export type AccessRole =
 export const ACCESS_ROLE_LABEL: Record<AccessRole, string> = {
   policajac: 'Policajac',
   sefSmjene: 'Šef smjene',
+  komandir: 'Komandir PS',
   dezurni: 'Dežurni operativac',
   nacelnik: 'Načelnik PU',
   komesar: 'Policijski komesar',
@@ -205,6 +207,43 @@ export interface Notification {
     kind: 'court_confirm' | 'court_log_hours' | 'accept_overtime' | 'open_request';
     payload?: Record<string, string | number>;
   };
+}
+
+// --- Knjiga dnevnih događaja (KDD) ---
+// Glavna evidencija šefa smjene: svaki poziv i događaj se upisuje hronološki.
+// Komandir PS i načelnik PU čitaju/pretražuju svoju jedinicu; komesar sve.
+
+export type KddEntryType = 'poziv_122' | 'intervencija' | 'dogadjaj' | 'ostalo';
+export type KddEntryStatus = 'otvoren' | 'u_toku' | 'zakljucen';
+
+export const KDD_TYPE_LABEL: Record<KddEntryType, string> = {
+  poziv_122: 'Poziv 122',
+  intervencija: 'Intervencija',
+  dogadjaj: 'Događaj',
+  ostalo: 'Ostalo',
+};
+
+export const KDD_STATUS_LABEL: Record<KddEntryStatus, string> = {
+  otvoren: 'Otvoren',
+  u_toku: 'U toku',
+  zakljucen: 'Zaključen',
+};
+
+export interface KddEntry {
+  id: string;
+  /** Stanica kojoj upis pripada — osnova za scoping (komandir/načelnik/komesar). */
+  psId: string;
+  /** "YYYY-MM-DDTHH:mm" — sidreno na demo vrijeme (demoNow). */
+  when: string;
+  type: KddEntryType;
+  /** Kratak opis bez ličnih podataka. */
+  description: string;
+  /** Pozivni znak patrole kojoj je događaj dodijeljen. */
+  assignedPatrol?: string;
+  outcome?: string;
+  status: KddEntryStatus;
+  /** Ko je upisao (šef smjene, OKC, sistem). */
+  recordedBy: string;
 }
 
 export type CourtSummonsStatus = 'nepotvrdjen' | 'potvrdjen' | 'evidentirano';

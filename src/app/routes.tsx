@@ -32,6 +32,7 @@ const C02Uskladjenost = lazy(() => import('../features/commissioner/C02Uskladjen
 const M01Strateska = lazy(() => import('../features/minister/M01Strateska').then((m) => ({ default: m.M01Strateska })));
 const M02Simulacija = lazy(() => import('../features/minister/M02Simulacija').then((m) => ({ default: m.M02Simulacija })));
 const M03Budzet = lazy(() => import('../features/minister/M03Budzet').then((m) => ({ default: m.M03Budzet })));
+const KddBook = lazy(() => import('../features/kdd/KddBook').then((m) => ({ default: m.KddBook })));
 const D01Mapa = lazy(() => import('../features/dispatch/D01Mapa').then((m) => ({ default: m.D01Mapa })));
 
 type Gate = 'checking' | 'open';
@@ -81,8 +82,24 @@ export function AppRoutes() {
         >
           <Route index element={<K01Raspored />} />
           <Route path="aktivna" element={<K02Aktivna />} />
+          <Route path="knjiga" element={<KddBook canWrite />} />
           <Route path="odobrenja" element={<K03Odobrenja />} />
           <Route path="prekovremeni" element={<K03Prekovremeni />} />
+        </Route>
+
+        <Route
+          path="/komandir"
+          element={
+            <RequireRole roles={['komandir']}>
+              <ChiefShell basePath="/komandir" roleTitle="Komandir PS" showN05={false} />
+            </RequireRole>
+          }
+        >
+          <Route index element={<N01Komandna />} />
+          <Route path="knjiga" element={<KddBook />} />
+          <Route path="analitika" element={<N02Analitika />} />
+          <Route path="kadar" element={<N03Kadar />} />
+          <Route path="oprema" element={<N04Oprema />} />
         </Route>
 
         <Route
@@ -105,6 +122,7 @@ export function AppRoutes() {
           }
         >
           <Route index element={<N01Komandna />} />
+          <Route path="knjiga" element={<KddBook />} />
           <Route path="analitika" element={<N02Analitika />} />
           <Route path="kadar" element={<N03Kadar />} />
           <Route path="oprema" element={<N04Oprema />} />
@@ -121,6 +139,7 @@ export function AppRoutes() {
         >
           <Route index element={<C01Operativni />} />
           <Route path="radno-vrijeme" element={<C02Uskladjenost />} />
+          <Route path="knjiga" element={<KddBook />} />
         </Route>
 
         <Route

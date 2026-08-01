@@ -235,6 +235,26 @@ export function generateOfficers(
     });
   }
 
+  // Komandir PS Centar — imenovani lik iz lanca odobravanja (P02/K03).
+  // Dodaje se NA KRAJU i bez ijednog poziva rand-a, da ne pomjeri ID-eve i
+  // raspodjelu svih prethodnih policajaca (seedActivePatrols referencira off-0005…0012).
+  officers.push({
+    id: `off-${String(idCounter++).padStart(4, '0')}`,
+    name: 'Adnan Softić',
+    rank: 'inspektor',
+    orgNodeId: 'ps-centar',
+    operationalRoleIds: [],
+    certifications: [
+      { certId: 'cert-osnovna', expires: addDays(DEMO_TODAY, 420) },
+      { certId: 'cert-gadjanje', expires: addDays(DEMO_TODAY, 180) },
+    ],
+    clearanceLevel: 'povjerljivo',
+    equipmentAssigned: [],
+    status: 'aktivan',
+    hireDate: addDays(DEMO_TODAY, -Math.round(20 * 365.25)),
+    birthDate: addDays(DEMO_TODAY, -Math.round(45 * 365.25)),
+  });
+
   return officers;
 }
 

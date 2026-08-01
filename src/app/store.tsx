@@ -2,7 +2,7 @@
 // fast-refresh rule is a false positive since the hook depends on this context.
 /* oxlint-disable react/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { CourtSummons, LeaveRequest, Notification } from '../data/types';
+import type { CourtSummons, KddEntry, LeaveRequest, Notification } from '../data/types';
 import { world } from '../data/world';
 import { DEMO_TODAY, addDays, demoNow } from '../data/generator/dates';
 
@@ -59,7 +59,14 @@ interface Store {
 
   markOfficerSick: (patrolId: string, officerId: string) => void;
   reassignOfficer: (patrolId: string, newOfficerId: string) => void;
+
+  kddEntries: KddEntry[];
+  addKddEntry: (input: KddDraft) => KddEntry;
+  updateKddEntry: (id: string, patch: Partial<Pick<KddEntry, 'outcome' | 'status' | 'assignedPatrol'>>) => void;
 }
+
+/** Novi upis u knjigu — vrijeme se popunjava demo satom ako nije zadano. */
+export type KddDraft = Omit<KddEntry, 'id' | 'when'> & { when?: string };
 
 export interface DraftLeaveRequest {
   officerId: string;
@@ -255,6 +262,34 @@ function seedActivePatrols(): ActivePatrolCard[] {
   ];
 }
 
+/** Knjiga dnevnih događaja — upisi za sve stanice (scoping se radi u useScopedKdd). */
+function seedKdd(): KddEntry[] {
+  const d = DEMO_TODAY;
+  const y = addDays(DEMO_TODAY, -1);
+  const kovac = 'Damir Kovač';
+
+  const rows: Array<Omit<KddEntry, 'id'>> = [
+    // --- PS Centar, tekuća II smjena ---
+    { psId: 'ps-centar', when: `${d}T19:05`, type: 'dogadjaj', description: 'Primopredaja smjene izvršena. Stanje ljudstva i vozila uredno.', status: 'zakljucen', outcome: 'Bez primjedbi.', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T19:42`, type: 'poziv_122', description: 'Prijava buke iz ugostiteljskog objekta, Ferhadija.', assignedPatrol: 'Pješačka 1-1', status: 'zakljucen', outcome: 'Upozorenje vlasniku, buka prekinuta.', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T20:15`, type: 'intervencija', description: 'Saobraćajna nezgoda bez povrijeđenih, Titova ulica.', assignedPatrol: 'Auto-patrola 2-1 · Interventna', status: 'zakljucen', outcome: 'Uviđaj izvršen, sačinjena službena zabilješka.', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T21:03`, type: 'poziv_122', description: 'Prijava sumnjivog lica u haustoru, Mis Irbina.', assignedPatrol: 'Pješačka 1-2', status: 'zakljucen', outcome: 'Provjera identiteta, lice udaljeno.', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T21:48`, type: 'intervencija', description: 'Narušavanje javnog reda i mira ispred lokala, Baščaršija.', assignedPatrol: 'Auto-patrola 2-2', status: 'u_toku', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T22:20`, type: 'dogadjaj', description: 'Kontrola saobraćaja — punkt Marijin dvor.', assignedPatrol: 'Moto 4-1', status: 'otvoren', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T22:35`, type: 'poziv_122', description: 'Prijava krađe mobilnog telefona, prijavilac upućen u stanicu.', status: 'otvoren', recordedBy: kovac },
+    // --- PS Centar, prethodna smjena ---
+    { psId: 'ps-centar', when: `${y}T14:10`, type: 'intervencija', description: 'Porodična svađa, bez fizičkog nasilja, Koševo.', assignedPatrol: 'Auto-patrola 2-1 · Interventna', status: 'zakljucen', outcome: 'Strane smirene, upućene na medijaciju.', recordedBy: 'Mirza Delić' },
+    // --- ostale stanice ---
+    { psId: 'ps-stari-grad', when: `${d}T20:05`, type: 'poziv_122', description: 'Prijava parkiranja na pješačkoj zoni, Kovači.', assignedPatrol: 'Pješačka 3-1', status: 'zakljucen', outcome: 'Izdat prekršajni nalog.', recordedBy: 'Haris Bešlija' },
+    { psId: 'ps-stari-grad', when: `${d}T22:00`, type: 'dogadjaj', description: 'Osiguranje kulturne manifestacije, Vijećnica.', assignedPatrol: 'Pješačka 3-2', status: 'u_toku', recordedBy: 'Haris Bešlija' },
+    { psId: 'ps-novi-grad', when: `${d}T19:30`, type: 'intervencija', description: 'Provala u poslovni prostor, Alipašino Polje.', assignedPatrol: 'Auto-patrola 5-1', status: 'u_toku', recordedBy: 'Senad Karić' },
+    { psId: 'ps-novi-grad', when: `${d}T21:15`, type: 'poziv_122', description: 'Prijava nesavjesne vožnje, Bulevar Meše Selimovića.', assignedPatrol: 'Auto-patrola 5-2', status: 'zakljucen', outcome: 'Vozilo zaustavljeno, izdat prekršajni nalog.', recordedBy: 'Senad Karić' },
+    { psId: 'ps-dobrinja', when: `${d}T20:40`, type: 'dogadjaj', description: 'Redovna patrolna aktivnost u naselju Dobrinja C5.', assignedPatrol: 'Auto-patrola 6-1', status: 'zakljucen', outcome: 'Bez posebnih zapažanja.', recordedBy: 'Amir Šehić' },
+  ];
+
+  return rows.map((r, i) => ({ ...r, id: `kdd-seed-${String(i + 1).padStart(3, '0')}` }));
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>(() => seedNotifications());
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => seedLeaveRequests());
@@ -265,6 +300,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     { id: 'log-init-1', when: `${DEMO_TODAY}T19:00`, who: 'Damir Kovač', event: 'Otvorena II smjena.' },
     { id: 'log-init-2', when: `${DEMO_TODAY}T19:05`, who: 'Sistem', event: 'Sve patrole na terenu.' },
   ]);
+  const [kddEntries, setKddEntries] = useState<KddEntry[]>(() => seedKdd());
 
   const markNotificationRead = useCallback((id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -390,6 +426,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const addKddEntry = useCallback((input: KddDraft): KddEntry => {
+    const entry: KddEntry = {
+      ...input,
+      id: `kdd-${Date.now()}`,
+      when: input.when ?? demoNow(),
+    };
+    setKddEntries((prev) => [...prev, entry]);
+    return entry;
+  }, []);
+
+  const updateKddEntry = useCallback(
+    (id: string, patch: Partial<Pick<KddEntry, 'outcome' | 'status' | 'assignedPatrol'>>) => {
+      setKddEntries((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+    },
+    [],
+  );
+
   const appendLog = useCallback((entry: Omit<ShiftLogEntry, 'id' | 'when'>) => {
     setShiftLog((prev) => [
       ...prev,
@@ -460,8 +513,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       acceptOvertime,
       markOfficerSick,
       reassignOfficer,
+      kddEntries,
+      addKddEntry,
+      updateKddEntry,
     }),
     [
+      kddEntries,
+      addKddEntry,
+      updateKddEntry,
       notifications,
       leaveRequests,
       courtSummonses,

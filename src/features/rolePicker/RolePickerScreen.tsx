@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { ROLE_CHOICES, sessionFromChoice, type RoleChoice } from '../../app/session';
 import { useRoleActions } from '../../app/RoleContext';
+import { useOrg } from '../../app/OrgContext';
 
 const HOME_BY_ROLE: Record<RoleChoice['role'], string> = {
   policajac: '/policajac',
@@ -20,6 +21,7 @@ const RUKOVODSTVO: RoleChoice['role'][] = ['komandir', 'nacelnik', 'komesar', 'm
 export function RolePickerScreen() {
   const nav = useNavigate();
   const { setSession } = useRoleActions();
+  const { org } = useOrg();
 
   const choose = (choice: RoleChoice) => {
     setSession(sessionFromChoice(choice));
@@ -33,7 +35,7 @@ export function RolePickerScreen() {
     <div className="min-h-screen bg-paper-50">
       <div className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <header className="mb-12 text-center">
-          <div className="section-label mb-3 text-brass-600">Ministarstvo unutrašnjih poslova · Demo kanton</div>
+          <div className="section-label mb-3 text-brass-600">{org.orgName}</div>
           <h1 className="font-heading text-4xl leading-tight text-ink-800 md:text-5xl">Odaberi ulogu</h1>
           <div className="mx-auto mt-5 h-[2px] w-16 bg-brass-500" />
           <p className="mx-auto mt-5 max-w-xl text-sm text-ink-500">
@@ -58,6 +60,15 @@ export function RolePickerScreen() {
             <a href="/mockup/admin" className="border border-paper-300 bg-paper-0 px-3 py-1.5 text-ink-600 hover:border-brass-500 hover:text-navy-900">
               X03 · Administracija i audit
             </a>
+            <button
+              onClick={() => {
+                setSession({ role: 'admin', identityOfficerId: null, scopeNodeId: 'mup', scopeLabel: 'Administracija' });
+                nav('/admin');
+              }}
+              className="border border-paper-300 bg-paper-0 px-3 py-1.5 text-ink-600 hover:border-brass-500 hover:text-navy-900"
+            >
+              A01 · Postavke organizacije
+            </button>
           </div>
         </div>
 

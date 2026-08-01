@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { LogOut } from 'lucide-react';
 import { useRoleActions, useSession } from '../app/RoleContext';
+import { useOrg } from '../app/OrgContext';
 
 // Jedinstveni shell sa bočnom trakom (sidebar) za sve uloge — da aplikacija izgleda
 // kao pravi proizvod na desktopu/projektoru. Svijetla i tamna varijanta (tamna = dežurni/mapa).
@@ -68,6 +69,7 @@ export function SidebarShell({
   const session = useSession();
   const { logout } = useRoleActions();
   const navigate = useNavigate();
+  const { org } = useOrg();
   const sub = subtitle ?? session.scopeLabel;
   const t = dark ? DARK : LIGHT;
 
@@ -84,7 +86,7 @@ export function SidebarShell({
       {/* Desktop sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r ${t.aside} lg:flex print:hidden`}>
         <div className={`border-b ${t.border} px-5 py-4`}>
-          <div className={`text-[10px] font-medium uppercase tracking-wider ${t.kicker}`}>Dutyboard</div>
+          <div className={`text-[10px] font-medium uppercase tracking-wider ${t.kicker}`}>{org.productName}</div>
           <div className={`mt-0.5 text-sm font-heading font-medium ${t.title}`}>{roleTitle}</div>
           <div className={`mt-0.5 text-xs ${t.sub}`}>{sub}</div>
         </div>

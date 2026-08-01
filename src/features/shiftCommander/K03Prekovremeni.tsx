@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { useStore, type OvertimePosting } from '../../app/store';
 import { addDays, DEMO_TODAY, formatBs } from '../../data/generator/dates';
+import { CHART_COLORS } from '../../components/chartTheme';
 
 export function K03Prekovremeni() {
   const world = useScopedWorld();
@@ -49,11 +50,11 @@ export function K03Prekovremeni() {
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e8e4d8" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#524d42' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: '#524d42' }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: CHART_COLORS.axis }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: CHART_COLORS.axis }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-              <Bar dataKey="sati" fill="#14203a" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="sati" fill={CHART_COLORS.primary} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

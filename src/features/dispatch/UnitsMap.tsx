@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup, Polyline } from 'react-le
 import 'leaflet/dist/leaflet.css';
 import { Filter } from 'lucide-react';
 import type { UnitDef } from './routes';
+import { cssVar } from '../../components/chartTheme';
 
 // Zajednička mapa jedinica — koristi je OKC (cijeli kanton) i šef smjene (svoja stanica).
 
@@ -19,13 +20,16 @@ export const KIND_LABEL: Record<UnitKind, string> = {
   interventna: 'Interventna',
 };
 
-export const KIND_COLOR: Record<UnitKind, string> = {
-  auto: '#b8935a',       // brass-500
-  motocikl: '#d6bd91',   // brass-300
-  pjesacka: '#8b93a8',   // dark-muted
-  civilna: '#a89f88',    // paper-400
-  interventna: '#e6e1d1', // dark-text
-};
+/** Boje markera prate temu organizacije (čitaju se iz CSS varijabli). */
+export function kindColor(kind: UnitKind): string {
+  switch (kind) {
+    case 'auto': return cssVar('--color-brass-500', '#bf9a5c');
+    case 'motocikl': return cssVar('--color-brass-300', '#dcc593');
+    case 'pjesacka': return cssVar('--color-dark-muted', '#8695b0');
+    case 'civilna': return cssVar('--color-paper-400', '#8d9bb4');
+    case 'interventna': return cssVar('--color-dark-text', '#e4e9f2');
+  }
+}
 
 const SARAJEVO_CENTER: [number, number] = [43.852, 18.395];
 
@@ -93,7 +97,7 @@ export function UnitsMap({ units, alertUnitId, center = SARAJEVO_CENTER, zoom = 
                 : 'border-dark-border bg-dark-surface text-dark-muted hover:border-dark-elevated'
             }`}
           >
-            <span className="h-2 w-2" style={{ background: KIND_COLOR[k] }} />
+            <span className="h-2 w-2" style={{ background: kindColor(k) }} />
             {KIND_LABEL[k]}
           </button>
         ))}
@@ -103,7 +107,7 @@ export function UnitsMap({ units, alertUnitId, center = SARAJEVO_CENTER, zoom = 
         <MapContainer
           center={center}
           zoom={zoom}
-          style={{ height: `${heightVh}vh`, width: '100%', background: '#0a1220' }}
+          style={{ height: `${heightVh}vh`, width: '100%', background: cssVar('--color-dark-bg', '#070f1f') }}
           scrollWheelZoom
         >
           <TileLayer
@@ -114,12 +118,12 @@ export function UnitsMap({ units, alertUnitId, center = SARAJEVO_CENTER, zoom = 
           {positions.map(({ unit, pos }) => {
             if (!filter.has(unit.kind)) return null;
             const isAlert = unit.id === alertUnitId;
-            const color = isAlert ? '#a67626' : KIND_COLOR[unit.kind];
+            const color = isAlert ? cssVar('--color-signal-warn', '#a67626') : kindColor(unit.kind);
             return (
               <Fragment key={unit.id}>
                 <Polyline
                   positions={unit.polyline}
-                  pathOptions={{ color: KIND_COLOR[unit.kind], weight: 1, opacity: 0.15 }}
+                  pathOptions={{ color: kindColor(unit.kind), weight: 1, opacity: 0.15 }}
                 />
                 <CircleMarker
                   center={pos}

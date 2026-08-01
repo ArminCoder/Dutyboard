@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Info } from 'lucide-react';
 import { useScopedWorld } from '../../data/useScopedWorld';
+import { CHART_COLORS } from '../../components/chartTheme';
 
 export function N02Analitika() {
   const world = useScopedWorld();
@@ -66,11 +67,11 @@ export function N02Analitika() {
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 20, left: 100, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e8e4d8" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 10, fill: '#524d42' }} axisLine={false} tickLine={false} />
-              <YAxis dataKey="label" type="category" tick={{ fontSize: 10, fill: '#524d42' }} axisLine={false} tickLine={false} width={100} />
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 10, fill: CHART_COLORS.axis }} axisLine={false} tickLine={false} />
+              <YAxis dataKey="label" type="category" tick={{ fontSize: 10, fill: CHART_COLORS.axis }} axisLine={false} tickLine={false} width={100} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-              <Bar dataKey="value" fill="#14203a" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="value" fill={CHART_COLORS.primary} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

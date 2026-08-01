@@ -4,6 +4,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { useStore } from '../../app/store';
 import { useSession } from '../../app/RoleContext';
+import { CHART_COLORS } from '../../components/chartTheme';
 
 export function N01Komandna() {
   const world = useScopedWorld();
@@ -92,15 +93,15 @@ export function N01Komandna() {
               <AreaChart data={trend} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="prekovG" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#14203a" stopOpacity={0.4} />
-                    <stop offset="100%" stopColor="#14203a" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CHART_COLORS.primary} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e8e4d8" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#524d42' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: '#524d42' }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 10, fill: CHART_COLORS.axis }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: CHART_COLORS.axis }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                <Area type="monotone" dataKey="sati" stroke="#14203a" strokeWidth={2} fill="url(#prekovG)" />
+                <Area type="monotone" dataKey="sati" stroke={CHART_COLORS.primary} strokeWidth={2} fill="url(#prekovG)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

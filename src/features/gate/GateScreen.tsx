@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGate } from './useGate';
 import { Button } from '../../components/Button';
+import { useOrg } from '../../app/OrgContext';
 
 interface Props {
   onAuthenticated: () => void;
@@ -8,6 +9,7 @@ interface Props {
 
 export function GateScreen({ onAuthenticated }: Props) {
   const gate = useGate();
+  const { org } = useOrg();
   const [key, setKey] = useState('');
 
   if (gate.status === 'checking') {
@@ -35,8 +37,8 @@ export function GateScreen({ onAuthenticated }: Props) {
         {/* Header nad karticom */}
         <div className="mb-6 text-center">
           <Crest />
-          <div className="section-label mt-4 text-brass-300">Ministarstvo unutrašnjih poslova · Demo kanton</div>
-          <h1 className="mt-2 font-heading text-3xl font-medium text-paper-50">Dutyboard</h1>
+          <div className="section-label mt-4 text-brass-300">{org.orgName}</div>
+          <h1 className="mt-2 font-heading text-3xl font-medium text-paper-50">{org.productName}</h1>
           <div className="mt-1 text-sm text-paper-300">Sistem za upravljanje ljudstvom</div>
           <div className="mx-auto mt-4 h-[2px] w-16 bg-brass-500" />
         </div>
@@ -113,14 +115,14 @@ function Crest() {
       <path
         d="M28 6 L46 12 V28 C46 39 38 47 28 50 C18 47 10 39 10 28 V12 Z"
         fill="none"
-        stroke="#b8935a"
+        stroke="var(--color-brass-500)"
         strokeWidth="1.8"
         strokeLinejoin="round"
       />
       <path
         d="M20 28 L26 34 L37 22"
         fill="none"
-        stroke="#d6bd91"
+        stroke="var(--color-brass-300)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -139,7 +141,7 @@ function BackgroundCrest() {
       <path
         d="M400 100 L620 180 V400 C620 540 520 640 400 680 C280 640 180 540 180 400 V180 Z"
         fill="none"
-        stroke="#b8935a"
+        stroke="var(--color-brass-500)"
         strokeWidth="1"
       />
     </svg>

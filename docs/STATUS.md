@@ -165,6 +165,25 @@ Driven by the approved master plan + [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md). P
   smjenu" prefills counts from the KDD, OKC **D02 Bilteni** inbox (matrix shift × station, missing = amber
   "čeka se"), **D03 Jutarnji brifing** (kanton totals + per-station table + open KDD entries, printable),
   also mounted for the komesar. Second načelnik card (Hodžić) removed as agreed.
+- ✅ **WP4 — Komesar data owner + Ministar resources:** shared domain layer (`overtimeCost.ts`,
+  `readiness.ts`, `workforce.ts`) so screens can't drift. **C03** Kontrola prekovremenih (cost vs budget,
+  top-decile fairness, distribution), **C04** Indeks spremnosti (composite scored against targets, ranked
+  worst-first, drivers shown, drill-down), **C05** Kadrovska projekcija (age pyramid, retirement cliff,
+  hiring need). **M04** Resursi i oprema (fleet per PU, 1 helicopter + 2 special vehicles at kanton level,
+  staffing vs systematization, INTERNO banner). `VehicleKind` gained `helikopter`/`specijalno`;
+  `useScopedWorld` vehicle filter fixed to scope on the whole subtree (kanton assets were invisible).
+  Pension model = age 60 **or** 35 years service (beneficirani staž), which makes the cliff non-empty.
+- ✅ **WP5 — Police-blue palette + white-label:** `@theme` retuned to police blue + gold (token names
+  unchanged → zero class churn); `chartTheme.ts` now reads **CSS variables via getters** with static
+  fallbacks, and the four screens that hardcoded chart hex (N01, N02, K03Prekovremeni, P03) plus the map
+  colors and gate crest were converged onto it. **`src/app/orgConfig.ts`** holds the per-organization
+  config (name, short name, product name, primary/accent colors, crest, feature flags) with
+  localStorage persistence and `applyOrgTheme()` deriving full navy/brass/dark ramps via HSL and setting
+  them on `documentElement` — so the whole app (including charts and map markers) re-themes live.
+  `OrgProvider` wraps the app; wordmark/org names now come from config. **A01 Postavke organizacije**
+  (ultra-admin) offers name fields, 3 presets, 2 colour pickers, crest choice, a live preview, and a
+  disabled feature-toggle section; reachable via a discreet role-picker link using the pre-wired `admin`
+  role. Verified live: applying a preset changes `--color-navy-900`, "Vrati zadano" restores it.
 - ⏳ **Phase 1 remainder (staged with their screens):** populate `equipmentAssigned`; generate rosters for
   all PS (only PS Centar/Aug today); world-wide `leaveRequests`/`notifications`; aggregate complaints/UoF;
   PU boundary polygons for the choropleth.

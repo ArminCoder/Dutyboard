@@ -40,6 +40,8 @@ const C03Prekovremeni = lazy(() => import('../features/commissioner/C03Prekovrem
 const C04Spremnost = lazy(() => import('../features/commissioner/C04Spremnost').then((m) => ({ default: m.C04Spremnost })));
 const C05Kadrovi = lazy(() => import('../features/commissioner/C05Kadrovi').then((m) => ({ default: m.C05Kadrovi })));
 const M04Resursi = lazy(() => import('../features/minister/M04Resursi').then((m) => ({ default: m.M04Resursi })));
+const AdminShell = lazy(() => import('../features/admin/AdminShell').then((m) => ({ default: m.AdminShell })));
+const A01Organizacija = lazy(() => import('../features/admin/A01Organizacija').then((m) => ({ default: m.A01Organizacija })));
 const D01Mapa = lazy(() => import('../features/dispatch/D01Mapa').then((m) => ({ default: m.D01Mapa })));
 
 type Gate = 'checking' | 'open';
@@ -168,6 +170,17 @@ export function AppRoutes() {
           <Route path="simulacija" element={<M02Simulacija />} />
           <Route path="budzet" element={<M03Budzet />} />
           <Route path="resursi" element={<M04Resursi />} />
+        </Route>
+
+        <Route
+          path="/admin"
+          element={
+            <RequireRole roles={['admin']}>
+              <AdminShell />
+            </RequireRole>
+          }
+        >
+          <Route index element={<A01Organizacija />} />
         </Route>
 
         <Route

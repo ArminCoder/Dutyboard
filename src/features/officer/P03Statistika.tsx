@@ -3,6 +3,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
 import { world } from '../../data/world';
 import { useSoftić } from './useOfficer';
+import { CHART_COLORS, CHART_TOOLTIP, CHART_TOOLTIP_LABEL } from '../../components/chartTheme';
 
 const MONTH_SHORT_BS = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt', 'nov', 'dec'];
 
@@ -73,16 +74,16 @@ export function P03Statistika() {
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e8e4d8" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#524d42' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: '#524d42' }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: CHART_COLORS.axis }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: CHART_COLORS.axis }} axisLine={false} tickLine={false} />
               <Tooltip
                 cursor={{ fill: 'rgba(0,0,0,0.04)' }}
-                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #d3dbe6' }}
-                labelStyle={{ color: '#14203a', fontWeight: 600 }}
+                contentStyle={CHART_TOOLTIP}
+                labelStyle={CHART_TOOLTIP_LABEL}
               />
-              <Bar dataKey="intervencije" fill="#14203a" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="hapsenja" fill="#524d42" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="intervencije" fill={CHART_COLORS.primary} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="hapsenja" fill={CHART_COLORS.axis} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -52,5 +52,37 @@ export function generateVehicles(): Vehicle[] {
     }
   }
 
+  // Kantonalni resursi — vode se na Upravi, odnosno posebnoj jedinici,
+  // i angažuju se za cijeli Kanton po zahtjevu.
+  out.push({
+    id: 'veh-heli-up-0',
+    kind: 'helikopter',
+    plate: 'MUP-H-01',
+    model: 'Airbus H125',
+    psId: 'up',
+    status: 'ispravno',
+    serviceDue: addDays(DEMO_TODAY, 96),
+  });
+  out.push({
+    id: 'veh-spec-posebna-0',
+    kind: 'specijalno',
+    plate: 'A-90-O-001',
+    model: 'Oklopno vozilo · Toyota Land Cruiser',
+    psId: 'posebna',
+    status: 'ispravno',
+    serviceDue: addDays(DEMO_TODAY, 140),
+    registrationDue: addDays(DEMO_TODAY, 210),
+  });
+  out.push({
+    id: 'veh-spec-posebna-1',
+    kind: 'specijalno',
+    plate: 'A-90-O-002',
+    model: 'Specijalno vozilo za prevoz jedinice',
+    psId: 'posebna',
+    status: 'servis',
+    serviceDue: addDays(DEMO_TODAY, -6),
+    registrationDue: addDays(DEMO_TODAY, 175),
+  });
+
   return out;
 }

@@ -305,7 +305,17 @@ export interface Payslip {
   net: number;
 }
 
-export type VehicleKind = 'auto' | 'motocikl' | 'bicikl';
+// Helikopter i specijalna vozila su kantonalni resursi (Uprava / posebna jedinica),
+// ne pripadaju pojedinoj stanici.
+export type VehicleKind = 'auto' | 'motocikl' | 'bicikl' | 'helikopter' | 'specijalno';
+
+export const VEHICLE_KIND_LABEL: Record<VehicleKind, string> = {
+  auto: 'Automobili',
+  motocikl: 'Motocikli',
+  bicikl: 'Bicikli',
+  helikopter: 'Helikopter',
+  specijalno: 'Specijalna vozila',
+};
 
 export type VehicleStatus = 'ispravno' | 'servis' | 'ostecen';
 

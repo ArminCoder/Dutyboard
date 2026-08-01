@@ -42,7 +42,9 @@ export function scopeWorld(w: World, scopeNodeId: string): World {
     courtSummonses: w.courtSummonses.filter((c) => officerIds.has(c.officerId)),
     performance: w.performance.filter((p) => officerIds.has(p.officerId)),
     payslips: w.payslips.filter((p) => officerIds.has(p.officerId)),
-    vehicles: w.vehicles.filter((v) => psIds.has(v.psId)),
+    // Ne samo PS — vozilo može biti vezano i za Upravu (helikopter) ili
+    // posebnu jedinicu (specijalna vozila); vidi ga onaj čiji scope ih obuhvata.
+    vehicles: w.vehicles.filter((v) => inScope.has(v.psId)),
     // Strateški podaci su kantonalne konstante/politike — prolaze kroz scope neizmijenjeni.
     // (unitBudgets ostaju cijeli; nijedan scoped ekran ih ne prikazuje ispod komesara.)
     finance: w.finance,

@@ -33,6 +33,9 @@ const M01Strateska = lazy(() => import('../features/minister/M01Strateska').then
 const M02Simulacija = lazy(() => import('../features/minister/M02Simulacija').then((m) => ({ default: m.M02Simulacija })));
 const M03Budzet = lazy(() => import('../features/minister/M03Budzet').then((m) => ({ default: m.M03Budzet })));
 const KddBook = lazy(() => import('../features/kdd/KddBook').then((m) => ({ default: m.KddBook })));
+const K05Mapa = lazy(() => import('../features/shiftCommander/K05Mapa').then((m) => ({ default: m.K05Mapa })));
+const D02Bilten = lazy(() => import('../features/dispatch/D02Bilten').then((m) => ({ default: m.D02Bilten })));
+const JutarnjiBilten = lazy(() => import('../features/dispatch/JutarnjiBilten').then((m) => ({ default: m.JutarnjiBilten })));
 const D01Mapa = lazy(() => import('../features/dispatch/D01Mapa').then((m) => ({ default: m.D01Mapa })));
 
 type Gate = 'checking' | 'open';
@@ -83,6 +86,7 @@ export function AppRoutes() {
           <Route index element={<K01Raspored />} />
           <Route path="aktivna" element={<K02Aktivna />} />
           <Route path="knjiga" element={<KddBook canWrite />} />
+          <Route path="mapa" element={<K05Mapa />} />
           <Route path="odobrenja" element={<K03Odobrenja />} />
           <Route path="prekovremeni" element={<K03Prekovremeni />} />
         </Route>
@@ -111,6 +115,8 @@ export function AppRoutes() {
           }
         >
           <Route index element={<D01Mapa />} />
+          <Route path="bilteni" element={<D02Bilten />} />
+          <Route path="brifing" element={<JutarnjiBilten dark />} />
         </Route>
 
         <Route
@@ -138,6 +144,7 @@ export function AppRoutes() {
           }
         >
           <Route index element={<C01Operativni />} />
+          <Route path="brifing" element={<JutarnjiBilten />} />
           <Route path="radno-vrijeme" element={<C02Uskladjenost />} />
           <Route path="knjiga" element={<KddBook />} />
         </Route>

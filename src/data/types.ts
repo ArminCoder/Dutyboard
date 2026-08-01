@@ -246,6 +246,24 @@ export interface KddEntry {
   recordedBy: string;
 }
 
+/** Bilten — sažetak smjene koji šef smjene na kraju šalje OKC-u.
+ *  OKC iz svih biltena pravi jutarnji brifing za komesara. */
+export interface Bilten {
+  id: string;
+  psId: string;
+  /** Datum smjene i koja smjena (I/II). */
+  shiftDate: string;
+  shiftKind: ShiftKind;
+  counts: {
+    dogadjaji: number;
+    intervencije: number;
+    prekrsajniNalozi: number;
+  };
+  note?: string;
+  submittedBy: string;
+  submittedAt: string;
+}
+
 export type CourtSummonsStatus = 'nepotvrdjen' | 'potvrdjen' | 'evidentirano';
 
 export interface CourtSummons {

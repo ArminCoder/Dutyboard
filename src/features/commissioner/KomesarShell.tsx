@@ -1,8 +1,9 @@
-import { LayoutGrid, Clock, BookOpen } from 'lucide-react';
+import { LayoutGrid, Clock, BookOpen, Sunrise } from 'lucide-react';
 import { SidebarShell, type ShellNavItem } from '../../components/SidebarShell';
 
 const NAV: ShellNavItem[] = [
   { to: '/komesar', end: true, label: 'Operativni pregled', icon: LayoutGrid, badge: 'C01' },
+  { to: '/komesar/brifing', label: 'Jutarnji brifing', icon: Sunrise, badge: 'C03' },
   { to: '/komesar/radno-vrijeme', label: 'Radno vrijeme', icon: Clock, badge: 'C02' },
   { to: '/komesar/knjiga', label: 'Knjiga događaja', icon: BookOpen, badge: 'KDD' },
 ];

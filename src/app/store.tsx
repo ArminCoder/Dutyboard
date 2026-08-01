@@ -2,7 +2,7 @@
 // fast-refresh rule is a false positive since the hook depends on this context.
 /* oxlint-disable react/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { CourtSummons, KddEntry, LeaveRequest, Notification } from '../data/types';
+import type { Bilten, CourtSummons, KddEntry, LeaveRequest, Notification } from '../data/types';
 import { world } from '../data/world';
 import { DEMO_TODAY, addDays, demoNow } from '../data/generator/dates';
 
@@ -63,6 +63,9 @@ interface Store {
   kddEntries: KddEntry[];
   addKddEntry: (input: KddDraft) => KddEntry;
   updateKddEntry: (id: string, patch: Partial<Pick<KddEntry, 'outcome' | 'status' | 'assignedPatrol'>>) => void;
+
+  biltens: Bilten[];
+  submitBilten: (input: Omit<Bilten, 'id' | 'submittedAt'>) => Bilten;
 }
 
 /** Novi upis u knjigu — vrijeme se popunjava demo satom ako nije zadano. */
@@ -290,6 +293,32 @@ function seedKdd(): KddEntry[] {
   return rows.map((r, i) => ({ ...r, id: `kdd-seed-${String(i + 1).padStart(3, '0')}` }));
 }
 
+/** Bilteni prethodne (noćne) smjene — PS Dobrinja namjerno nedostaje (čeka se). */
+function seedBiltens(): Bilten[] {
+  const y = addDays(DEMO_TODAY, -1);
+  const rows: Array<Omit<Bilten, 'id'>> = [
+    {
+      psId: 'ps-centar', shiftDate: y, shiftKind: 'II',
+      counts: { dogadjaji: 9, intervencije: 4, prekrsajniNalozi: 7 },
+      note: 'Bez težih incidenata. Jedna saobraćajna nezgoda bez povrijeđenih.',
+      submittedBy: 'Mirza Delić', submittedAt: `${DEMO_TODAY}T07:12`,
+    },
+    {
+      psId: 'ps-stari-grad', shiftDate: y, shiftKind: 'II',
+      counts: { dogadjaji: 6, intervencije: 2, prekrsajniNalozi: 11 },
+      note: 'Pojačan promet u zoni Baščaršije zbog manifestacije.',
+      submittedBy: 'Haris Bešlija', submittedAt: `${DEMO_TODAY}T07:05`,
+    },
+    {
+      psId: 'ps-novi-grad', shiftDate: y, shiftKind: 'II',
+      counts: { dogadjaji: 12, intervencije: 6, prekrsajniNalozi: 9 },
+      note: 'Provala u poslovni prostor — uviđaj u toku.',
+      submittedBy: 'Senad Karić', submittedAt: `${DEMO_TODAY}T07:20`,
+    },
+  ];
+  return rows.map((r, i) => ({ ...r, id: `bilten-seed-${i + 1}` }));
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>(() => seedNotifications());
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => seedLeaveRequests());
@@ -301,6 +330,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     { id: 'log-init-2', when: `${DEMO_TODAY}T19:05`, who: 'Sistem', event: 'Sve patrole na terenu.' },
   ]);
   const [kddEntries, setKddEntries] = useState<KddEntry[]>(() => seedKdd());
+  const [biltens, setBiltens] = useState<Bilten[]>(() => seedBiltens());
 
   const markNotificationRead = useCallback((id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -450,6 +480,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ]);
   }, []);
 
+  const submitBilten = useCallback(
+    (input: Omit<Bilten, 'id' | 'submittedAt'>): Bilten => {
+      const bilten: Bilten = { ...input, id: `bilten-${Date.now()}`, submittedAt: demoNow() };
+      setBiltens((prev) => [...prev.filter((b) => !(b.psId === input.psId && b.shiftDate === input.shiftDate && b.shiftKind === input.shiftKind)), bilten]);
+      appendLog({ who: input.submittedBy, event: 'Smjena zaključena — bilten poslan OKC-u.' });
+      return bilten;
+    },
+    [appendLog],
+  );
+
   const markOfficerSick = useCallback(
     (patrolId: string, officerId: string) => {
       const officer = world.officers.find((o) => o.id === officerId);
@@ -516,11 +556,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       kddEntries,
       addKddEntry,
       updateKddEntry,
+      biltens,
+      submitBilten,
     }),
     [
       kddEntries,
       addKddEntry,
       updateKddEntry,
+      biltens,
+      submitBilten,
       notifications,
       leaveRequests,
       courtSummonses,

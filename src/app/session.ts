@@ -49,12 +49,14 @@ export const ROLE_CHOICES: RoleChoice[] = [
     scopeLabel: 'PS Centar',
   },
   {
+    // OKC je kantonalni — na broj 122 se javlja ovdje, pa se poziv prosljeđuje
+    // stanici koja pokriva područje. Zato je scope cijela Uprava, ne jedna PU.
     role: 'dezurni',
     officerId: null,
-    scopeNodeId: 'pu-centar',
-    displayName: 'Operativni centar PU Centar',
-    displayTitle: 'dežurni operativac',
-    scopeLabel: 'PU Centar',
+    scopeNodeId: 'up',
+    displayName: 'Operativno-komunikacijski centar',
+    displayTitle: 'OKC MUP DK · dežurni operativac',
+    scopeLabel: 'MUP DK · sve stanice',
   },
   {
     role: 'nacelnik',
@@ -63,14 +65,6 @@ export const ROLE_CHOICES: RoleChoice[] = [
     displayName: 'Samir Begić',
     displayTitle: 'načelnik PU Centar',
     scopeLabel: 'PU Centar',
-  },
-  {
-    role: 'nacelnik',
-    officerId: 'off-0004', // Edin Hodžić
-    scopeNodeId: 'pu-novi-grad',
-    displayName: 'Edin Hodžić',
-    displayTitle: 'načelnik PU Novi Grad',
-    scopeLabel: 'PU Novi Grad',
   },
   {
     role: 'komesar',

@@ -157,6 +157,14 @@ Driven by the approved master plan + [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md). P
   **Also fixed:** Odjava did `window.location.href` (hard reload) which wiped the in-session store, so
   cross-role flows silently lost data — including the spec's signature P02→K03 request round-trip. Now
   router navigation; a real refresh still resets, as intended.
+- ✅ **WP3 — OKC refocus + bilten loop:** dežurni is now the kanton-wide **Operativno-komunikacijski
+  centar** (scope `up`, 4 stations / 13 units). `UnitDef` gained `psId`; 5 units added for the other
+  stations; D01 is genuinely scoped (was hardcoded PU Centar) and its "ne javlja se" escalation now
+  **writes a KDD entry** (previously it only claimed to). Shared `UnitsMap` extracted → šef smjene got
+  **K05 Mapa patrola** (his 6 units). New **bilten** flow: `Bilten` type + store slice, K02 "Zaključi
+  smjenu" prefills counts from the KDD, OKC **D02 Bilteni** inbox (matrix shift × station, missing = amber
+  "čeka se"), **D03 Jutarnji brifing** (kanton totals + per-station table + open KDD entries, printable),
+  also mounted for the komesar. Second načelnik card (Hodžić) removed as agreed.
 - ⏳ **Phase 1 remainder (staged with their screens):** populate `equipmentAssigned`; generate rosters for
   all PS (only PS Centar/Aug today); world-wide `leaveRequests`/`notifications`; aggregate complaints/UoF;
   PU boundary polygons for the choropleth.

@@ -85,7 +85,8 @@ function ruleCertificationExpiry(ctx: Ctx): EligibilityResult | null {
   for (const certId of role.requiredCertIds) {
     const cert = ctx.officer.certifications.find((c) => c.certId === certId);
     if (!cert) return { eligible: false, reason: 'Nema traženi certifikat' };
-    if (cert.expires < ctx.shift.date) {
+    // Trajni certifikat nema rok — uvijek važi.
+    if (cert.expires && cert.expires < ctx.shift.date) {
       return {
         eligible: false,
         reason: `Certifikat istekao ${formatMY(cert.expires)}`,

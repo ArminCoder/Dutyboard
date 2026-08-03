@@ -1,4 +1,4 @@
-import type { Officer, PerformanceMonth } from '../types';
+import { NIGHT_HOURS_PER_SHIFT, type Officer, type PerformanceMonth } from '../types';
 import { intBetween, mulberry32 } from './prng';
 import { DEMO_TODAY, parseISO } from './dates';
 
@@ -26,18 +26,21 @@ export function generatePerformance(seed: number, officers: Officer[]): Performa
       const m = (totalMonthsFromStart % 12) + 1;
       const yearMonth = `${y}-${String(m).padStart(2, '0')}`;
 
+      // Realne mjesečne brojke (provjereno s praksom): hapšenja su rijetka — nekoliko
+      // desetina godišnje čak i za interventnu; sud se dogodi svega nekoliko puta godišnje.
+      const sudniMjesec = rand() < 0.35; // ~4 mjeseca godišnje sa sudom
       out.push({
         officerId: officer.id,
         yearMonth,
-        hapsenja: isInterv ? intBetween(rand, 3, 9) : intBetween(rand, 0, 3),
-        prekrsajni: isMoto ? intBetween(rand, 15, 40) : intBetween(rand, 4, 18),
-        intervencije: isInterv ? intBetween(rand, 20, 55) : isCivilna ? intBetween(rand, 8, 20) : intBetween(rand, 6, 25),
-        asistencije: intBetween(rand, 3, 14),
+        hapsenja: isInterv ? intBetween(rand, 0, 2) : intBetween(rand, 0, 1),
+        prekrsajni: isMoto ? intBetween(rand, 8, 22) : intBetween(rand, 2, 10),
+        intervencije: isInterv ? intBetween(rand, 12, 30) : isCivilna ? intBetween(rand, 3, 10) : intBetween(rand, 4, 14),
         sati: {
           redovni: intBetween(rand, 140, 168),
-          nocni: intBetween(rand, 30, 70),
+          // Noćni rad se broji 22:00–06:00 → 8 h po noćnoj smjeni, ne cijelih 12 h.
+          nocni: intBetween(rand, 5, 6) * NIGHT_HOURS_PER_SHIFT,
           prekovremeni: intBetween(rand, 0, 22),
-          sud: isBicikl ? intBetween(rand, 0, 2) : intBetween(rand, 0, 6),
+          sud: sudniMjesec ? intBetween(rand, 1, isBicikl ? 2 : 4) : 0,
         },
       });
     }

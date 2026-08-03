@@ -19,12 +19,11 @@ export function P03Statistika() {
   );
 
   const totals = useMemo(() => {
-    const acc = { hapsenja: 0, prekrsajni: 0, intervencije: 0, asistencije: 0, redovni: 0, nocni: 0, prekovremeni: 0, sud: 0 };
+    const acc = { hapsenja: 0, prekrsajni: 0, intervencije: 0, redovni: 0, nocni: 0, prekovremeni: 0, sud: 0 };
     for (const p of my) {
       acc.hapsenja += p.hapsenja;
       acc.prekrsajni += p.prekrsajni;
       acc.intervencije += p.intervencije;
-      acc.asistencije += p.asistencije;
       acc.redovni += p.sati.redovni;
       acc.nocni += p.sati.nocni;
       acc.prekovremeni += p.sati.prekovremeni;
@@ -60,7 +59,6 @@ export function P03Statistika() {
         <KpiCard label="Hapšenja" value={totals.hapsenja} />
         <KpiCard label="Prekršajni nalozi" value={totals.prekrsajni} />
         <KpiCard label="Intervencije" value={totals.intervencije} trend={trend} />
-        <KpiCard label="Asistencije" value={totals.asistencije} />
       </div>
 
       <section className=" bg-paper-0 p-4 border border-paper-200">

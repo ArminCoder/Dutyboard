@@ -65,15 +65,27 @@ export interface OperationalRole {
 export interface Certification {
   id: string;
   name: string;
+  /** Neke obuke se polažu jednom i vrijede trajno (npr. osnovna policijska obuka). */
+  permanent?: boolean;
 }
 
 export interface OfficerCertificate {
   certId: string;
-  /** ISO datum "YYYY-MM-DD". */
-  expires: string;
+  /** ISO datum "YYYY-MM-DD". Izostaje kod trajnih certifikata. */
+  expires?: string;
 }
 
-export type EquipmentType = 'vozilo' | 'motocikl' | 'bicikl' | 'radio' | 'oruzje' | 'znacka' | 'uniforma' | 'radar' | 'racunar';
+export type EquipmentType =
+  | 'vozilo' | 'motocikl' | 'bicikl'
+  | 'radio' | 'oruzje' | 'znacka' | 'uniforma' | 'prsluk' | 'palica'
+  | 'radar' | 'racunar';
+
+export const EQUIPMENT_LABEL: Record<EquipmentType, string> = {
+  vozilo: 'Vozilo', motocikl: 'Motocikl', bicikl: 'Bicikl',
+  radio: 'Radio-stanica', oruzje: 'Službeno oružje', znacka: 'Značka',
+  uniforma: 'Uniforma', prsluk: 'Balistički prsluk', palica: 'Službena palica',
+  radar: 'Radar', racunar: 'Računar',
+};
 
 export interface EquipmentAssignment {
   equipmentId: string;
@@ -126,10 +138,13 @@ export const ACCESS_ROLE_LABEL: Record<AccessRole, string> = {
 
 export type ShiftKind = 'I' | 'II'; // I: 07-19, II: 19-07
 
+/** Noćni rad se po propisu računa 22:00–06:00 — dakle 8 h unutar noćne smjene, ne cijelih 12 h. */
+export const NIGHT_HOURS_PER_SHIFT = 8;
+
 /** Jedinstveni izvor za trajanje i oznaku smjene (izbjegava duplirane stringove po ekranima). */
-export const SHIFT_TIME: Record<ShiftKind, { label: string; hours: number; night: boolean }> = {
-  I: { label: '07:00 – 19:00', hours: 12, night: false },
-  II: { label: '19:00 – 07:00', hours: 12, night: true },
+export const SHIFT_TIME: Record<ShiftKind, { label: string; hours: number; night: boolean; nightHours: number }> = {
+  I: { label: '07:00 – 19:00', hours: 12, night: false, nightHours: 0 },
+  II: { label: '19:00 – 07:00', hours: 12, night: true, nightHours: NIGHT_HOURS_PER_SHIFT },
 };
 
 export interface Shift {
@@ -284,7 +299,6 @@ export interface PerformanceMonth {
   hapsenja: number;
   prekrsajni: number;
   intervencije: number;
-  asistencije: number;
   sati: {
     redovni: number;
     nocni: number;

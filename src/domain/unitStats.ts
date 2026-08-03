@@ -80,7 +80,7 @@ export function unitStat(w: World, nodeId: string): UnitStat {
   for (const o of officers) {
     for (const c of o.certifications) {
       needCerts += 1;
-      if (c.expires >= DEMO_TODAY) validCerts += 1;
+      if (!c.expires || c.expires >= DEMO_TODAY) validCerts += 1; // bez roka = trajan
     }
   }
   const certValidPct = needCerts > 0 ? Math.round((validCerts / needCerts) * 100) : 100;

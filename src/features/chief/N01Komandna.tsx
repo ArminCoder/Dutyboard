@@ -50,6 +50,7 @@ export function N01Komandna() {
     let expired = 0;
     for (const o of world.officers) {
       for (const c of o.certifications) {
+        if (!c.expires) continue; // trajni certifikat ne može isteći
         if (c.expires < today) expired++;
         else if (c.expires < in30ISO) expSoon++;
       }

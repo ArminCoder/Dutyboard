@@ -2,6 +2,7 @@ import type { World } from '../types';
 import { buildOrgTree } from './org';
 import { CERTIFICATIONS, buildOperationalRoles } from './roles';
 import { generateOfficers } from './officers';
+import { assignEquipment } from './equipment';
 import { generateRoster } from './shifts';
 import { generatePerformance } from './performance';
 import { generateSoftićPayslips } from './payslip';
@@ -18,6 +19,7 @@ export function generateWorld(): World {
   const posebnaId = orgNodes.find((n) => n.kind === 'posebna')!.id;
   const operationalRoles = buildOperationalRoles(puIds, posebnaId);
   const officers = generateOfficers(SEED, orgNodes, operationalRoles);
+  assignEquipment(SEED + 7, officers); // zasebni prolaz — ne dira niz ID-eva
   const shifts = generateRoster(SEED + 1, officers);
   const courtSummonses = generateSoftićCourt();
   const performance = generatePerformance(SEED + 2, officers);

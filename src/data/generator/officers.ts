@@ -1,6 +1,7 @@
 import type { Officer, OfficerCertificate, OfficerStatus, OperationalRole, OrgNode, Rank } from '../types';
 import { chance, intBetween, mulberry32, pick } from './prng';
 import { FIRST_NAMES_F, FIRST_NAMES_M, LAST_NAMES } from './names';
+import { CERTIFICATIONS } from './roles';
 import { DEMO_TODAY, addDays } from './dates';
 
 // Raspodjela činova ~ realistična piramida.
@@ -58,6 +59,14 @@ function statusForOfficer(rand: () => number): OfficerStatus {
 }
 
 /** Datum isteka certifikata — "YYYY-MM-DD". Većina buduća, ~3-4 istekla / uskoro isticu (za K01 demo momenat). */
+/** Trajni certifikati (osnovna obuka, vozačke) nemaju rok — ali svejedno povlačimo
+ *  jedan `rand()` poziv da niz ostane identičan i da se ID-evi policajaca ne pomjere. */
+function buildCert(certId: string, rand: () => number, forceExpired = false): OfficerCertificate {
+  const drawn = certExpiryDate(rand, forceExpired);
+  const isPermanent = CERTIFICATIONS.find((c) => c.id === certId)?.permanent === true;
+  return isPermanent ? { certId } : { certId, expires: drawn };
+}
+
 function certExpiryDate(rand: () => number, forceExpired: boolean): string {
   // Sidreno na DEMO_TODAY (ne na stvarni datum) — inače bi se istekli/uskoro-ističu
   // certifikati mijenjali iz dana u dan i demo ne bi bio deterministički.
@@ -132,15 +141,14 @@ export function generateOfficers(
       rank: d.rank,
       orgNodeId: d.orgNodeId,
       operationalRoleIds: roleIds,
-      certifications: certs.map((certId) => ({
-        certId,
+      certifications: certs.map((certId) => {
+        const c = buildCert(certId, rand);
         // Softiću gađanje ističe za 21 dan — unutar praga upozorenja (30 dana),
         // pa P05 pokazuje narandžasti bedž, a P01 odgovarajuće obavještenje.
-        expires:
-          d.name === 'Amar Softić' && certId === 'cert-gadjanje'
-            ? addDays(DEMO_TODAY, 21)
-            : certExpiryDate(rand, false),
-      })),
+        return d.name === 'Amar Softić' && certId === 'cert-gadjanje'
+          ? { certId, expires: addDays(DEMO_TODAY, 21) }
+          : c;
+      }),
       clearanceLevel: 'interno',
       equipmentAssigned: [],
       status: 'aktivan',
@@ -166,10 +174,10 @@ export function generateOfficers(
       const officerNum = idCounter;
       const forceOneExpired = forcedExpiredTargets.has(officerNum);
 
-      const certObjs: OfficerCertificate[] = requiredCerts.map((certId, idx) => ({
-        certId,
-        expires: certExpiryDate(rand, forceOneExpired && idx === 0),
-      }));
+      // Namjerno istekli certifikati ciljaju gađanje — osnovna obuka je trajna i ne može isteći.
+      const certObjs: OfficerCertificate[] = requiredCerts.map((certId) =>
+        buildCert(certId, rand, forceOneExpired && certId === 'cert-gadjanje'),
+      );
 
       const rank = pickRank(rand);
       officers.push({
@@ -202,9 +210,9 @@ export function generateOfficers(
       orgNodeId: posebna.id,
       operationalRoleIds: [`${posebna.id}:specijalci`],
       certifications: [
-        { certId: 'cert-osnovna', expires: certExpiryDate(rand, false) },
-        { certId: 'cert-gadjanje', expires: certExpiryDate(rand, false) },
-        { certId: 'cert-specijalna', expires: certExpiryDate(rand, false) },
+        buildCert('cert-osnovna', rand),
+        buildCert('cert-gadjanje', rand),
+        buildCert('cert-specijalna', rand),
       ],
       clearanceLevel: 'povjerljivo',
       equipmentAssigned: [],
@@ -225,8 +233,8 @@ export function generateOfficers(
       orgNodeId: ps.id,
       operationalRoleIds: [],
       certifications: [
-        { certId: 'cert-osnovna', expires: certExpiryDate(rand, false) },
-        { certId: 'cert-gadjanje', expires: certExpiryDate(rand, false) },
+        buildCert('cert-osnovna', rand),
+        buildCert('cert-gadjanje', rand),
       ],
       clearanceLevel: 'interno',
       equipmentAssigned: [],
@@ -245,7 +253,7 @@ export function generateOfficers(
     orgNodeId: 'ps-centar',
     operationalRoleIds: [],
     certifications: [
-      { certId: 'cert-osnovna', expires: addDays(DEMO_TODAY, 420) },
+      { certId: 'cert-osnovna' },
       { certId: 'cert-gadjanje', expires: addDays(DEMO_TODAY, 180) },
     ],
     clearanceLevel: 'povjerljivo',

@@ -4,10 +4,11 @@ import type { Certification, OperationalRole } from '../types';
 // Za demo držimo katalog jednostavan i ističemo one koje se koriste u K01 (SPEC linije 122-133).
 
 export const CERTIFICATIONS: Certification[] = [
-  { id: 'cert-osnovna', name: 'Osnovna policijska obuka' },
+  // Osnovna obuka i vozačke kategorije polažu se jednom — nemaju rok važenja.
+  { id: 'cert-osnovna', name: 'Osnovna policijska obuka', permanent: true },
   { id: 'cert-interventna', name: 'Interventna obuka' },
-  { id: 'cert-vozac-a', name: 'Vozačka kategorija A (motocikl)' },
-  { id: 'cert-vozac-b', name: 'Vozačka kategorija B' },
+  { id: 'cert-vozac-a', name: 'Vozačka kategorija A (motocikl)', permanent: true },
+  { id: 'cert-vozac-b', name: 'Vozačka kategorija B', permanent: true },
   { id: 'cert-gadjanje', name: 'Godišnje gađanje' },
   { id: 'cert-eng', name: 'Engleski jezik (B2)' },
   { id: 'cert-civilna', name: 'Rad u civilnom odijelu' },

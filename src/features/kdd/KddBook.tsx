@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { BookOpen, Plus, Search, X, ChevronDown, CheckCircle2, Clock, CircleDot } from 'lucide-react';
+import { BookOpen, Plus, Search, X, ChevronDown, CheckCircle2, Clock, CircleDot, Pencil, History } from 'lucide-react';
 import { useScopedKdd } from './useScopedKdd';
 import { useStore } from '../../app/store';
 import { useSession } from '../../app/RoleContext';
@@ -10,6 +10,7 @@ import {
   type KddEntry,
   type KddEntryStatus,
   type KddEntryType,
+  KDD_EDIT_WINDOW_HOURS,
 } from '../../data/types';
 import { DEMO_TODAY, dayNameBs, demoNow, formatBs } from '../../data/generator/dates';
 
@@ -17,6 +18,20 @@ import { DEMO_TODAY, dayNameBs, demoNow, formatBs } from '../../data/generator/d
 // Šef smjene upisuje (canWrite), komandir/načelnik/komesar čitaju i pretražuju.
 
 const TYPES: KddEntryType[] = ['poziv_122', 'intervencija', 'dogadjaj', 'ostalo'];
+
+const FIELD_LABEL: Record<string, string> = {
+  description: 'opis', outcome: 'ishod', status: 'status', assignedPatrol: 'patrola',
+};
+
+/** Koliko je sati prošlo od upisa (po demo satu). */
+function hoursSince(when: string): number {
+  const [d, t] = when.split('T');
+  const [nd, nt] = demoNow().split('T');
+  const days = (new Date(nd).getTime() - new Date(d).getTime()) / 86400000;
+  const [h, m] = t.split(':').map(Number);
+  const [nh, nm] = nt.split(':').map(Number);
+  return days * 24 + (nh * 60 + nm - (h * 60 + m)) / 60;
+}
 
 const STATUS_TONE: Record<KddEntryStatus, string> = {
   otvoren: 'bg-signal-warn/15 text-signal-warn',
@@ -179,17 +194,38 @@ export function KddBook({ canWrite = false }: { canWrite?: boolean }) {
 
 function EntryRow({ entry, canWrite, showStation }: { entry: KddEntry; canWrite: boolean; showStation: boolean }) {
   const store = useStore();
+  const session = useSession();
   const [open, setOpen] = useState(false);
   const [outcome, setOutcome] = useState('');
+  const [desc, setDesc] = useState(entry.description);
+  const [editing, setEditing] = useState(false);
+
+  const actor =
+    world.officers.find((o) => o.id === session.identityOfficerId)?.name ??
+    (session.role === 'komandir' ? 'Komandir PS' : 'Šef smjene');
+
+  // Upis se ispravlja 24 h; poslije toga ispravku može unijeti samo komandir stanice.
+  const hoursOld = hoursSince(entry.when);
+  const withinWindow = hoursOld <= KDD_EDIT_WINDOW_HOURS;
+  const isKomandir = session.role === 'komandir';
+  const canEdit = (canWrite && withinWindow) || isKomandir;
   const StatusIcon = STATUS_ICON[entry.status];
   const station = world.orgNodes.find((n) => n.id === entry.psId);
 
   const close = () => {
-    store.updateKddEntry(entry.id, {
-      status: 'zakljucen',
-      outcome: outcome.trim() || 'Postupljeno po prijavi.',
-    });
+    store.updateKddEntry(
+      entry.id,
+      { status: 'zakljucen', outcome: outcome.trim() || 'Postupljeno po prijavi.' },
+      actor,
+    );
     setOpen(false);
+  };
+
+  const saveDesc = () => {
+    if (desc.trim() && desc.trim() !== entry.description) {
+      store.updateKddEntry(entry.id, { description: desc.trim() }, actor);
+    }
+    setEditing(false);
   };
 
   return (
@@ -199,6 +235,11 @@ function EntryRow({ entry, canWrite, showStation }: { entry: KddEntry; canWrite:
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-ink-800">{entry.description}</span>
+            {entry.revisions && entry.revisions.length > 0 ? (
+              <span className="border border-paper-300 px-1 py-0.5 text-[9px] uppercase tracking-wider text-ink-500">
+                izmijenjeno
+              </span>
+            ) : null}
           </span>
           <span className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-ink-500">
             <span className="border border-paper-300 px-1.5 py-0.5 uppercase tracking-wider">
@@ -227,6 +268,43 @@ function EntryRow({ entry, canWrite, showStation }: { entry: KddEntry; canWrite:
             <div className="text-sm text-ink-500">Ishod još nije evidentiran.</div>
           )}
 
+          {canEdit ? (
+            <div className="mt-3">
+              {editing ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    value={desc}
+                    onChange={(e) => setDesc(e.target.value)}
+                    className="min-w-[240px] flex-1 border border-paper-200 bg-paper-0 px-2.5 py-1.5 text-sm text-ink-800"
+                  />
+                  <button onClick={saveDesc} className="bg-navy-900 px-3 py-1.5 text-sm text-paper-50 hover:bg-navy-800">
+                    Sačuvaj ispravku
+                  </button>
+                  <button onClick={() => { setDesc(entry.description); setEditing(false); }} className="px-2 py-1.5 text-sm text-ink-500 hover:bg-paper-100">
+                    Odustani
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="inline-flex items-center gap-1.5 border border-paper-300 bg-paper-0 px-2.5 py-1 text-xs text-ink-600 transition hover:border-brass-500"
+                >
+                  <Pencil className="h-3 w-3" />
+                  Ispravi opis
+                </button>
+              )}
+              {!withinWindow && isKomandir ? (
+                <p className="mt-1.5 text-[11px] text-signal-warn">
+                  Prošlo je više od {KDD_EDIT_WINDOW_HOURS} h — ispravku unosi komandir i ostaje trajno zabilježena.
+                </p>
+              ) : null}
+            </div>
+          ) : canWrite ? (
+            <p className="mt-3 text-[11px] text-ink-500">
+              Rok za ispravku ({KDD_EDIT_WINDOW_HOURS} h) je istekao — ispravku može unijeti komandir stanice.
+            </p>
+          ) : null}
+
           {canWrite && entry.status !== 'zakljucen' ? (
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <input
@@ -238,6 +316,23 @@ function EntryRow({ entry, canWrite, showStation }: { entry: KddEntry; canWrite:
               <button onClick={close} className="bg-navy-900 px-3 py-1.5 text-sm text-paper-50 transition hover:bg-navy-800">
                 Zaključi upis
               </button>
+            </div>
+          ) : null}
+
+          {entry.revisions && entry.revisions.length > 0 ? (
+            <div className="mt-3 border-t border-paper-200 pt-2">
+              <div className="section-label mb-1 flex items-center gap-1.5 text-ink-500">
+                <History className="h-3 w-3" />
+                Trag izmjena ({entry.revisions.length})
+              </div>
+              <ul className="space-y-1">
+                {entry.revisions.map((r, i) => (
+                  <li key={i} className="text-[11px] text-ink-500">
+                    {r.at.slice(11, 16)} · {r.by} · <span className="text-ink-700">{FIELD_LABEL[r.field]}</span>:{' '}
+                    <span className="line-through opacity-70">{r.from || '—'}</span> → {r.to}
+                  </li>
+                ))}
+              </ul>
             </div>
           ) : null}
         </div>
@@ -322,7 +417,7 @@ function NewEntryDialog({ onClose }: { onClose: () => void }) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            placeholder="Kratak opis — bez ličnih podataka."
+            placeholder="Opis događaja — unesi lične podatke ako su potrebni za postupanje."
             className="w-full resize-none border border-paper-200 bg-paper-50 px-3 py-2 text-sm text-ink-800"
           />
         </label>

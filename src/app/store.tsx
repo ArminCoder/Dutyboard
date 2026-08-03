@@ -2,7 +2,7 @@
 // fast-refresh rule is a false positive since the hook depends on this context.
 /* oxlint-disable react/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { ApprovalStep, Bilten, CourtSummons, KddEntry, LeaveRequest, Notification } from '../data/types';
+import type { ApprovalStep, Bilten, CourtSummons, KddEntry, KddRevision, LeaveRequest, Notification } from '../data/types';
 import { world } from '../data/world';
 import { DEMO_TODAY, addDays, demoNow } from '../data/generator/dates';
 
@@ -27,6 +27,8 @@ export interface ActivePatrolCard {
   status: 'na_terenu' | 'pauza' | 'intervencija' | 'nepotpuna';
   location?: string;
   incompleteReason?: string;
+  /** "YYYY-MM-DDTHH:mm" — do kada traje pauza (odbrojavanje u K02). */
+  pauzaDo?: string;
 }
 
 export interface ShiftLogEntry {
@@ -57,12 +59,17 @@ interface Store {
   offerOvertime: (postingId: string, officerId: string, officerName: string) => void;
   acceptOvertime: (postingId: string, officerId: string) => void;
 
-  markOfficerSick: (patrolId: string, officerId: string) => void;
+  markOfficerSick: (patrolId: string, officerId: string, reason: string) => void;
   reassignOfficer: (patrolId: string, newOfficerId: string) => void;
+  setPatrolStatus: (patrolId: string, status: ActivePatrolCard['status'], minutes?: number) => void;
 
   kddEntries: KddEntry[];
   addKddEntry: (input: KddDraft) => KddEntry;
-  updateKddEntry: (id: string, patch: Partial<Pick<KddEntry, 'outcome' | 'status' | 'assignedPatrol'>>) => void;
+  updateKddEntry: (
+    id: string,
+    patch: Partial<Pick<KddEntry, 'description' | 'outcome' | 'status' | 'assignedPatrol'>>,
+    actor: string,
+  ) => void;
 
   biltens: Bilten[];
   submitBilten: (input: Omit<Bilten, 'id' | 'submittedAt'>) => Bilten;
@@ -489,8 +496,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateKddEntry = useCallback(
-    (id: string, patch: Partial<Pick<KddEntry, 'outcome' | 'status' | 'assignedPatrol'>>) => {
-      setKddEntries((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+    (
+      id: string,
+      patch: Partial<Pick<KddEntry, 'description' | 'outcome' | 'status' | 'assignedPatrol'>>,
+      actor: string,
+    ) => {
+      setKddEntries((prev) =>
+        prev.map((e) => {
+          if (e.id !== id) return e;
+          // Svaka izmjena se dopisuje u trag — postojeći zapisi se ne mijenjaju i ne brišu.
+          const revisions = [...(e.revisions ?? [])];
+          for (const [field, to] of Object.entries(patch) as Array<[KddRevision['field'], string]>) {
+            const from = (e[field] as string | undefined) ?? '';
+            if (from === to) continue;
+            revisions.push({ at: demoNow(), by: actor, field, from, to });
+          }
+          return { ...e, ...patch, revisions };
+        }),
+      );
     },
     [],
   );
@@ -513,7 +536,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const markOfficerSick = useCallback(
-    (patrolId: string, officerId: string) => {
+    (patrolId: string, officerId: string, reason: string) => {
       const officer = world.officers.find((o) => o.id === officerId);
       setActivePatrols((prev) =>
         prev.map((p) => {
@@ -523,13 +546,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             ...p,
             officers: remaining,
             status: 'nepotpuna',
-            incompleteReason: `${officer?.name ?? 'Policajac'} napustio smjenu (bolovanje)`,
+            incompleteReason: `${officer?.name ?? 'Policajac'} — ${reason}`,
           };
         }),
       );
       appendLog({
         who: 'Damir Kovač',
-        event: `${officer?.name ?? 'Policajac'} napustio smjenu (bolovanje). ${patrolId} označen kao NEPOTPUNA.`,
+        event: `${officer?.name ?? 'Policajac'} napustio smjenu — ${reason}. Patrola označena kao NEPOTPUNA.`,
       });
     },
     [appendLog],
@@ -557,6 +580,37 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [appendLog],
   );
 
+  /** Status patrole postavlja šef smjene kad mu se patrola javi (pauza ima trajanje). */
+  const setPatrolStatus = useCallback(
+    (patrolId: string, status: ActivePatrolCard['status'], minutes?: number) => {
+      let label = '';
+      setActivePatrols((prev) =>
+        prev.map((p) => {
+          if (p.id !== patrolId) return p;
+          label = p.callSign;
+          const pauzaDo =
+            status === 'pauza' && minutes
+              ? (() => {
+                  const [d, t] = demoNow().split('T');
+                  const [hh, mm] = t.split(':').map(Number);
+                  const end = new Date(2000, 0, 1, hh, mm + minutes);
+                  return `${d}T${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+                })()
+              : undefined;
+          return { ...p, status, pauzaDo };
+        }),
+      );
+      const text =
+        status === 'pauza'
+          ? `${label}: pauza${minutes ? ` (${minutes} min)` : ''}.`
+          : status === 'intervencija'
+            ? `${label}: upućena na intervenciju.`
+            : `${label}: ponovo na terenu.`;
+      appendLog({ who: 'Šef smjene', event: text });
+    },
+    [appendLog],
+  );
+
   const value = useMemo<Store>(
     () => ({
       notifications,
@@ -575,6 +629,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       acceptOvertime,
       markOfficerSick,
       reassignOfficer,
+      setPatrolStatus,
       kddEntries,
       addKddEntry,
       updateKddEntry,
@@ -603,6 +658,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       acceptOvertime,
       markOfficerSick,
       reassignOfficer,
+      setPatrolStatus,
     ],
   );
 

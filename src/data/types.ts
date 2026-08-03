@@ -254,7 +254,7 @@ export interface KddEntry {
   /** "YYYY-MM-DDTHH:mm" — sidreno na demo vrijeme (demoNow). */
   when: string;
   type: KddEntryType;
-  /** Kratak opis bez ličnih podataka. */
+  /** Opis događaja. Službena evidencija — lični podaci se unose kad su potrebni. */
   description: string;
   /** Pozivni znak patrole kojoj je događaj dodijeljen. */
   assignedPatrol?: string;
@@ -262,7 +262,21 @@ export interface KddEntry {
   status: KddEntryStatus;
   /** Ko je upisao (šef smjene, OKC, sistem). */
   recordedBy: string;
+  /** Trag izmjena — dopunjava se, nikad se ne briše. */
+  revisions?: KddRevision[];
 }
+
+/** Svaka izmjena upisa ostavlja trag: ko, kada, šta je promijenjeno. */
+export interface KddRevision {
+  at: string;
+  by: string;
+  field: 'description' | 'outcome' | 'status' | 'assignedPatrol';
+  from: string;
+  to: string;
+}
+
+/** Upis se može mijenjati 24 h; poslije toga samo komandir stanice. */
+export const KDD_EDIT_WINDOW_HOURS = 24;
 
 /** Bilten — sažetak smjene koji šef smjene na kraju šalje OKC-u.
  *  OKC iz svih biltena pravi jutarnji brifing za komesara. */

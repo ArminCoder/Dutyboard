@@ -1,14 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Radio, MapPin, AlertTriangle, X, UserMinus, UserPlus, Coffee, Siren } from 'lucide-react';
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { useStore, type ActivePatrolCard } from '../../app/store';
 import { checkEligibility } from '../../domain/eligibility';
 import { world } from '../../data/world';
-import { DEMO_TODAY } from '../../data/generator/dates';
+import { DEMO_TODAY, demoNow } from '../../data/generator/dates';
 
 export function K02Aktivna() {
   const store = useStore();
   const [reassigning, setReassigning] = useState<ActivePatrolCard | null>(null);
+  const [removing, setRemoving] = useState<{ patrol: ActivePatrolCard; officerId: string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   return (
@@ -36,12 +37,19 @@ export function K02Aktivna() {
               <PatrolCard
                 key={p.id}
                 patrol={p}
-                onSick={(oId) => {
-                  store.markOfficerSick(p.id, oId);
-                  setToast('Patrola označena kao NEPOTPUNA — sistem predlaže zamjenu.');
+                onSick={(oId) => setRemoving({ patrol: p, officerId: oId })}
+                onReassign={() => setReassigning(p)}
+                onStatus={(st, min) => {
+                  store.setPatrolStatus(p.id, st, min);
+                  setToast(
+                    st === 'pauza'
+                      ? `${p.callSign}: pauza ${min} min.`
+                      : st === 'intervencija'
+                        ? `${p.callSign}: upućena na intervenciju.`
+                        : `${p.callSign}: ponovo na terenu.`,
+                  );
                   setTimeout(() => setToast(null), 3000);
                 }}
-                onReassign={() => setReassigning(p)}
               />
             ))}
           </div>
@@ -63,6 +71,20 @@ export function K02Aktivna() {
           </div>
         </aside>
       </div>
+
+      {removing && (
+        <RemoveOfficerDialog
+          patrol={removing.patrol}
+          officerId={removing.officerId}
+          onClose={() => setRemoving(null)}
+          onConfirm={(reason) => {
+            store.markOfficerSick(removing.patrol.id, removing.officerId, reason);
+            setRemoving(null);
+            setToast('Patrola označena kao NEPOTPUNA — sistem predlaže zamjenu.');
+            setTimeout(() => setToast(null), 3000);
+          }}
+        />
+      )}
 
       {reassigning && (
         <ReassignDrawer
@@ -90,10 +112,12 @@ function PatrolCard({
   patrol,
   onSick,
   onReassign,
+  onStatus,
 }: {
   patrol: ActivePatrolCard;
   onSick: (officerId: string) => void;
   onReassign: () => void;
+  onStatus: (status: ActivePatrolCard['status'], minutes?: number) => void;
 }) {
   const officers = patrol.officers
     .map((id) => world.officers.find((o) => o.id === id))
@@ -113,7 +137,10 @@ function PatrolCard({
           <div className="text-sm font-heading font-medium text-ink-800">{patrol.callSign}</div>
           {patrol.vehiclePlate && <div className="text-[11px] text-ink-500">{patrol.vehiclePlate}</div>}
         </div>
-        <StatusBadge status={patrol.status} />
+        <div className="flex flex-col items-end gap-1">
+          <StatusBadge status={patrol.status} />
+          {patrol.status === 'pauza' && patrol.pauzaDo ? <PauzaCountdown until={patrol.pauzaDo} /> : null}
+        </div>
       </div>
 
       {patrol.location && (
@@ -143,6 +170,32 @@ function PatrolCard({
           </li>
         ))}
       </ul>
+
+      {/* Status mijenja šef smjene kad mu se patrola javi. */}
+      {patrol.status !== 'nepotpuna' && (
+        <div className="mb-3 flex flex-wrap gap-1.5 border-t border-paper-200 pt-3">
+          {patrol.status !== 'na_terenu' ? (
+            <StatusBtn onClick={() => onStatus('na_terenu')} icon={<Radio className="h-3 w-3" />}>
+              Na terenu
+            </StatusBtn>
+          ) : null}
+          {patrol.status !== 'intervencija' ? (
+            <StatusBtn onClick={() => onStatus('intervencija')} icon={<Siren className="h-3 w-3" />}>
+              Intervencija
+            </StatusBtn>
+          ) : null}
+          {patrol.status !== 'pauza' ? (
+            <>
+              <StatusBtn onClick={() => onStatus('pauza', 30)} icon={<Coffee className="h-3 w-3" />}>
+                Pauza 30
+              </StatusBtn>
+              <StatusBtn onClick={() => onStatus('pauza', 45)} icon={<Coffee className="h-3 w-3" />}>
+                45 min
+              </StatusBtn>
+            </>
+          ) : null}
+        </div>
+      )}
 
       {patrol.status === 'nepotpuna' && (
         <button
@@ -249,6 +302,109 @@ function ReassignDrawer({
           </ul>
         </div>
       </aside>
+    </div>
+  );
+}
+
+
+function StatusBtn({ onClick, icon, children }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-1 border border-paper-200 bg-paper-50 px-2 py-1 text-[11px] text-ink-700 transition hover:border-navy-500 hover:text-navy-900"
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+/** Odbrojavanje pauze — računa se prema demo satu, pa je stabilno u demou. */
+function PauzaCountdown({ until }: { until: string }) {
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const int = setInterval(() => tick((n) => n + 1), 1000);
+    return () => clearInterval(int);
+  }, []);
+
+  const now = demoNow();
+  const mins = minutesBetween(now, until);
+  if (mins <= 0) return <span className="text-[10px] text-signal-warn">pauza istekla</span>;
+  return (
+    <span className="font-mono text-[10px] tabular-nums text-ink-500">
+      još {mins} min · do {until.slice(11, 16)}
+    </span>
+  );
+}
+
+function minutesBetween(fromIso: string, toIso: string): number {
+  const [, a] = fromIso.split('T');
+  const [, b] = toIso.split('T');
+  const [ah, am] = a.split(':').map(Number);
+  const [bh, bm] = b.split(':').map(Number);
+  return (bh * 60 + bm) - (ah * 60 + am);
+}
+
+/** Uklanjanje iz smjene traži potvrdu i razlog — ostaje trag u dnevniku. */
+function RemoveOfficerDialog({
+  patrol,
+  officerId,
+  onClose,
+  onConfirm,
+}: {
+  patrol: ActivePatrolCard;
+  officerId: string;
+  onClose: () => void;
+  onConfirm: (reason: string) => void;
+}) {
+  const officer = world.officers.find((o) => o.id === officerId);
+  const REASONS = ['bolovanje', 'povreda na radu', 'hitan porodični slučaj', 'upućen po nalogu'];
+  const [reason, setReason] = useState(REASONS[0]);
+
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
+      <div className="w-full max-w-md bg-paper-0 p-5">
+        <div className="mb-1 flex items-center justify-between">
+          <h3 className="font-heading text-lg text-ink-800">Uklanjanje iz smjene</h3>
+          <button onClick={onClose} aria-label="Zatvori">
+            <X className="h-4 w-4 text-ink-500 hover:text-ink-800" />
+          </button>
+        </div>
+        <p className="mb-4 text-sm text-ink-600">
+          <span className="font-medium text-ink-800">{officer?.name}</span> se uklanja iz patrole{' '}
+          <span className="font-medium text-ink-800">{patrol.callSign}</span>. Patrola će biti označena kao
+          NEPOTPUNA dok se ne nađe zamjena.
+        </p>
+
+        <div className="mb-4">
+          <span className="mb-1 block text-xs font-medium text-ink-600">Razlog</span>
+          <div className="grid gap-1.5">
+            {REASONS.map((r) => (
+              <button
+                key={r}
+                onClick={() => setReason(r)}
+                className={`border px-3 py-2 text-left text-sm capitalize transition ${
+                  reason === r ? 'border-navy-900 bg-navy-900 text-paper-50' : 'border-paper-200 bg-paper-50 text-ink-700 hover:border-navy-500'
+                }`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2">
+          <button onClick={onClose} className="px-3 py-2 text-sm text-ink-600 hover:bg-paper-100">
+            Odustani
+          </button>
+          <button
+            onClick={() => onConfirm(reason)}
+            className="bg-signal-alarm px-3 py-2 text-sm text-paper-50 transition hover:opacity-90"
+          >
+            Potvrdi uklanjanje
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

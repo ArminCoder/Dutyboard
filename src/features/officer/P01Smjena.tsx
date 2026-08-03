@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Bell, Calendar, ChevronRight, MapPin, Users, Car, Gavel, ClipboardCheck } from 'lucide-react';
+import { Bell, Calendar, ChevronRight, MapPin, Users, Car, Gavel, ClipboardCheck, GraduationCap } from 'lucide-react';
 import { useSoftić } from './useOfficer';
 import { world } from '../../data/world';
 import { useStore } from '../../app/store';
@@ -214,14 +214,6 @@ function NotificationRow({ n }: { n: Notification }) {
               </button>
             )
           ) : null}
-          {n.action.kind === 'accept_overtime' ? (
-            <button
-              onClick={() => store.markNotificationRead(n.id)}
-              className="inline-flex items-center gap-1.5  border border-paper-300 bg-paper-0 px-3 py-1.5 text-xs font-medium text-ink-800 transition hover:border-navy-700"
-            >
-              {n.action.label}
-            </button>
-          ) : null}
         </div>
       ) : null}
     </li>
@@ -232,7 +224,8 @@ function iconFor(kind: Notification['kind']) {
   switch (kind) {
     case 'sudski_poziv': return Gavel;
     case 'raspored': return Calendar;
-    case 'prekovremeni_ponuda': return Users;
+    case 'prekovremeni_nalog': return Users;
+    case 'obuka': return GraduationCap;
     case 'certifikat_upozorenje': return Bell;
     default: return Bell;
   }

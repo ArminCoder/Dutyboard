@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Plus, X, ChevronRight, CalendarOff, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Plus, X, ChevronRight, CalendarOff, CheckCircle2, XCircle, Clock, Paperclip } from 'lucide-react';
 import { useSoftić } from './useOfficer';
 import { useStore } from '../../app/store';
 import { DEMO_TODAY, addDays, formatBs } from '../../data/generator/dates';
@@ -83,7 +83,10 @@ function RequestCard({ req }: { req: LeaveRequest }) {
       ? req.fromDate === req.toDate
         ? formatBs(req.fromDate)
         : `${formatBs(req.fromDate)} — ${formatBs(req.toDate)}`
-      : '—';
+      // Otvoreno bolovanje nema krajnji datum dok ljekar ne utvrdi kraj.
+      : req.fromDate
+        ? `od ${formatBs(req.fromDate)} · otvoreno`
+        : '—';
 
   return (
     <li className="overflow-hidden  bg-paper-0 border border-paper-200">
@@ -173,8 +176,10 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
   const [fromDate, setFromDate] = useState<string>(addDays(DEMO_TODAY, 3));
   const [toDate, setToDate] = useState<string>(addDays(DEMO_TODAY, 3));
   const [reason, setReason] = useState('');
+  const [nota, setNota] = useState<string | null>(null);
 
-  const canSubmit = fromDate && toDate && fromDate <= toDate;
+  // Bolovanje je otvoreno — dovoljan je prvi dan.
+  const canSubmit = kind === 'bolovanje' ? Boolean(fromDate) : Boolean(fromDate && toDate && fromDate <= toDate);
 
   const submit = () => {
     if (!canSubmit) return;
@@ -183,8 +188,8 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
       officerName: officer.name,
       kind,
       fromDate,
-      toDate: kind === 'slobodan_dan' ? fromDate : toDate,
-      reason: reason.trim() || undefined,
+      toDate: kind === 'bolovanje' ? undefined : kind === 'slobodan_dan' ? fromDate : toDate,
+      reason: [reason.trim(), nota ? `Prilog: ${nota}` : ''].filter(Boolean).join(' · ') || undefined,
     });
     onClose();
   };
@@ -226,7 +231,34 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
           </div>
         </label>
 
-        {kind === 'slobodan_dan' ? (
+        {kind === 'bolovanje' ? (
+          <div className="mb-3">
+            <label className="block">
+              <div className="mb-1 text-xs font-medium text-ink-600">Prvi dan bolovanja</div>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="w-full border border-paper-200 bg-paper-50 px-3 py-2 text-sm text-ink-800"
+              />
+            </label>
+            <p className="mt-1 text-[11px] text-ink-400">
+              Trajanje se ne unosi — bolovanje ostaje otvoreno dok ljekar ne utvrdi kraj.
+            </p>
+            <button
+              type="button"
+              onClick={() => setNota(nota ? null : 'ljekarsko-uvjerenje.pdf')}
+              className={`mt-2 flex w-full items-center justify-center gap-2 border border-dashed px-3 py-2 text-xs transition ${
+                nota
+                  ? 'border-signal-ok/40 bg-signal-ok/10 text-signal-ok'
+                  : 'border-paper-300 bg-paper-50 text-ink-500 hover:border-brass-500'
+              }`}
+            >
+              <Paperclip className="h-3.5 w-3.5" />
+              {nota ?? 'Priloži ljekarsko uvjerenje'}
+            </button>
+          </div>
+        ) : kind === 'slobodan_dan' ? (
           <label className="mb-3 block">
             <div className="mb-1 text-xs font-medium text-ink-600">Datum</div>
             <input
@@ -281,7 +313,7 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
             {kind === 'ostalo'
               ? 'Ova vrsta zahtjeva će biti dostupna u sljedećoj fazi. Podnošenje je omogućeno kao mockup.'
               : kind === 'bolovanje'
-                ? 'Prijava bolovanja ide šefu smjene odmah; ljekarsko uvjerenje se dostavlja naknadno.'
+                ? 'Bolovanje se prijavljuje odmah i ostaje otvoreno; ljekarsko uvjerenje vidi komandir.'
                 : 'Zahtjev prolazi trostepeni lanac: šef smjene → komandir → načelnik.'}
           </div>
         )}

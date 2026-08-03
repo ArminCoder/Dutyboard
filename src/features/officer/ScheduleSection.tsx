@@ -114,7 +114,7 @@ export function ScheduleSection({ officerId }: { officerId: string }) {
       for (const e of byDate.get(date) ?? []) {
         shifts += 1;
         hours += SHIFT_TIME[e.shift.kind].hours;
-        if (SHIFT_TIME[e.shift.kind].night) night += SHIFT_TIME[e.shift.kind].hours;
+        night += SHIFT_TIME[e.shift.kind].nightHours; // 22:00–06:00, ne cijela smjena
       }
     }
     return { shifts, hours, night, leaveCount };
@@ -211,11 +211,12 @@ export function ScheduleSection({ officerId }: { officerId: string }) {
       {detail ? <DayDetail date={detail.date} entries={detail.entries} leave={detail.leave} officerId={officerId} /> : null}
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-500">
-        <LegendDot className="bg-navy-900" label="dnevna" />
-        <LegendDot className="bg-brass-500" label="noćna" />
-        <LegendDot className="bg-signal-warn/40" label="godišnji / slobodan" />
-        <LegendDot className="bg-paper-300" label="bolovanje" />
-        <LegendDot className="bg-paper-100" label="neraspoređen" />
+        <LegendDot className="bg-navy-400" label="dnevna" />
+        <LegendDot className="bg-navy-900" label="noćna" />
+        <LegendDot className="bg-brass-300" label="godišnji" />
+        <LegendDot className="bg-paper-300" label="slobodan dan" />
+        <LegendDot className="bg-signal-warn-soft" label="bolovanje" />
+        <LegendDot className="bg-paper-50 ring-1 ring-inset ring-paper-200" label="neraspoređen" />
       </div>
 
       {/* Sažetak sati za prikazani mjesec */}
@@ -264,23 +265,28 @@ function DayCell({
   const works = entries.length > 0 && !leave;
   const night = works && entries.some((e) => SHIFT_TIME[e.shift.kind].night);
 
+  // Dnevna = svijetla plava, noćna = tamna plava s mjesecom: smjene se razlikuju
+  // na prvi pogled, a odsustva imaju svoju boju (godišnji ≠ slobodan ≠ bolovanje).
   const tone = leave
     ? leave.kind === 'bolovanje'
-      ? 'bg-paper-300 text-ink-700'
-      : 'bg-signal-warn/20 text-signal-warn'
+      ? 'bg-signal-warn-soft text-signal-warn'
+      : leave.kind === 'godisnji'
+        ? 'bg-brass-300 text-brass-800'
+        : 'bg-paper-300 text-ink-700'
     : night
-      ? 'bg-brass-500 text-navy-900'
+      ? 'bg-navy-900 text-paper-50'
       : works
-        ? 'bg-navy-900 text-paper-50'
-        : 'bg-paper-100 text-ink-500';
+        ? 'bg-navy-400 text-paper-50'
+        : 'bg-paper-50 text-ink-400 ring-1 ring-inset ring-paper-200';
 
   return (
     <div
       className={`relative flex h-9 w-full items-center justify-center text-xs font-medium transition ${tone} ${
         selected ? 'ring-2 ring-brass-600' : ''
-      } ${isToday && !selected ? 'ring-1 ring-ink-400' : ''}`}
+      } ${isToday && !selected ? 'ring-1 ring-ink-500' : ''}`}
     >
       {date.slice(-2)}
+      {night ? <Moon className="absolute left-0.5 top-0.5 h-2.5 w-2.5 opacity-70" /> : null}
       {works && entries.length > 1 ? (
         <span className="absolute right-0.5 top-0.5 text-[8px] opacity-80">2</span>
       ) : null}

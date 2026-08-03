@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Calendar, Check, Wrench, ChevronRight } from 'lucide-react';
+import { Calendar, Check, Wrench, ChevronRight, Download } from 'lucide-react';
 import { world } from '../../data/world';
 import { isCurrentPayslip } from '../../data/generator/payslip';
 import { useSoftić } from './useOfficer';
@@ -17,6 +17,7 @@ export function P04Plata() {
     [officer.id],
   );
 
+  const [toast, setToast] = useState<string | null>(null);
   const [selectedYm, setSelectedYm] = useState(slips[0]?.yearMonth ?? '');
   const payslip = slips.find((p) => p.yearMonth === selectedYm) ?? slips[0];
   const jeTekuci = payslip ? isCurrentPayslip(payslip.yearMonth) : false;
@@ -60,7 +61,24 @@ export function P04Plata() {
               </li>
             ))}
           </ul>
+
+          <button
+            onClick={() => {
+              setToast(`Platna lista ${formatMonth(payslip.yearMonth)} pripremljena za preuzimanje.`);
+              setTimeout(() => setToast(null), 3000);
+            }}
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 border border-paper-50/25 px-3 py-2 text-xs font-medium text-paper-50 transition hover:bg-paper-50/10"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Preuzmi platnu listu (PDF)
+          </button>
         </section>
+      ) : null}
+
+      {toast ? (
+        <div className="pointer-events-none fixed bottom-24 left-1/2 z-40 -translate-x-1/2 lg:bottom-6">
+          <div className="rounded-full bg-navy-900 px-4 py-2 text-sm text-paper-50">{toast}</div>
+        </div>
       ) : null}
 
       <section className="border border-paper-200 bg-paper-0 p-4">

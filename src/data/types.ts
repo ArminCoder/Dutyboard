@@ -200,7 +200,10 @@ export type NotificationKind =
   | 'raspored'
   | 'zahtjev'
   | 'sudski_poziv'
-  | 'prekovremeni_ponuda'
+  /** Prekovremeni se NALAŽE (ne nudi) — policajac se obavještava o rasporedu. */
+  | 'prekovremeni_nalog'
+  /** Obuka i gađanje su zakazani za sve u terminu — obavještenje, ne rezervacija. */
+  | 'obuka'
   | 'certifikat_upozorenje'
   | 'info';
 
@@ -219,7 +222,7 @@ export interface Notification {
   /** Poziv na akciju — npr. za sudski poziv "Potvrdi prisustvo". */
   action?: {
     label: string;
-    kind: 'court_confirm' | 'court_log_hours' | 'accept_overtime' | 'open_request';
+    kind: 'court_confirm' | 'court_log_hours' | 'open_request';
     payload?: Record<string, string | number>;
   };
 }

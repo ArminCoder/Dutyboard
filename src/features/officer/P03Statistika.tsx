@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
 import { world } from '../../data/world';
+import { DEMO_TODAY, monthNameBs } from '../../data/generator/dates';
 import { useSoftić } from './useOfficer';
 import { CHART_COLORS, CHART_TOOLTIP, CHART_TOOLTIP_LABEL } from '../../components/chartTheme';
 
@@ -10,13 +11,24 @@ const MONTH_SHORT_BS = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 
 export function P03Statistika() {
   const officer = useSoftić();
 
-  const my = useMemo(
+  const [period, setPeriod] = useState<'mjesec' | 'godina'>('godina');
+
+  const all = useMemo(
     () =>
       world.performance
         .filter((p) => p.officerId === officer.id)
         .sort((a, b) => a.yearMonth.localeCompare(b.yearMonth)),
     [officer.id],
   );
+
+  // Zadnji mjesec s podacima je referentni; godina = zadnjih 12 mjeseci.
+  const my = useMemo(() => (period === 'mjesec' ? all.slice(-1) : all.slice(-12)), [all, period]);
+  const periodLabel = useMemo(() => {
+    const ym = all[all.length - 1]?.yearMonth ?? DEMO_TODAY.slice(0, 7);
+    return period === 'mjesec'
+      ? `${monthNameBs(Number(ym.slice(5, 7)) - 1)} ${ym.slice(0, 4)}.`
+      : 'Posljednjih 12 mjeseci';
+  }, [all, period]);
 
   const totals = useMemo(() => {
     const acc = { hapsenja: 0, prekrsajni: 0, intervencije: 0, redovni: 0, nocni: 0, prekovremeni: 0, sud: 0 };
@@ -34,7 +46,7 @@ export function P03Statistika() {
 
   const chartData = useMemo(
     () =>
-      my.map((p) => {
+      all.slice(-12).map((p) => {
         const monthIdx = Number(p.yearMonth.slice(-2)) - 1;
         return {
           label: MONTH_SHORT_BS[monthIdx],
@@ -43,16 +55,31 @@ export function P03Statistika() {
           prekrsajni: p.prekrsajni,
         };
       }),
-    [my],
+    [all],
   );
 
-  const trend = trendFor(my.map((p) => p.intervencije));
+  const trend = trendFor(all.slice(-12).map((p) => p.intervencije));
 
   return (
     <div className="space-y-4 p-4">
-      <div>
-        <div className="text-xs uppercase tracking-wider text-ink-400">Posljednjih 12 mjeseci</div>
-        <h1 className="mt-0.5 text-xl font-heading font-medium text-ink-800">Moja statistika</h1>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="text-xs uppercase tracking-wider text-ink-400">{periodLabel}</div>
+          <h1 className="mt-0.5 text-xl font-heading font-medium text-ink-800">Moja statistika</h1>
+        </div>
+        <div className="flex gap-1 bg-paper-100 p-1">
+          {(['mjesec', 'godina'] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-2.5 py-1 text-xs font-medium capitalize transition ${
+                period === p ? 'bg-paper-0 text-ink-800' : 'text-ink-500 hover:text-ink-800'
+              }`}
+            >
+              {p === 'mjesec' ? 'Mjesec' : 'Godina'}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -63,9 +90,10 @@ export function P03Statistika() {
 
       <section className=" bg-paper-0 p-4 border border-paper-200">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-heading font-medium text-ink-800">Aktivnost po mjesecima</h2>
+          <h2 className="text-sm font-heading font-medium text-ink-800">Aktivnost po mjesecima (12 mj.)</h2>
           <div className="flex items-center gap-3 text-[10px] text-ink-500">
             <LegendDot color="bg-navy-900" label="intervencije" />
+            <LegendDot color="bg-brass-500" label="prekršajni" />
             <LegendDot color="bg-ink-400" label="hapšenja" />
           </div>
         </div>
@@ -81,6 +109,7 @@ export function P03Statistika() {
                 labelStyle={CHART_TOOLTIP_LABEL}
               />
               <Bar dataKey="intervencije" fill={CHART_COLORS.primary} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="prekrsajni" fill={CHART_COLORS.secondary} radius={[4, 4, 0, 0]} />
               <Bar dataKey="hapsenja" fill={CHART_COLORS.axis} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -88,7 +117,9 @@ export function P03Statistika() {
       </section>
 
       <section className=" bg-paper-0 p-4 border border-paper-200">
-        <h2 className="mb-3 text-sm font-heading font-medium text-ink-800">Sati (godišnje)</h2>
+        <h2 className="mb-3 text-sm font-heading font-medium text-ink-800">
+          Sati ({period === 'mjesec' ? 'mjesečno' : 'godišnje'})
+        </h2>
         <ul className="divide-y divide-paper-200">
           <HoursRow label="Redovni rad" value={totals.redovni} />
           <HoursRow label="Noćni rad" value={totals.nocni} />

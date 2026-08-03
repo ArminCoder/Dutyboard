@@ -19,11 +19,11 @@ export function K03Odobrenja() {
   const my = useMemo(() => {
     return store.leaveRequests
       .filter((r) => r.officerId !== null)
-      .filter((r) => (filter === 'ceka' ? currentStep(r)?.role === 'sefSmjene' && currentStep(r)?.status === 'ceka' : true))
+      .filter((r) => (filter === 'ceka' ? currentStep(r)?.role === 'komandir' && currentStep(r)?.status === 'ceka' : true))
       .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
   }, [store.leaveRequests, filter]);
 
-  const waiting = store.leaveRequests.filter((r) => currentStep(r)?.role === 'sefSmjene' && currentStep(r)?.status === 'ceka').length;
+  const waiting = store.leaveRequests.filter((r) => currentStep(r)?.role === 'komandir' && currentStep(r)?.status === 'ceka').length;
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-6">
@@ -73,7 +73,7 @@ function RequestRow({ req }: { req: LeaveRequest }) {
   const [expanded, setExpanded] = useState(false);
   const officer = world.officers.find((o) => o.id === req.officerId);
   const step = currentStep(req);
-  const canAct = step?.role === 'sefSmjene' && step.status === 'ceka';
+  const canAct = step?.role === 'komandir' && step.status === 'ceka';
 
   const range =
     req.fromDate && req.toDate
@@ -137,7 +137,7 @@ function RequestRow({ req }: { req: LeaveRequest }) {
                 Odobri
               </button>
               <button
-                onClick={() => store.advanceApproval(req.id, 'odbijeno', 'Odbačeno na razini šefa smjene.')}
+                onClick={() => store.advanceApproval(req.id, 'odbijeno', 'Odbačeno na razini komandira stanice.')}
                 className="inline-flex items-center gap-1.5  border border-paper-200 bg-paper-0 px-4 py-2 text-sm text-ink-700 transition hover:border-signal-alarm hover:text-signal-alarm"
               >
                 <XCircle className="h-4 w-4" />

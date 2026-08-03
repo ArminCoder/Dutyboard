@@ -8,9 +8,11 @@ import { P02Zahtjevi } from '../features/officer/P02Zahtjevi';
 import { P04Plata } from '../features/officer/P04Plata';
 import { P05Zaduzenja } from '../features/officer/P05Zaduzenja';
 import { ShiftCommanderShell } from '../features/shiftCommander/ShiftCommanderShell';
-import { K01Raspored } from '../features/shiftCommander/K01Raspored';
 import { K02Aktivna } from '../features/shiftCommander/K02Aktivna';
-import { K03Odobrenja } from '../features/shiftCommander/K03Odobrenja';
+import { K03Odobrenja } from '../features/precinctCommander/K03Odobrenja';
+import { K01Raspored } from '../features/precinctCommander/K01Raspored';
+import { K06MojaSmjena } from '../features/shiftCommander/K06MojaSmjena';
+import { K07Bilten } from '../features/shiftCommander/K07Bilten';
 import { ChiefShell } from '../components/ChiefShell';
 import { MinisterShell } from '../features/minister/MinisterShell';
 import { KomesarShell } from '../features/commissioner/KomesarShell';
@@ -24,7 +26,7 @@ import type { AccessRole } from '../data/types';
 
 // Code-splitting: Recharts i Leaflet heavy chunks se učitavaju lazy.
 const P03Statistika = lazy(() => import('../features/officer/P03Statistika').then((m) => ({ default: m.P03Statistika })));
-const K03Prekovremeni = lazy(() => import('../features/shiftCommander/K03Prekovremeni').then((m) => ({ default: m.K03Prekovremeni })));
+const K03Prekovremeni = lazy(() => import('../features/precinctCommander/K03Prekovremeni').then((m) => ({ default: m.K03Prekovremeni })));
 const N02Analitika = lazy(() => import('../features/chief/N02Analitika').then((m) => ({ default: m.N02Analitika })));
 const N03Kadar = lazy(() => import('../features/chief/N03Kadar').then((m) => ({ default: m.N03Kadar })));
 const C01Operativni = lazy(() => import('../features/commissioner/C01Operativni').then((m) => ({ default: m.C01Operativni })));
@@ -89,23 +91,25 @@ export function AppRoutes() {
             </RequireRole>
           }
         >
-          <Route index element={<K01Raspored />} />
+          <Route index element={<K06MojaSmjena />} />
           <Route path="aktivna" element={<K02Aktivna />} />
           <Route path="knjiga" element={<KddBook canWrite />} />
           <Route path="mapa" element={<K05Mapa />} />
-          <Route path="odobrenja" element={<K03Odobrenja />} />
-          <Route path="prekovremeni" element={<K03Prekovremeni />} />
+          <Route path="bilten" element={<K07Bilten />} />
         </Route>
 
         <Route
           path="/komandir"
           element={
             <RequireRole roles={['komandir']}>
-              <ChiefShell basePath="/komandir" roleTitle="Komandir PS" showN05={false} />
+              <ChiefShell basePath="/komandir" roleTitle="Komandir PS" showN05={false} showCommandTools />
             </RequireRole>
           }
         >
           <Route index element={<N01Komandna />} />
+          <Route path="raspored" element={<K01Raspored />} />
+          <Route path="odobrenja" element={<K03Odobrenja />} />
+          <Route path="prekovremeni" element={<K03Prekovremeni />} />
           <Route path="knjiga" element={<KddBook />} />
           <Route path="analitika" element={<N02Analitika />} />
           <Route path="kadar" element={<N03Kadar />} />

@@ -2,7 +2,7 @@
 // fast-refresh rule is a false positive since the hook depends on this context.
 /* oxlint-disable react/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { Bilten, CourtSummons, KddEntry, LeaveRequest, Notification } from '../data/types';
+import type { ApprovalStep, Bilten, CourtSummons, KddEntry, LeaveRequest, Notification } from '../data/types';
 import { world } from '../data/world';
 import { DEMO_TODAY, addDays, demoNow } from '../data/generator/dates';
 
@@ -81,6 +81,19 @@ export interface DraftLeaveRequest {
 }
 
 const StoreCtx = createContext<Store | null>(null);
+
+const KOMANDIR_NAME = 'Adnan Softić';
+const NACELNIK_NAME = 'Samir Begić';
+
+/** Lanac odobravanja po vrsti zahtjeva.
+ *  Slobodan dan i bolovanje rješava komandir stanice; godišnji ide i na načelnika PU. */
+function chainFor(kind: LeaveRequest['kind']): ApprovalStep[] {
+  const komandir: ApprovalStep = { role: 'komandir', approverName: KOMANDIR_NAME, status: 'ceka' };
+  if (kind === 'godisnji' || kind === 'ostalo') {
+    return [komandir, { role: 'nacelnik', approverName: NACELNIK_NAME, status: 'ceka' }];
+  }
+  return [komandir];
+}
 
 function seedNotifications(): Notification[] {
   const nowIso = `${DEMO_TODAY}T08:15`;
@@ -176,8 +189,8 @@ function seedLeaveRequests(): LeaveRequest[] {
       status: 'odobren',
       approvalChain: [
         {
-          role: 'sefSmjene',
-          approverName: 'Damir Kovač',
+          role: 'komandir',
+          approverName: KOMANDIR_NAME,
           status: 'odobreno',
           resolvedAt: `${addDays(DEMO_TODAY, -3)}T14:05`,
         },
@@ -193,14 +206,8 @@ function seedLeaveRequests(): LeaveRequest[] {
       reason: 'Ljetni odmor',
       status: 'u_toku',
       approvalChain: [
-        {
-          role: 'sefSmjene',
-          approverName: 'Damir Kovač',
-          status: 'odobreno',
-          resolvedAt: `${addDays(DEMO_TODAY, -1)}T15:10`,
-        },
-        { role: 'komandir', approverName: 'Adnan Softić', status: 'ceka' },
-        { role: 'nacelnik', approverName: 'Samir Begić', status: 'ceka' },
+        { role: 'komandir', approverName: KOMANDIR_NAME, status: 'ceka' },
+        { role: 'nacelnik', approverName: NACELNIK_NAME, status: 'ceka' },
       ],
     },
     {
@@ -215,8 +222,8 @@ function seedLeaveRequests(): LeaveRequest[] {
       status: 'odobren',
       approvalChain: [
         {
-          role: 'sefSmjene',
-          approverName: 'Damir Kovač',
+          role: 'komandir',
+          approverName: KOMANDIR_NAME,
           status: 'odobreno',
           resolvedAt: `${addDays(DEMO_TODAY, -12)}T08:10`,
         },
@@ -401,14 +408,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       toDate: draft.toDate,
       reason: draft.reason,
       status: 'u_toku',
-      approvalChain:
-        draft.kind === 'slobodan_dan'
-          ? [{ role: 'sefSmjene', approverName: 'Damir Kovač', status: 'ceka' }]
-          : [
-              { role: 'sefSmjene', approverName: 'Damir Kovač', status: 'ceka' },
-              { role: 'komandir', approverName: 'Adnan Softić', status: 'ceka' },
-              { role: 'nacelnik', approverName: 'Samir Begić', status: 'ceka' },
-            ],
+      // Odobrava komandir stanice, ne šef smjene — šef smjene vodi smjenu na terenu.
+      // Godišnji ide i na načelnika PU; bolovanje se samo evidentira kod komandira.
+      approvalChain: chainFor(draft.kind),
     };
     setLeaveRequests((prev) => [req, ...prev]);
     return req;

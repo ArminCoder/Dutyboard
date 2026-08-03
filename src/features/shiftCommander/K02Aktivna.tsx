@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Radio, MapPin, AlertTriangle, X, UserMinus, UserPlus, Coffee, Siren, Send } from 'lucide-react';
+import { Radio, MapPin, AlertTriangle, X, UserMinus, UserPlus, Coffee, Siren } from 'lucide-react';
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { useStore, type ActivePatrolCard } from '../../app/store';
 import { checkEligibility } from '../../domain/eligibility';
@@ -10,7 +10,6 @@ export function K02Aktivna() {
   const store = useStore();
   const [reassigning, setReassigning] = useState<ActivePatrolCard | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [closing, setClosing] = useState(false);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-6">
@@ -20,13 +19,6 @@ export function K02Aktivna() {
           <h1 className="mt-0.5 text-lg font-heading font-medium text-ink-800">PS Centar — trenutno na terenu</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setClosing(true)}
-            className="inline-flex items-center gap-2 border border-paper-300 bg-paper-0 px-3 py-1.5 text-sm text-ink-700 transition hover:border-brass-500 hover:text-navy-900"
-          >
-            <Send className="h-3.5 w-3.5" />
-            Zaključi smjenu
-          </button>
           <div className="flex items-center gap-2 rounded-full bg-signal-ok/15 px-3 py-1 text-xs font-medium text-signal-ok">
             <span className="h-2 w-2 rounded-full bg-signal-ok animate-pulse" />
             live
@@ -84,17 +76,6 @@ export function K02Aktivna() {
         />
       )}
 
-      {closing && (
-        <CloseShiftDialog
-          onClose={() => setClosing(false)}
-          onDone={() => {
-            setClosing(false);
-            setToast('Bilten poslan OKC-u. Zapis u dnevniku smjene.');
-            setTimeout(() => setToast(null), 3000);
-          }}
-        />
-      )}
-
       {toast && (
         <div className="pointer-events-none fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
           <div className="rounded-full bg-navy-900 px-4 py-2 text-sm text-paper-50 ">{toast}</div>
@@ -104,93 +85,6 @@ export function K02Aktivna() {
   );
 }
 
-/** Zaključenje smjene — brojevi se predlažu iz knjige događaja, šef ih može korigovati. */
-function CloseShiftDialog({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
-  const store = useStore();
-  const PS_ID = 'ps-centar';
-
-  const auto = useMemo(() => {
-    const mine = store.kddEntries.filter((e) => e.psId === PS_ID && e.when.startsWith(DEMO_TODAY));
-    return {
-      intervencije: mine.filter((e) => e.type === 'intervencija').length,
-      dogadjaji: mine.filter((e) => e.type !== 'intervencija').length,
-    };
-  }, [store.kddEntries]);
-
-  const [dogadjaji, setDogadjaji] = useState(auto.dogadjaji);
-  const [intervencije, setIntervencije] = useState(auto.intervencije);
-  const [nalozi, setNalozi] = useState(6);
-  const [note, setNote] = useState('');
-
-  const submit = () => {
-    store.submitBilten({
-      psId: PS_ID,
-      shiftDate: DEMO_TODAY,
-      shiftKind: 'II',
-      counts: { dogadjaji, intervencije, prekrsajniNalozi: nalozi },
-      note: note.trim() || undefined,
-      submittedBy: 'Damir Kovač',
-    });
-    onDone();
-  };
-
-  return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-md bg-paper-0 p-5">
-        <div className="mb-1 flex items-center justify-between">
-          <h3 className="font-heading text-lg text-ink-800">Zaključenje smjene</h3>
-          <button onClick={onClose} aria-label="Zatvori">
-            <X className="h-4 w-4 text-ink-500 hover:text-ink-800" />
-          </button>
-        </div>
-        <p className="mb-4 text-xs text-ink-500">
-          Brojevi su predloženi iz knjige događaja. Provjeri i pošalji bilten OKC-u.
-        </p>
-
-        <div className="mb-4 grid grid-cols-3 gap-2">
-          <NumField label="Događaji" value={dogadjaji} onChange={setDogadjaji} />
-          <NumField label="Intervencije" value={intervencije} onChange={setIntervencije} />
-          <NumField label="Nalozi" value={nalozi} onChange={setNalozi} />
-        </div>
-
-        <label className="mb-4 block">
-          <span className="mb-1 block text-xs font-medium text-ink-600">Napomena (opcionalno)</span>
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={2}
-            placeholder="Npr. bez težih incidenata."
-            className="w-full resize-none border border-paper-200 bg-paper-50 px-3 py-2 text-sm text-ink-800"
-          />
-        </label>
-
-        <div className="flex items-center justify-end gap-2">
-          <button onClick={onClose} className="px-3 py-2 text-sm text-ink-600 hover:bg-paper-100">
-            Odustani
-          </button>
-          <button onClick={submit} className="bg-navy-900 px-3 py-2 text-sm text-paper-50 transition hover:bg-navy-800">
-            Pošalji bilten
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function NumField({ label, value, onChange }: { label: string; value: number; onChange: (n: number) => void }) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-[11px] font-medium text-ink-600">{label}</span>
-      <input
-        type="number"
-        min={0}
-        value={value}
-        onChange={(e) => onChange(Math.max(0, Number(e.target.value)))}
-        className="w-full border border-paper-200 bg-paper-50 px-2 py-1.5 text-center font-mono text-sm text-ink-800"
-      />
-    </label>
-  );
-}
 
 function PatrolCard({
   patrol,

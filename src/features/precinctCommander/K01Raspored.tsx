@@ -129,7 +129,7 @@ export function K01Raspored() {
               <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
                 <div className="text-sm font-medium text-ink-700">Raspored za ovaj mjesec nije generisan u demou</div>
                 <div className="mt-1 max-w-md text-xs text-ink-500">
-                  U produkciji šef smjene koristi Šablon sedmice ili ručno popunjava. Za demo je pun raspored generisan samo za avgust 2026.
+                  U produkciji komandir koristi Šablon sedmice ili ručno popunjava. Za demo je pun raspored generisan samo za avgust 2026.
                 </div>
               </div>
             ) : null}
@@ -365,7 +365,7 @@ function SlotDrawer({
 
           <div className="mt-6 flex items-start gap-2 border border-paper-200 bg-paper-100 p-3 text-[11px] text-ink-600">
             <Info className="mt-0.5 h-3.5 w-3.5 flex-none" />
-            Sistem prijavljuje razlog za svakog nedostupnog. U produkciji klik „Rasporedi" gura oficira u slot i logira u dnevnik smjene.
+            Sistem prijavljuje razlog za svakog nedostupnog. U produkciji klik „Rasporedi" gura oficira u slot i logira izmjenu rasporeda.
           </div>
         </div>
       </aside>

@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, HeartHandshake, Truck, Sliders, BookOpen } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, HeartHandshake, Truck, Sliders, BookOpen, CalendarRange, Inbox, Timer } from 'lucide-react';
 import { SidebarShell, type ShellNavItem } from './SidebarShell';
 
 interface Props {
@@ -6,11 +6,20 @@ interface Props {
   roleTitle: string;
   /** Katalog operativnih uloga je na nivou PU — komandir stanice ga nema. */
   showN05?: boolean;
+  /** Komandir stanice vodi raspored, odobrenja i prekovremeni; načelnik ne. */
+  showCommandTools?: boolean;
 }
 
-export function ChiefShell({ basePath, roleTitle, showN05 = true }: Props) {
+export function ChiefShell({ basePath, roleTitle, showN05 = true, showCommandTools = false }: Props) {
   const nav: ShellNavItem[] = [
     { to: basePath, end: true, label: 'Komandna tabla', icon: LayoutDashboard, badge: 'N01' },
+    ...(showCommandTools
+      ? [
+          { to: `${basePath}/raspored`, label: 'Mjesečni raspored', icon: CalendarRange, badge: 'K01' },
+          { to: `${basePath}/odobrenja`, label: 'Odobrenja', icon: Inbox, badge: 'K03' },
+          { to: `${basePath}/prekovremeni`, label: 'Prekovremeni', icon: Timer, badge: 'K03' },
+        ]
+      : []),
     { to: `${basePath}/knjiga`, label: 'Knjiga događaja', icon: BookOpen, badge: 'KDD' },
     { to: `${basePath}/analitika`, label: 'Analitika učinka', icon: TrendingUp, badge: 'N02' },
     { to: `${basePath}/kadar`, label: 'Briga o kadru', icon: HeartHandshake, badge: 'N03' },

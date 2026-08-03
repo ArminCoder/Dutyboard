@@ -18,8 +18,11 @@ doc — read it and [docs/STATUS.md](docs/STATUS.md) first when picking up work.
 4. **Red is reserved for alarms only** (NEPOTPUNA patrol, expired certs, below-minimum shift).
    Don't use red for ordinary UI accents, or alarms stop feeling like alarms.
 5. **In-session mutations live in memory and reset on reload** — this is intentional and desirable
-   for a demo. All of it is in [src/app/store.tsx](src/app/store.tsx).
-6. **Don't invent modules beyond the spec.** Polish beats surface area. "What NOT to build" section
+   for a demo. All of it is in [src/app/store.tsx](src/app/store.tsx). Role switching uses router
+   navigation (not `window.location`) so cross-role flows survive a role change.
+6. **Nadležnosti su stvarne:** šef smjene vodi smjenu (aktivna smjena, knjiga, bilten); **komandir PS**
+   pravi raspored i odobrava zahtjeve/prekovremeni; načelnik je na nivou PU. Ne miješati.
+7. **Don't invent modules beyond the spec.** Polish beats surface area. "What NOT to build" section
    of the spec is binding: no real auth/DB/integrations, responsive web only.
 
 ## Stack (fixed — do not substitute)
@@ -57,7 +60,9 @@ src/app/
 src/features/
   gate/ rolePicker/        E00a, E00
   officer/                 P01–P05   (mobile-first)
-  shiftCommander/          K01–K03   (desktop-first)
+  shiftCommander/          K02, K04–K07 — vodi smjenu na terenu (NE pravi raspored)
+  precinctCommander/       K01 raspored, K03 odobrenja/prekovremeni — komandir PS
+  kdd/                     Knjiga dnevnih događaja (piše šef smjene, čitaju nadređeni)
   dispatch/                D01 map
   chief/                   N01–N05
   commissioner/ minister/  C01, M01

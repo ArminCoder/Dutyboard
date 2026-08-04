@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, HeartHandshake, Truck, Sliders, BookOpen, CalendarRange, Inbox, Timer } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, HeartHandshake, Truck, Sliders, BookOpen, CalendarRange, Inbox, Timer, Users, Crosshair } from 'lucide-react';
 import { SidebarShell, type ShellNavItem } from './SidebarShell';
 
 interface Props {
@@ -15,15 +15,17 @@ export function ChiefShell({ basePath, roleTitle, showN05 = true, showCommandToo
     { to: basePath, end: true, label: 'Komandna tabla', icon: LayoutDashboard, badge: 'N01' },
     ...(showCommandTools
       ? [
+          { to: `${basePath}/ljudstvo`, label: 'Ljudstvo', icon: Users, badge: 'PC1' },
           { to: `${basePath}/raspored`, label: 'Mjesečni raspored', icon: CalendarRange, badge: 'K01' },
           { to: `${basePath}/odobrenja`, label: 'Odobrenja', icon: Inbox, badge: 'K03' },
           { to: `${basePath}/prekovremeni`, label: 'Prekovremeni', icon: Timer, badge: 'K03' },
+          { to: `${basePath}/oprema`, label: 'Naoružanje i oprema', icon: Crosshair, badge: 'PC2' },
         ]
       : []),
     { to: `${basePath}/knjiga`, label: 'Knjiga događaja', icon: BookOpen, badge: 'KDD' },
     { to: `${basePath}/analitika`, label: 'Analitika učinka', icon: TrendingUp, badge: 'N02' },
     { to: `${basePath}/kadar`, label: 'Briga o kadru', icon: HeartHandshake, badge: 'N03' },
-    { to: `${basePath}/oprema`, label: 'Oprema i vozni park', icon: Truck, badge: 'N04' },
+    ...(showCommandTools ? [] : [{ to: `${basePath}/oprema`, label: 'Oprema i vozni park', icon: Truck, badge: 'N04' }]),
     ...(showN05 ? [{ to: `${basePath}/uloge`, label: 'Operativne uloge', icon: Sliders, badge: 'N05' }] : []),
   ];
 

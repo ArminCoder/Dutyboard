@@ -296,6 +296,43 @@ export interface Bilten {
   submittedAt: string;
 }
 
+// --- Izvještaji i službene zabilješke ---
+// Pisanje dokumenata je stvarno opterećenje: policajci ostaju poslije smjene da
+// pišu, pa traže gdje da odštampaju. Ovdje se piše kratak opis, sistem sastavi
+// dokument po obrascu, a štampa se naručuje u stanici.
+
+export type ReportKind = 'sluzbena_zabiljeska' | 'izvjestaj' | 'prekrsajna_prijava';
+export type ReportStatus = 'nacrt' | 'predan' | 'za_stampu' | 'odstampan';
+
+export const REPORT_KIND_LABEL: Record<ReportKind, string> = {
+  sluzbena_zabiljeska: 'Službena zabilješka',
+  izvjestaj: 'Izvještaj',
+  prekrsajna_prijava: 'Prekršajna prijava',
+};
+
+export const REPORT_STATUS_LABEL: Record<ReportStatus, string> = {
+  nacrt: 'Nacrt',
+  predan: 'Predan',
+  za_stampu: 'Za štampu',
+  odstampan: 'Odštampan',
+};
+
+export interface PoliceReport {
+  id: string;
+  officerId: string;
+  psId: string;
+  kind: ReportKind;
+  /** Kratak opis koji policajac unese — osnova za sastavljanje dokumenta. */
+  summary: string;
+  /** Sastavljen tekst dokumenta (obrazac + opis). Policajac ga može doraditi. */
+  body: string;
+  status: ReportStatus;
+  createdAt: string;
+  submittedAt?: string;
+  /** Vezani upis iz knjige događaja, ako je dokument nastao iz događaja. */
+  kddEntryId?: string;
+}
+
 export type CourtSummonsStatus = 'nepotvrdjen' | 'potvrdjen' | 'evidentirano';
 
 export interface CourtSummons {

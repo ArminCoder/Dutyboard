@@ -2,7 +2,7 @@
 // fast-refresh rule is a false positive since the hook depends on this context.
 /* oxlint-disable react/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { ApprovalStep, Bilten, CourtSummons, KddEntry, KddRevision, LeaveRequest, Notification } from '../data/types';
+import type { ApprovalStep, Bilten, CourtSummons, KddEntry, KddRevision, LeaveRequest, Notification, PoliceReport, ReportStatus } from '../data/types';
 import { world } from '../data/world';
 import { DEMO_TODAY, addDays, demoNow } from '../data/generator/dates';
 
@@ -73,7 +73,17 @@ interface Store {
 
   biltens: Bilten[];
   submitBilten: (input: Omit<Bilten, 'id' | 'submittedAt'>) => Bilten;
+
+  reports: PoliceReport[];
+  saveReport: (input: ReportDraft) => PoliceReport;
+  setReportStatus: (id: string, status: ReportStatus) => void;
 }
+
+/** Novi ili izmijenjen dokument; bez `id` je novi. */
+export type ReportDraft = Omit<PoliceReport, 'id' | 'createdAt' | 'status'> & {
+  id?: string;
+  status?: ReportStatus;
+};
 
 /** Novi upis u knjigu — vrijeme se popunjava demo satom ako nije zadano. */
 export type KddDraft = Omit<KddEntry, 'id' | 'when'> & { when?: string };
@@ -333,6 +343,34 @@ function seedBiltens(): Bilten[] {
   return rows.map((r, i) => ({ ...r, id: `bilten-seed-${i + 1}` }));
 }
 
+/** Dva ranija dokumenta — da ekran nije prazan i da komandir ima šta vidjeti. */
+function seedReports(): PoliceReport[] {
+  return [
+    {
+      id: 'rep-seed-1',
+      officerId: 'off-0001',
+      psId: 'ps-centar',
+      kind: 'sluzbena_zabiljeska',
+      summary: 'Zatečeno oštećenje stakla na izlogu, vlasnik obaviješten telefonom.',
+      body: 'Sačinjena službena zabilješka o oštećenju izloga u ul. Ferhadija.',
+      status: 'odstampan',
+      createdAt: `${addDays(DEMO_TODAY, -6)}T21:10`,
+      submittedAt: `${addDays(DEMO_TODAY, -6)}T22:05`,
+    },
+    {
+      id: 'rep-seed-2',
+      officerId: 'off-0001',
+      psId: 'ps-centar',
+      kind: 'prekrsajna_prijava',
+      summary: 'Vozač zatečen bez vozačke dozvole tokom kontrole saobraćaja.',
+      body: 'Podnesena prekršajna prijava zbog upravljanja vozilom bez dozvole.',
+      status: 'predan',
+      createdAt: `${addDays(DEMO_TODAY, -2)}T23:40`,
+      submittedAt: `${addDays(DEMO_TODAY, -2)}T23:55`,
+    },
+  ];
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>(() => seedNotifications());
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => seedLeaveRequests());
@@ -344,6 +382,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     { id: 'log-init-2', when: `${DEMO_TODAY}T19:05`, who: 'Sistem', event: 'Sve patrole na terenu.' },
   ]);
   const [kddEntries, setKddEntries] = useState<KddEntry[]>(() => seedKdd());
+  const [reports, setReports] = useState<PoliceReport[]>(() => seedReports());
   const [biltens, setBiltens] = useState<Bilten[]>(() => seedBiltens());
 
   const markNotificationRead = useCallback((id: string) => {
@@ -560,6 +599,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [appendLog],
   );
 
+  const saveReport = useCallback((input: ReportDraft): PoliceReport => {
+    let saved!: PoliceReport;
+    setReports((prev) => {
+      if (input.id) {
+        return prev.map((r) => {
+          if (r.id !== input.id) return r;
+          saved = { ...r, ...input, id: r.id };
+          return saved;
+        });
+      }
+      saved = {
+        ...input,
+        id: `rep-${Date.now()}`,
+        status: input.status ?? 'nacrt',
+        createdAt: demoNow(),
+      } as PoliceReport;
+      return [saved, ...prev];
+    });
+    return saved;
+  }, []);
+
+  const setReportStatus = useCallback((id: string, status: ReportStatus) => {
+    setReports((prev) =>
+      prev.map((r) =>
+        r.id === id ? { ...r, status, submittedAt: status === 'predan' ? demoNow() : r.submittedAt } : r,
+      ),
+    );
+  }, []);
+
   /** Status patrole postavlja šef smjene kad mu se patrola javi (pauza ima trajanje). */
   const setPatrolStatus = useCallback(
     (patrolId: string, status: ActivePatrolCard['status'], minutes?: number) => {
@@ -615,6 +683,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateKddEntry,
       biltens,
       submitBilten,
+      reports,
+      saveReport,
+      setReportStatus,
     }),
     [
       kddEntries,
@@ -622,6 +693,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateKddEntry,
       biltens,
       submitBilten,
+      reports,
+      saveReport,
+      setReportStatus,
       notifications,
       leaveRequests,
       courtSummonses,

@@ -138,6 +138,35 @@ Driven by the approved master plan + [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md). P
   budget vs actual, OT-budget utilization with traffic lights (Novi Grad 109% = over budget, red), grouped
   budget-vs-cost chart, and the "OT cost ≈ N salaries" hiring argument tied to the simulator. PDF export.
   **`finance.ts` budgets rescaled** to the ~99-officer demo (were placeholder-large). Browser-verified.
+### Realism pass v3 (police-insider review of the running app)
+
+- ✅ **R2 seed realism** — arrests 151/yr → 7; night work counted 22:00–06:00 (8 h per night shift,
+  ~43 h/month); court a few times a year; *asistencije* dropped; permanent certificates
+  (`Certification.permanent`, optional `expires`); per-officer equipment finally generated.
+- ✅ **R1 officer screens** — calendar day/night/leave tones + matching legend; overtime is an
+  **assignment order**, not an offer; gađanje and permanentna obuka as fixed announcements;
+  open-ended bolovanje + doctor's note; statistics **Mjesec | Godina** (the year view had been
+  summing 24 months); payslip PDF action.
+- ✅ **R3 role responsibilities** — **Raspored, Odobrenja and Prekovremeni moved to the komandir**
+  (`features/precinctCommander/`); approval chains reworked (slobodan dan/bolovanje → komandir,
+  godišnji → komandir → načelnik), otherwise the commander's queue would have been empty. Šef smjene
+  gained read-only **K06 Moja smjena** and **K07 Bilten**.
+- ✅ **R4 active shift** — removal needs confirmation + reason; patrol status is settable
+  (na terenu / intervencija / pauza with live countdown).
+- ✅ **R5 KDD** — personal data allowed; 24 h edit window, after which only the komandir; every edit
+  appends an immutable revision trail.
+- ✅ **R6 patrols** — headcount raised to a real station (72/PS, 308 total, 18 per shift group);
+  roster composition = 3 auto + interventna + straža + 2 pješačke + sektori (19 tonight), generated
+  for two stations; active patrols derived from the roster (one source of truth); fleet plates made
+  station-local so referenced vehicles exist; 12 sector zones with coverage; budgets rescaled.
+- ✅ **R7 komandir** — PC00 Komandna tabla (headcount, tonight's composition, "Traži pažnju" actions),
+  PC01 Ljudstvo (searchable roster + per-officer detail), PC02 Naoružanje i oprema (issued vs stock,
+  by serial) — the načelnik keeps the aggregate N01.
+- ✅ **R8 izvještaji** — službena zabilješka / izvještaj / prekršajna prijava. Officer writes a short
+  description, the system composes the document from a template (`domain/reportTemplates.ts` — an LLM
+  does this in production), then submits and marks it for printing; PC03 Dokumenti is the commander's
+  inbox and print queue. Drafts stay private until submitted.
+
 ### Domain-feedback wave (v2 plan — police-insider corrections)
 
 - ✅ **WP1 — Officer pack:** P01 gained a **Sedmica | Mjesec** schedule (month calendar with per-day

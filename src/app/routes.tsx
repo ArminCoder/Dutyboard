@@ -41,6 +41,8 @@ const JutarnjiBilten = lazy(() => import('../features/dispatch/JutarnjiBilten').
 const C03Prekovremeni = lazy(() => import('../features/commissioner/C03Prekovremeni').then((m) => ({ default: m.C03Prekovremeni })));
 const C04Spremnost = lazy(() => import('../features/commissioner/C04Spremnost').then((m) => ({ default: m.C04Spremnost })));
 const C05Kadrovi = lazy(() => import('../features/commissioner/C05Kadrovi').then((m) => ({ default: m.C05Kadrovi })));
+const P06Izvjestaji = lazy(() => import('../features/reports/P06Izvjestaji').then((m) => ({ default: m.P06Izvjestaji })));
+const PC03Dokumenti = lazy(() => import('../features/precinctCommander/PC03Dokumenti').then((m) => ({ default: m.PC03Dokumenti })));
 const PC00Tabla = lazy(() => import('../features/precinctCommander/PC00Tabla').then((m) => ({ default: m.PC00Tabla })));
 const PC01Ljudstvo = lazy(() => import('../features/precinctCommander/PC01Ljudstvo').then((m) => ({ default: m.PC01Ljudstvo })));
 const PC02Oprema = lazy(() => import('../features/precinctCommander/PC02Oprema').then((m) => ({ default: m.PC02Oprema })));
@@ -83,6 +85,7 @@ export function AppRoutes() {
           <Route path="zahtjevi" element={<P02Zahtjevi />} />
           <Route path="statistika" element={<P03Statistika />} />
           <Route path="plata" element={<P04Plata />} />
+          <Route path="izvjestaji" element={<P06Izvjestaji />} />
           <Route path="zaduzenja" element={<P05Zaduzenja />} />
         </Route>
 
@@ -115,6 +118,7 @@ export function AppRoutes() {
           <Route path="odobrenja" element={<K03Odobrenja />} />
           <Route path="prekovremeni" element={<K03Prekovremeni />} />
           <Route path="oprema" element={<PC02Oprema />} />
+          <Route path="dokumenti" element={<PC03Dokumenti />} />
           <Route path="knjiga" element={<KddBook />} />
           <Route path="analitika" element={<N02Analitika />} />
           <Route path="kadar" element={<N03Kadar />} />

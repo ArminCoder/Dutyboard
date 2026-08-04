@@ -97,7 +97,9 @@ function assignRoles(
   return roles;
 }
 
-const SMJENSKE_PO_PS = 20; // 4 smjene × 5 ljudi po smjeni ≈ 80 po PS; Novi Grad malo veći
+// Stvarna stanica ima 70-90 policajaca: po smjeni treba ~18 ljudi da se popune
+// 3 auto-patrole, interventna, straža, dvije pješačke i sektorske patrole.
+const SMJENSKE_PO_PS = 72;
 
 export function generateOfficers(
   seed: number,
@@ -247,7 +249,7 @@ export function generateOfficers(
   // Dodaje se NA KRAJU i bez ijednog poziva rand-a, da ne pomjeri ID-eve i
   // raspodjelu svih prethodnih policajaca (seedActivePatrols referencira off-0005…0012).
   officers.push({
-    id: `off-${String(idCounter++).padStart(4, '0')}`,
+    id: 'off-komandir-centar', // fiksan ID — ne ovisi o broju generisanih policajaca
     name: 'Adnan Softić',
     rank: 'inspektor',
     orgNodeId: 'ps-centar',

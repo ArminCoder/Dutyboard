@@ -1,16 +1,17 @@
 // Konstante boja/oznaka žive uz komponentu koja ih jedina koristi.
 /* oxlint-disable react/only-export-components */
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Filter } from 'lucide-react';
 import type { UnitDef } from './routes';
 import { cssVar } from '../../components/chartTheme';
+import { SECTORS } from './sectors';
 
 // Zajednička mapa jedinica — koristi je OKC (cijeli kanton) i šef smjene (svoja stanica).
 
 export type UnitKind = UnitDef['kind'];
-const ALL_KINDS: UnitKind[] = ['auto', 'motocikl', 'pjesacka', 'civilna', 'interventna'];
+const ALL_KINDS: UnitKind[] = ['auto', 'motocikl', 'pjesacka', 'civilna', 'interventna', 'straza'];
 
 export const KIND_LABEL: Record<UnitKind, string> = {
   auto: 'Auto',
@@ -18,6 +19,7 @@ export const KIND_LABEL: Record<UnitKind, string> = {
   pjesacka: 'Pješačka',
   civilna: 'Civilna',
   interventna: 'Interventna',
+  straza: 'Straža',
 };
 
 /** Boje markera prate temu organizacije (čitaju se iz CSS varijabli). */
@@ -28,6 +30,7 @@ export function kindColor(kind: UnitKind): string {
     case 'pjesacka': return cssVar('--color-dark-muted', '#8695b0');
     case 'civilna': return cssVar('--color-paper-400', '#8d9bb4');
     case 'interventna': return cssVar('--color-dark-text', '#e4e9f2');
+    case 'straza': return cssVar('--color-signal-ok', '#3f7f5e');
   }
 }
 
@@ -35,6 +38,8 @@ const SARAJEVO_CENTER: [number, number] = [43.852, 18.395];
 
 function positionOnLine(line: Array<[number, number]>, t: number): [number, number] {
   const n = line.length;
+  // Stalno mjesto (straža) — jedna tačka, nema interpolacije.
+  if (n < 2) return line[0];
   const segments = n - 1;
   const scaled = t * segments;
   const idx = Math.floor(scaled) % segments;
@@ -46,6 +51,8 @@ function positionOnLine(line: Array<[number, number]>, t: number): [number, numb
 
 interface Props {
   units: UnitDef[];
+  /** Prikaži sektore stanice i njihovu pokrivenost u ovoj smjeni. */
+  showSectors?: boolean;
   /** Jedinica koja se ne javlja — crta se narandžasto i uvećano. */
   alertUnitId?: string | null;
   center?: [number, number];
@@ -53,7 +60,7 @@ interface Props {
   heightVh?: number;
 }
 
-export function UnitsMap({ units, alertUnitId, center = SARAJEVO_CENTER, zoom = 12, heightVh = 62 }: Props) {
+export function UnitsMap({ units, alertUnitId, showSectors = false, center = SARAJEVO_CENTER, zoom = 12, heightVh = 62 }: Props) {
   const [now, setNow] = useState(Date.now());
   const [filter, setFilter] = useState<Set<UnitKind>>(new Set(ALL_KINDS));
 
@@ -71,6 +78,30 @@ export function UnitsMap({ units, alertUnitId, center = SARAJEVO_CENTER, zoom = 
     });
   }, [now, units]);
 
+  /** Sektor je pokriven ako je jedinica ISTE stanice raspoređena na njega
+   *  (sektori se numerišu po stanici, pa se ne smiju miješati između stanica). */
+  const coveredSectors = useMemo(() => {
+    const map = new Map<string, Set<number>>();
+    for (const u of units) {
+      const m = /Sektor (\d+)/.exec(u.callSign);
+      if (!m) continue;
+      const set = map.get(u.psId) ?? new Set<number>();
+      set.add(Number(m[1]));
+      map.set(u.psId, set);
+    }
+    return map;
+  }, [units]);
+
+  const coveredCount = useMemo(
+    () => visibleSectorsCount(SECTORS, units, coveredSectors),
+    [units, coveredSectors],
+  );
+
+  const visibleSectors = useMemo(
+    () => (showSectors ? SECTORS.filter((sec) => units.some((u) => u.psId === sec.psId)) : []),
+    [showSectors, units],
+  );
+
   const kindsPresent = useMemo(() => ALL_KINDS.filter((k) => units.some((u) => u.kind === k)), [units]);
 
   const toggle = (k: UnitKind) => {
@@ -87,6 +118,18 @@ export function UnitsMap({ units, alertUnitId, center = SARAJEVO_CENTER, zoom = 
           <Filter className="h-3.5 w-3.5" />
           <span className="section-label text-dark-muted">Prikaz</span>
         </div>
+        {showSectors && visibleSectors.length > 0 ? (
+          <span className="ml-2 flex items-center gap-3 border-l border-dark-border pl-3 text-[11px] text-dark-muted">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 border" style={{ borderColor: cssVar('--color-signal-ok', '#3f7f5e') }} />
+              pokriven sektor
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 border" style={{ borderColor: cssVar('--color-signal-warn', '#a67626') }} />
+              nepokriven ({visibleSectors.length - coveredCount})
+            </span>
+          </span>
+        ) : null}
         {kindsPresent.map((k) => (
           <button
             key={k}
@@ -114,6 +157,27 @@ export function UnitsMap({ units, alertUnitId, center = SARAJEVO_CENTER, zoom = 
             attribution="&copy; OpenStreetMap contributors &copy; CARTO"
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
           />
+
+          {visibleSectors.map((sec) => {
+            const covered = coveredSectors.get(sec.psId)?.has(sec.id) ?? false;
+            const color = covered ? cssVar('--color-signal-ok', '#3f7f5e') : cssVar('--color-signal-warn', '#a67626');
+            return (
+              <Polygon
+                key={`sector-${sec.id}`}
+                positions={sec.polygon}
+                pathOptions={{ color, weight: 1, opacity: covered ? 0.5 : 0.7, fillOpacity: covered ? 0.06 : 0.14 }}
+              >
+                <Popup>
+                  <div className="text-xs">
+                    <div className="font-semibold">{sec.name}</div>
+                    <div className="mt-0.5 text-gray-600">
+                      {covered ? 'Pokriven u ovoj smjeni' : 'Nije pokriven u ovoj smjeni'}
+                    </div>
+                  </div>
+                </Popup>
+              </Polygon>
+            );
+          })}
 
           {positions.map(({ unit, pos }) => {
             if (!filter.has(unit.kind)) return null;
@@ -145,4 +209,14 @@ export function UnitsMap({ units, alertUnitId, center = SARAJEVO_CENTER, zoom = 
       </div>
     </div>
   );
+}
+
+
+/** Broj pokrivenih sektora među onima koji su vidljivi u trenutnom scope-u. */
+function visibleSectorsCount(
+  all: typeof SECTORS,
+  units: UnitDef[],
+  covered: Map<string, Set<number>>,
+): number {
+  return all.filter((sec) => units.some((u) => u.psId === sec.psId) && covered.get(sec.psId)?.has(sec.id)).length;
 }

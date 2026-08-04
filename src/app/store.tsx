@@ -257,46 +257,26 @@ function seedOvertimePostings(): OvertimePosting[] {
 }
 
 function seedActivePatrols(): ActivePatrolCard[] {
-  return [
-    {
-      id: 'patrol-auto-2-1',
-      callSign: 'Auto-patrola 2-1 · Interventna',
-      vehiclePlate: 'A-311-K-121',
-      officers: ['off-0001', 'off-0005'],
-      status: 'na_terenu',
-      location: 'Ferhadija',
-    },
-    {
-      id: 'patrol-auto-2-2',
-      callSign: 'Auto-patrola 2-2',
-      vehiclePlate: 'A-311-K-122',
-      officers: ['off-0006', 'off-0007'],
-      status: 'pauza',
-      location: 'PS Centar',
-    },
-    {
-      id: 'patrol-moto-4-1',
-      callSign: 'Moto 4-1',
-      vehiclePlate: 'A-311-M-104',
-      officers: ['off-0008'],
-      status: 'na_terenu',
-      location: 'Marijin dvor',
-    },
-    {
-      id: 'patrol-pjes-1-1',
-      callSign: 'Pješačka 1-1',
-      officers: ['off-0009', 'off-0010'],
-      status: 'intervencija',
-      location: 'Titova',
-    },
-    {
-      id: 'patrol-pjes-1-2',
-      callSign: 'Pješačka 1-2',
-      officers: ['off-0011', 'off-0012'],
-      status: 'na_terenu',
-      location: 'Baščaršija',
-    },
-  ];
+  // Izvedeno iz stvarnog rasporeda (tekuća noćna smjena PS Centar) — jedan izvor
+  // istine: raspored, kartice aktivne smjene i mapa prikazuju iste patrole.
+  const shift = world.shifts.find(
+    (s) => s.psId === 'ps-centar' && s.date === DEMO_TODAY && s.kind === 'II',
+  );
+  if (!shift) return [];
+
+  const LOCATIONS = ['Ferhadija', 'Titova', 'Marijin dvor', 'Baščaršija', 'Skenderija', 'Koševo', 'Mejtaš', 'Bistrik'];
+
+  return shift.slots
+    .filter((sl) => sl.assignedOfficerIds.length > 0)
+    .map((sl, i) => ({
+      id: `patrol-${sl.id}`,
+      callSign: sl.callSign ?? 'Patrola',
+      vehiclePlate: sl.vehiclePlate,
+      officers: sl.assignedOfficerIds,
+      // Straža je na fiksnom mjestu; ostale patrole su na terenu.
+      status: sl.callSign === 'Straža PS' ? ('na_terenu' as const) : i === 1 ? ('pauza' as const) : i === 3 ? ('intervencija' as const) : ('na_terenu' as const),
+      location: sl.callSign === 'Straža PS' ? 'ispred stanice' : LOCATIONS[i % LOCATIONS.length],
+    }));
 }
 
 /** Knjiga dnevnih događaja — upisi za sve stanice (scoping se radi u useScopedKdd). */

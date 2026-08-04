@@ -42,7 +42,7 @@ export const ROLE_CHOICES: RoleChoice[] = [
   },
   {
     role: 'komandir',
-    officerId: 'off-0100', // Adnan Softić — komandir PS Centar
+    officerId: 'off-komandir-centar', // Adnan Softić — komandir PS Centar
     scopeNodeId: 'ps-centar',
     displayName: 'Adnan Softić',
     displayTitle: 'inspektor, komandir PS Centar',

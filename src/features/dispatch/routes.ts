@@ -4,7 +4,7 @@
 export interface UnitDef {
   id: string;
   callSign: string;
-  kind: 'auto' | 'motocikl' | 'pjesacka' | 'civilna' | 'interventna';
+  kind: 'auto' | 'motocikl' | 'pjesacka' | 'civilna' | 'interventna' | 'straza';
   /** Matična stanica — određuje ko jedinicu vidi (šef smjene svoju, OKC sve). */
   psId: string;
   polyline: Array<[number, number]>;
@@ -182,6 +182,90 @@ export const UNITS: UnitDef[] = [
       [43.8300, 18.3390], [43.8318, 18.3428], [43.8338, 18.3468], [43.8358, 18.3505],
       [43.8375, 18.3545], [43.8365, 18.3585], [43.8345, 18.3562], [43.8328, 18.3520],
       [43.8310, 18.3478], [43.8298, 18.3432],
+    ],
+  },
+  // --- Straža ispred stanice (stalno mjesto — polilinija je jedna tačka duplirana) ---
+  {
+    id: 'u-14',
+    psId: 'ps-centar',
+    callSign: 'Straža PS Centar',
+    kind: 'straza',
+    officers: ['Kadrić E.'],
+    loopSeconds: 600,
+    polyline: [
+      [43.8595, 18.4128], [43.8595, 18.4128],
+    ],
+  },
+  {
+    id: 'u-15',
+    psId: 'ps-novi-grad',
+    callSign: 'Straža PS Novi Grad',
+    kind: 'straza',
+    officers: ['Mujić H.'],
+    loopSeconds: 600,
+    polyline: [
+      [43.8489, 18.3634], [43.8489, 18.3634],
+    ],
+  },
+  // --- Sektorske patrole (uglavnom pješice) ---
+  {
+    id: 'u-16',
+    psId: 'ps-centar',
+    callSign: 'Sektor 3',
+    kind: 'pjesacka',
+    officers: ['Hrnjić A.'],
+    loopSeconds: 380,
+    polyline: [
+      [43.8628, 18.4185], [43.8634, 18.4205], [43.8641, 18.4228], [43.8636, 18.4250],
+      [43.8626, 18.4238], [43.8620, 18.4212], [43.8622, 18.4192],
+    ],
+  },
+  {
+    id: 'u-17',
+    psId: 'ps-centar',
+    callSign: 'Sektor 7',
+    kind: 'pjesacka',
+    officers: ['Begić N.'],
+    loopSeconds: 400,
+    polyline: [
+      [43.8548, 18.4048], [43.8556, 18.4070], [43.8566, 18.4092], [43.8560, 18.4114],
+      [43.8548, 18.4100], [43.8540, 18.4074], [43.8542, 18.4054],
+    ],
+  },
+  {
+    id: 'u-18',
+    psId: 'ps-centar',
+    callSign: 'Auto-patrola 3',
+    kind: 'auto',
+    officers: ['Selimović B.', 'Tahirović K.'],
+    loopSeconds: 210,
+    polyline: [
+      [43.8618, 18.4050], [43.8632, 18.4085], [43.8645, 18.4125], [43.8652, 18.4168],
+      [43.8642, 18.4200], [43.8624, 18.4180], [43.8610, 18.4140], [43.8604, 18.4095],
+    ],
+  },
+  {
+    id: 'u-19',
+    psId: 'ps-novi-grad',
+    callSign: 'Sektor 4',
+    kind: 'pjesacka',
+    officers: ['Dedić L.'],
+    loopSeconds: 360,
+    polyline: [
+      [43.8452, 18.3562], [43.8460, 18.3585], [43.8470, 18.3608], [43.8464, 18.3630],
+      [43.8452, 18.3616], [43.8445, 18.3590],
+    ],
+  },
+  {
+    id: 'u-20',
+    psId: 'ps-novi-grad',
+    callSign: 'Auto-patrola 5-3',
+    kind: 'auto',
+    officers: ['Alagić M.', 'Pašić R.'],
+    loopSeconds: 245,
+    polyline: [
+      [43.8432, 18.3448], [43.8446, 18.3486], [43.8462, 18.3524], [43.8476, 18.3560],
+      [43.8468, 18.3596], [43.8450, 18.3574], [43.8438, 18.3532], [43.8428, 18.3486],
     ],
   },
 ];

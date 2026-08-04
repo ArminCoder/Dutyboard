@@ -5,22 +5,24 @@ import { addDays, DEMO_TODAY } from './dates';
 export function generateVehicles(): Vehicle[] {
   const out: Vehicle[] = [];
 
-  const psFleet: Array<{ psId: string; auto: number; moto: number; bicikl: number }> = [
-    { psId: 'ps-centar', auto: 5, moto: 2, bicikl: 3 },
-    { psId: 'ps-stari-grad', auto: 4, moto: 1, bicikl: 2 },
-    { psId: 'ps-novi-grad', auto: 6, moto: 1, bicikl: 2 },
-    { psId: 'ps-dobrinja', auto: 5, moto: 0, bicikl: 1 },
+  // Registracije su lokalne po stanici i moraju sadržavati oznake koje raspored
+  // stvarno koristi (npr. A-311-K-121 za prvu auto-patrolu PS Centar).
+  const psFleet: Array<{ psId: string; prefix: string; auto: number; autoBase: number; moto: number; motoBase: number; bicikl: number }> = [
+    { psId: 'ps-centar', prefix: 'A-311', auto: 6, autoBase: 121, moto: 2, motoBase: 104, bicikl: 3 },
+    { psId: 'ps-stari-grad', prefix: 'A-411', auto: 4, autoBase: 131, moto: 1, motoBase: 106, bicikl: 2 },
+    { psId: 'ps-novi-grad', prefix: 'A-521', auto: 6, autoBase: 201, moto: 1, motoBase: 108, bicikl: 2 },
+    { psId: 'ps-dobrinja', prefix: 'A-611', auto: 5, autoBase: 141, moto: 0, motoBase: 110, bicikl: 1 },
   ];
 
   let plateNum = 100;
   for (const ps of psFleet) {
-    const prefix = ps.psId === 'ps-centar' ? 'A-311' : ps.psId === 'ps-stari-grad' ? 'A-411' : ps.psId === 'ps-novi-grad' ? 'A-521' : 'A-611';
+    const prefix = ps.prefix;
     for (let i = 0; i < ps.auto; i++) {
       const isServisiran = i === 0 && ps.psId === 'ps-centar'; // 1 vozilo trenutno servisirano
       out.push({
         id: `veh-auto-${ps.psId}-${i}`,
         kind: 'auto',
-        plate: `${prefix}-K-${plateNum++}`,
+        plate: `${prefix}-K-${ps.autoBase + i}`,
         model: 'Škoda Octavia',
         psId: ps.psId,
         status: isServisiran ? 'servis' : 'ispravno',
@@ -33,7 +35,7 @@ export function generateVehicles(): Vehicle[] {
       out.push({
         id: `veh-moto-${ps.psId}-${i}`,
         kind: 'motocikl',
-        plate: `${prefix}-M-${plateNum++}`,
+        plate: `${prefix}-M-${ps.motoBase + i}`,
         model: 'Yamaha FJR1300',
         psId: ps.psId,
         status: isServisiran ? 'servis' : 'ispravno',

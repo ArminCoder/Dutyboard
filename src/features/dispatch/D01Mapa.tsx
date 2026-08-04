@@ -79,7 +79,7 @@ export function D01Mapa() {
 
       <div className="grid gap-4 px-6 py-5 lg:grid-cols-[1fr_340px]">
         <section>
-          <UnitsMap units={units} alertUnitId={nonResp && !nonResp.escalated ? NON_RESPONSIVE_UNIT_ID : null} />
+          <UnitsMap showSectors units={units} alertUnitId={nonResp && !nonResp.escalated ? NON_RESPONSIVE_UNIT_ID : null} />
           <p className="mt-2 text-[11px] text-dark-muted">
             Prati se jedinica/vozilo — u svrhu sigurnosti policajaca. Ne pojedinac.
           </p>

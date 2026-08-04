@@ -26,7 +26,7 @@ export function K05Mapa() {
       </div>
 
       <div className="px-6 py-5">
-        <UnitsMap units={units} zoom={13} center={[43.858, 18.418]} heightVh={64} />
+        <UnitsMap showSectors units={units} zoom={13} center={[43.858, 18.418]} heightVh={64} />
         <p className="mt-2 text-[11px] text-dark-muted">
           Prati se jedinica/vozilo — u svrhu sigurnosti policajaca. Ne pojedinac.
         </p>

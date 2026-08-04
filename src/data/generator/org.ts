@@ -24,12 +24,12 @@ export function buildOrgTree(): OrgNode[] {
   // `est` = sistematizovan broj izvršilaca po PS (malo iznad stvarne popune → vidljiva upražnjena mjesta).
   const pus = [
     { id: 'pu-centar', name: 'PU Centar', pss: [
-      { id: 'ps-centar', name: 'PS Centar', est: 24 },
-      { id: 'ps-stari-grad', name: 'PS Stari Grad', est: 23 },
+      { id: 'ps-centar', name: 'PS Centar', est: 80 },
+      { id: 'ps-stari-grad', name: 'PS Stari Grad', est: 78 },
     ] },
     { id: 'pu-novi-grad', name: 'PU Novi Grad', pss: [
-      { id: 'ps-novi-grad', name: 'PS Novi Grad', est: 26 },
-      { id: 'ps-dobrinja', name: 'PS Dobrinja', est: 22 },
+      { id: 'ps-novi-grad', name: 'PS Novi Grad', est: 84 },
+      { id: 'ps-dobrinja', name: 'PS Dobrinja', est: 74 },
     ] },
   ];
 

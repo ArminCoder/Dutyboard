@@ -52,20 +52,23 @@ src/data/
                            shifts, vehicles, performance, court, payslip, dates)
   world.ts                 the generated world singleton
   useScopedWorld.ts        scoping hook — the isolation backbone (rule #3)
-src/domain/eligibility.ts  who can fill which slot & why not — Bosnian reason strings (K01/K02)
+src/domain/                eligibility (ko može u slot i zašto ne) · unitStats · workTime ·
+                           overtimeCost · readiness · workforce · reportTemplates
 src/app/
   RoleContext.tsx          current role + org scope
   routes.tsx               role-scoped route trees + gate + RequireRole guards
   store.tsx                all in-session mutations (leave, court, overtime, K02 crisis, shift log)
 src/features/
   gate/ rolePicker/        E00a, E00
-  officer/                 P01–P05   (mobile-first)
-  shiftCommander/          K02, K04–K07 — vodi smjenu na terenu (NE pravi raspored)
-  precinctCommander/       K01 raspored, K03 odobrenja/prekovremeni — komandir PS
+  officer/                 P01–P06 + ScheduleSection (mobile-first)
+  shiftCommander/          K02 aktivna, K05 mapa, K06 moja smjena, K07 bilten
+  precinctCommander/       K01 raspored, K03 odobrenja/prekovremeni, PC00–PC03 (komandir PS)
   kdd/                     Knjiga dnevnih događaja (piše šef smjene, čitaju nadređeni)
-  dispatch/                D01 map
-  chief/                   N01–N05
-  commissioner/ minister/  C01, M01
+  reports/                 P06 izvještaji (zabilješke, prijave) + red za štampu
+  dispatch/                D01 mapa kantona, D02 bilteni, jutarnji brifing, UnitsMap, sektori
+  chief/                   N01–N05 (načelnik PU)
+  commissioner/ minister/  C01–C05, M01–M04
+  admin/                   A01 postavke organizacije (white-label)
   mockups/                 X01–X03
 src/components/            shared UI (Button, Card, Kpi, StatusBadge, shells, chartTheme, ...)
 ```

@@ -1,235 +1,152 @@
-# STATUS — build progress & continuity log
+# STATUS — handoff & continuity log
 
-> **Purpose:** if a coding session is lost, read this first (after [CLAUDE.md](../CLAUDE.md) and
-> the [spec](demo-spec.md)) to know exactly where things stand. **Keep it current** — update
-> the tables and the log whenever you finish or change something.
+> **Read this first** when picking up work, then [CLAUDE.md](../CLAUDE.md) (conventions) and the
+> [spec](demo-spec.md) (original brief — note: parts of it are now superseded, see below).
+> **Keep this file current.**
 
-**Last updated:** 2026-07-26 (Phase 0 done + Phase 1 seed foundation core)
-**Health:** `tsc -b` clean · `vite build` succeeds · `oxlint` clean (0 warnings) · world verified deterministic.
+**Last updated:** after the "realism pass v3" (police-insider review) · pushed to
+`git@github.com:ArminCoder/Dutyboard.git` on `main`, 21 commits.
+**Health:** `npx tsc -b`, `npm run lint`, `npm run build` all clean · world verified deterministic ·
+every package browser-verified before commit.
 
-> **Master plan:** see the approved plan + [docs/FEATURE-BACKLOG.md](FEATURE-BACKLOG.md). Direction:
-> demo-first / wow-focused, build komesar+ministar wow features first, expand the seed richly.
+---
 
-## TL;DR
+## 1. What this is
 
-The app is **feature-complete through Phase 7** (all screens exist, compile, and route; the
-critical demo behaviors are wired). The remaining work is **Phase 8 (polish) + a full runtime
-walkthrough of the 20-minute demo script** to catch bugs that static analysis can't. Per-screen
-"built" below means *implemented and compiling*; it has **not** yet been verified by clicking
-through the live demo end-to-end — that verification is the top priority.
+A role-based **police workforce-management demo** for **MUP Demo kantona**, shown to a ministry
+behind an access-key gate. All data is fake and generated deterministically. UI is **Bosnian**; code,
+comments and commits are English.
 
-## Phase status
+The owner has **real police domain knowledge** and reviews the running app. His corrections outrank
+the original spec — several spec assumptions turned out to be wrong (see §3). When he describes how
+something works in the field, implement that, and update the docs rather than arguing with the spec.
 
-| Phase | Scope | State |
-|---|---|---|
-| 1 — Skeleton + world | server gate, types, seed generator, RoleContext, routing, E00a, E00 | ✅ Built |
-| 2 — Officer core | P01, P02, P03 (P04/P05 shells) | ✅ Built |
-| 3 — Roster engine | eligibility.ts + K01 warnings/alarms | ✅ Built · ⚠️ runtime-verify both K01 demo moments |
-| 4 — Live board + approvals | K02 crisis, K03 + cross-role loop | ✅ Built · ⚠️ runtime-verify round-trip |
-| 5 — Dashboards | N01–N05, C01, M01 (+PDF) | ✅ Built · ⚠️ runtime-verify isolation switch |
-| 6 — Map | D01 moving units + non-responsive flow | ✅ Built · ⚠️ runtime-verify |
-| 7 — Config + mockups | N05, P04/P05, X01–X03 | ✅ Built |
-| 8 — Polish pass | transitions, empty/loading, mobile QA, copy review, meta | ⬜ Not started |
+## 2. Current state — everything below is built AND browser-verified
 
-## Per-screen status
+| Role | Screens |
+|---|---|
+| **Policajac** | P01 Smjena (+ ScheduleSection week/month calendar) · P02 Zahtjevi · P03 Statistika · P04 Plata · **P06 Izvještaji** · P05 Zaduženja |
+| **Šef smjene** | K06 Moja smjena (read-only) · K02 Aktivna smjena · K04 Knjiga događaja (write) · K05 Mapa patrola · K07 Bilten |
+| **Komandir PS** | PC00 Komandna tabla · PC01 Ljudstvo · K01 Mjesečni raspored · K03 Odobrenja · K03 Prekovremeni · PC02 Naoružanje i oprema · **PC03 Dokumenti** · KDD (read) · N02 · N03 |
+| **OKC (dežurni)** | D01 Mapa kantona (+ sector zones) · D02 Bilteni smjena · D03 Jutarnji brifing |
+| **Načelnik PU** | N01 · KDD (read) · N02 · N03 · N04 · N05 |
+| **Komesar** | C01 Compstat · C02 Jutarnji brifing · C03 Kontrola prekovremenih · C04 Indeks spremnosti · C05 Kadrovska projekcija · C06 Radno vrijeme · KDD (read, sve stanice) |
+| **Ministar** | M01 Strateška tabla · M02 Simulacija · M03 Budžet · M04 Resursi i oprema |
+| **Admin (skriven)** | A01 Postavke organizacije (white-label) — reached via a discreet role-picker link |
 
-| ID | Screen | Spec priority | State | Notes |
-|---|---|---|---|---|
-| E00a | Pristupna kapija | PUNI | ✅ | server/index.ts gate + rate limit; GateScreen.tsx |
-| E00 | Birač uloge | PUNI | ✅ | RolePickerScreen.tsx; 6 roles + 2 načelnik cards |
-| P01 | Moja smjena | PUNI | ✅ | court-summons flow in store; notifications feed |
-| P02 | Moji zahtjevi | PUNI+DJEL | ✅ | slobodan-dan full; other kinds mockup-labeled |
-| P03 | Moja statistika | PUNI | ✅ | Recharts, 12mo history |
-| P04 | Moja plata | MOCKUP | ✅ | "Integracija u razvoju" label present |
-| P05 | Zaduženja/certifikati | DJELIMIČNI | ✅ | cert expiry warnings |
-| K01 | Mjesečni raspored | PUNI ★ | ✅ | eligibility greys + reasons; season warning. **Verify live.** |
-| K02 | Aktivna smjena | PUNI ★ | ✅ | markOfficerSick → NEPOTPUNA → reassign → shift log |
-| K03 | Odobrenja/prekovremeni | PUNI+DJEL | ✅ | approval chain + overtime ranking |
-| D01 | Live mapa | PUNI | ✅ | Leaflet, moving units, "ne javlja se" (unit u-5) escalation |
-| N01 | Komandna tabla PU | PUNI | ✅ | KPIs, scoped |
-| N02 | Analitika učinka | PUNI | ✅ | role-filtered comparison |
-| N03 | Briga o kadru | PUNI ★ | ✅ | workload index + sick heatmap + departure risk |
-| N04 | Oprema/vozni park | PUNI | ✅ | per-PS vehicle status |
-| N05 | Operativne uloge | DJELIMIČNI | ✅ | role catalog + create |
-| C01 | Tabla Uprave policije | PUNI | ✅ | all-PU comparison, drill-down |
-| M01 | Strateška tabla | PUNI | ✅ | aggregates + PDF via window.print + print CSS |
-| X01 | Pisarnica | MOCKUP | ✅ | XScreens.tsx |
-| X02 | Stepen tajnosti | MOCKUP | ✅ | XScreens.tsx |
-| X03 | Admin/audit log | DJELIMIČNI | ✅ | XScreens.tsx |
+All roles render through **one shared `components/SidebarShell`** (desktop sidebar; mobile top strip,
+or bottom tabs for the officer; light + dark variants; `print:hidden`).
 
-★ = spec-flagged as the most important / theatrical screens.
+## 3. The role model — get this right, it was the biggest correction
 
-## Non-negotiable behaviors (spec) — wiring check
+- **Šef smjene does NOT build the roster or approve leave.** He commands the shift he is given:
+  active patrols, the daily events book, and the end-of-shift bilten.
+- **Komandir PS** owns the monthly roster, approvals and overtime, plus his station's people,
+  weapons/equipment and documents.
+- **Načelnik PU** is the PU-level aggregate view (N01–N05).
+- **OKC (dežurni) is kanton-wide** — it is the 122 call centre, not a PU office. It sees all stations,
+  collects biltens and compiles the morning briefing for the komesar.
+- **Approval chains:** slobodan dan / bolovanje → **komandir**; godišnji / ostalo → **komandir →
+  načelnik**. (`chainFor()` in `src/app/store.tsx`.) There is no šef-smjene approval step any more.
+- **Overtime is assigned by order, never offered/accepted.**
+- **Training (gađanje, permanentna obuka) is announced** at a fixed time and place — never booked.
 
-1. ✅ **Real scoping** — `useScopedWorld` filters by org descendants (src/data/useScopedWorld.ts).
-2. ✅ **Eligibility returns Bosnian reasons** — src/domain/eligibility.ts, spec-exact strings.
-3. ✅ **K02 crisis end-to-end** — wired in store.tsx (markOfficerSick / reassignOfficer / shiftLog).
-4. ✅ **Cross-role loop** — leave request (P02) → K03 queue → advanceApproval updates P01/P02.
-5. ✅ **Map units move + one goes non-responsive** — D01Mapa.tsx (`NON_RESPONSIVE_UNIT_ID = 'u-5'`).
-6. ✅ **Deterministic seed** — src/data/generator/prng.ts + fixed seed.
-7. ⚠️ **Responsive** — needs real device/emulator QA (Phase 8).
-8. ⚠️ **Bosnian everywhere** — no literal English leaks found in a grep sweep; needs a proper copy pass.
+⚠️ The spec (`docs/demo-spec.md`) still describes K01/K03 as šef-smjene screens and scripts a
+demo around that. **That part of the spec is superseded.** Use §7 for the current demo flow.
 
-> ⚠️ items are "looks wired but unverified at runtime."
+## 4. Architecture map (what changed from the spec's layout)
 
-## Known gaps / cleanup backlog
+```
+src/data/generator/     deterministic world: prng, names, org, officers, equipment, roles, shifts,
+                        vehicles, performance, court, payslip, finance, targets, dates
+src/domain/             eligibility · unitStats · workTime · overtimeCost · readiness · workforce
+                        · reportTemplates
+src/features/
+  officer/              P01–P05 + ScheduleSection      shiftCommander/   K02, K05, K06, K07
+  precinctCommander/    K01, K03×2, PC00–PC03          kdd/              KddBook (all roles)
+  reports/              P06 Izvještaji                 dispatch/         D01, D02, JutarnjiBilten, UnitsMap, sectors
+  chief/ commissioner/ minister/ admin/ gate/ rolePicker/ mockups/
+src/app/                RoleContext · OrgContext (white-label) · session · store · routes
+```
 
-- [ ] **robots.txt missing** — spec deploy requires `public/robots.txt` with `Disallow: /`. (quick)
-- [ ] **Dead code:** `src/features/shiftCommander/PlaceholderScreen.tsx` is unused — remove. (quick)
-- [ ] **`domain/workload.ts` not extracted** — spec structure lists it; the workload-index logic
-      currently lives inline in N03Kadar.tsx. Works, but extract if touching N03 for reuse/testability.
-- [ ] **Bundle:** main chunk ~964 kB (Recharts in the main bundle). Consider splitting for load polish.
-- [ ] **Lint:** 4 `react(only-export-components)` fast-refresh warnings in store.tsx / RoleContext.tsx
-      (cosmetic; only affects HMR, not the build).
-- [ ] **Phase 8 proper:** transitions, empty/loading states audit, mobile QA on officer screens,
-      Bosnian copy review, favicon/meta polish, English-string sweep.
+## 5. Seed facts (deterministic — same every run)
 
-## The demo dramaturgija (what must run flawlessly, ~20 min)
+- **308 officers**, establishment 330 · 4 PS (72 each) · 18 per shift group · 36 vehicles ·
+  124 shifts (August 2026, **ps-centar + ps-novi-grad only**) · 7392 performance rows (24 months).
+- **Stable IDs:** `off-0001` Amar Softić (policajac) · `off-0002` Damir Kovač (šef smjene) ·
+  `off-0003` Samir Begić (načelnik) · `off-0004` Edin Hodžić (unused since his card was cut) ·
+  `off-komandir-centar` Adnan Softić (komandir — **fixed id on purpose**).
+- **Tonight (24.08.2026, II smjena, PS Centar):** 13 slots / 19 officers — 3 auto + interventna +
+  straža + 2 pješačke + 6 sektora.
+- **Planted demo moments:** interventna empty on 26./27.08 nights (K01 alarm) · 4 expired certificates ·
+  Softić's gađanje expires in 21 days · PS Dobrinja's bilten missing (OKC amber) · PU Novi Grad over
+  its overtime budget (108%).
+- Realistic figures: ~7 arrests/year, ~40–50 night hours/month (night = 22:00–06:00 → **8 h per night
+  shift**), a few court hours per year.
 
-1. E00a key + E00 picker (30s)
-2. Officer on phone: P01 → P02 request → P03 (3m)
-3. Šef smjene: K03 approve → K01 roster + season warning → **K02 crisis** (5m — the heart)
-4. Dežurni: D01 map + "ne javlja se" (2m)
-5. Načelnik: N01 → **switch načelnik (isolation!)** → N02 → N03 → N04 → N05 create role (5m)
-6. Komesar: C01 (1m)
-7. Ministar: M01 + PDF (1m)
-8. X01/X02 on questions
+## 6. Traps — these bite, they all bit once already
 
-**Definition of done:** a presenter can run the whole script start-to-finish on the hosted URL with
-zero errors, phone (officer) + laptop (command), following only the spec.
+1. **Officer ID stability.** `generateOfficers` consumes `rand()` in sequence; adding or removing a
+   draw shifts every later officer's id. Named officers are generated first; Adnan is appended with a
+   **fixed literal id**; equipment is a **separate pass with its own PRNG**. Keep it that way.
+2. **`store.tsx` dep array.** Every new slice/mutator must be added to the interface, the value memo
+   **and** the manually mirrored dep array, or the UI goes silently stale.
+3. **Store data isn't scoped by `useScopedWorld`.** KDD/bilten/reports live in the store — read them
+   through a scoped hook (`features/kdd/useScopedKdd.ts` is the pattern), never raw in a screen.
+4. **Two clocks.** Seeds and `demoNow()` anchor on `DEMO_TODAY` (2026-08-24). Never use `new Date()`
+   for domain data — it breaks determinism (this caused the old "certificates change daily" bug).
+5. **Role switch must not hard-reload.** `SidebarShell` logout uses router navigation; `window.location`
+   would wipe the in-session store and break every cross-role demo flow.
+6. **Raising headcount changes every aggregate** — re-verify C01–C05, M01–M04, N01–N04 and rescale
+   `generator/finance.ts` budgets afterwards.
+7. **Roster ↔ fleet coupling.** Vehicle plates referenced by the roster must exist in
+   `generator/vehicles.ts` (plate numbering is station-local for exactly this reason).
+8. **Sector numbers repeat across stations** — match coverage by `psId`, not by number alone.
 
-## Expansion work (post-recovery — the "wow" build)
+## 7. Demo flow (current — replaces the spec's script)
 
-Driven by the approved master plan + [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md). Progress:
+1. Gate (`DEMO-2026`) → role picker
+2. **Policajac:** month calendar + hours summary → statistics (Mjesec/Godina) → new request → write a
+   report from two sentences
+3. **Šef smjene:** Moja smjena → Aktivna smjena (set pauza with countdown; remove someone → confirm
+   with reason → NEPOTPUNA → reassign) → Knjiga događaja → Bilten
+4. **Komandir:** Komandna tabla ("Traži pažnju") → Ljudstvo → Odobrenja (the officer's request is
+   here) → Raspored (26./27. alarm) → Naoružanje i oprema → Dokumenti (print queue)
+5. **OKC:** kanton map + sector coverage + "ne javlja se" escalation (writes to the KDD) → Bilteni →
+   Jutarnji brifing
+6. **Komesar:** Compstat drill-down → prekovremeni fairness → spremnost → kadrovi
+7. **Ministar:** Simulacija „+20 policajaca" → Budžet → Resursi (helikopter) → PDF
+8. **A01** white-label: change colours, whole app re-themes live
 
-- ✅ **Phase 0 — safety pass:** `public/robots.txt` added; dead `PlaceholderScreen.tsx` removed; oxlint
-  fast-refresh warnings cleared (file-level disable on the two provider files); build/lint/typecheck green.
-- ✅ **Phase 1 — seed foundation (core):** performance now anchors on `DEMO_TODAY` + **24 months** (was
-  buggy real-date/12mo → 2026 charts were half-empty); `Officer` gained **`hireDate`/`birthDate`**
-  (rank-correlated, realistic pyramid — kills M01's hardcoded staž/pension); `OrgNode.establishment` on
-  PS/posebna + `establishmentUnder()` rollup; new `FinanceConfig`/`KpiTargets`/`RestRules` on the `World`
-  via `generator/finance.ts` + `generator/targets.ts`; `useScopedWorld` passes them through. Verified
-  deterministic. **M01 still displays its old hardcodes — rewire to the new data when rebuilding M01 (Phase 3).**
-- ✅ **build-next #3 — Ministar *Simulacija „+20 policajaca"*:** interactive what-if. Two sliders
-  (dodatni policajci 0–40, limit prekovremenih h/officer) → live recompute of coverage %, annual OT cost
-  (KM), burnout index (zeleno/žuto/crveno), and a budget-tradeoff panel (nove plate vs OT ušteda → neto) +
-  a live Bosnian narrative. Model in `M02Simulacija.tsx` (`simulate()`), verified monotonic. Ministar role
-  converted to a tabbed shell (`MinisterShell.tsx`): **Strateška tabla | Simulacija**. Routes nested under
-  `/ministar`. **M01 rewired to real data** — establishment via `establishmentUnder`, staž/pension from
-  `hireDate`/`birthDate`, OT rate from `finance` (all former hardcodes gone).
-- ✅ **build-next #4 — Komesar *Operativni pregled (Compstat)*:** ranked accountability board with real
-  **drill-down Kanton→PU→PS→smjena** (breadcrumb + focus state), traffic-light KPIs vs `targets`, and
-  **period-over-period** arrows (last complete month `2026-07` vs `2026-06`) with semantic coloring.
-  Reusable `src/domain/unitStats.ts` (unitStat / childUnitsOf / pathFromRoot / monthlyIntervencije). Komesar
-  converted to `KomesarShell` (tabbed). **Posebna jedinica is now visible to the komesar** (was excluded).
-  Old `C01Uprava.tsx` removed. Browser-verified (drill + PoP + lights, zero console errors).
-- ✅ **build-next #5 — Komesar *Usklađenost radnog vremena*:** EU working-time compliance as a KomesarShell
-  tab. `src/domain/workTime.ts` computes per-officer compliance from last-month hours (weekly hours healthy
-  ~38.5h; the real signal is overtime — 23 over the 16h limit, 10 clear breaches). Screen shows compliance %,
-  breaches, avg weekly, night share, a per-PU ranked table, and a color-coded overtime histogram (green→red
-  tail). Browser-verified, zero console errors. Note: viewport screenshots DO render animated bars — only
-  *fullPage* headless drops them.
-- ✅ **App-wide sidebar unification:** all six roles now use one `components/SidebarShell` (desktop sidebar
-  + mobile top-strip or bottom-tabs; light + dark variants; `print:hidden` so PDF exports stay clean).
-  Komesar/Ministar moved from top-bar to sidebar (badges C0x/M0x); Officer got a desktop sidebar (mobile
-  bottom-tabs kept); Dežurni got a dark sidebar (D01Mapa refactored to shed its own chrome). Browser-verified
-  all six, zero console errors.
-- ✅ **build-next #6 — Ministar *Budžet i troškovi ljudstva*:** MinisterShell tab (M03). Per-PU personnel/OT
-  budget vs actual, OT-budget utilization with traffic lights (Novi Grad 109% = over budget, red), grouped
-  budget-vs-cost chart, and the "OT cost ≈ N salaries" hiring argument tied to the simulator. PDF export.
-  **`finance.ts` budgets rescaled** to the ~99-officer demo (were placeholder-large). Browser-verified.
-### Realism pass v3 (police-insider review of the running app)
+## 8. Verification recipe (use this — it has caught real bugs every time)
 
-- ✅ **R2 seed realism** — arrests 151/yr → 7; night work counted 22:00–06:00 (8 h per night shift,
-  ~43 h/month); court a few times a year; *asistencije* dropped; permanent certificates
-  (`Certification.permanent`, optional `expires`); per-officer equipment finally generated.
-- ✅ **R1 officer screens** — calendar day/night/leave tones + matching legend; overtime is an
-  **assignment order**, not an offer; gađanje and permanentna obuka as fixed announcements;
-  open-ended bolovanje + doctor's note; statistics **Mjesec | Godina** (the year view had been
-  summing 24 months); payslip PDF action.
-- ✅ **R3 role responsibilities** — **Raspored, Odobrenja and Prekovremeni moved to the komandir**
-  (`features/precinctCommander/`); approval chains reworked (slobodan dan/bolovanje → komandir,
-  godišnji → komandir → načelnik), otherwise the commander's queue would have been empty. Šef smjene
-  gained read-only **K06 Moja smjena** and **K07 Bilten**.
-- ✅ **R4 active shift** — removal needs confirmation + reason; patrol status is settable
-  (na terenu / intervencija / pauza with live countdown).
-- ✅ **R5 KDD** — personal data allowed; 24 h edit window, after which only the komandir; every edit
-  appends an immutable revision trail.
-- ✅ **R6 patrols** — headcount raised to a real station (72/PS, 308 total, 18 per shift group);
-  roster composition = 3 auto + interventna + straža + 2 pješačke + sektori (19 tonight), generated
-  for two stations; active patrols derived from the roster (one source of truth); fleet plates made
-  station-local so referenced vehicles exist; 12 sector zones with coverage; budgets rescaled.
-- ✅ **R7 komandir** — PC00 Komandna tabla (headcount, tonight's composition, "Traži pažnju" actions),
-  PC01 Ljudstvo (searchable roster + per-officer detail), PC02 Naoružanje i oprema (issued vs stock,
-  by serial) — the načelnik keeps the aggregate N01.
-- ✅ **R8 izvještaji** — službena zabilješka / izvještaj / prekršajna prijava. Officer writes a short
-  description, the system composes the document from a template (`domain/reportTemplates.ts` — an LLM
-  does this in production), then submits and marks it for printing; PC03 Dokumenti is the commander's
-  inbox and print queue. Drafts stay private until submitted.
+```bash
+npx tsc -b && npm run lint && npm run build
+# determinism: two generateWorld() calls must be byte-identical
+NODE_ENV=production PORT=3100 npx tsx server/index.ts &   # then poll /healthz
+npm i --no-save playwright-core                            # drives system Chrome
+```
+Drive with `chromium.launch({ channel: 'chrome', headless: true })`, gate key `DEMO-2026`.
+**Look at the screenshots** — and note that *fullPage* headless screenshots drop animated SVG bars
+(a capture quirk, not a bug); screenshot the chart element or the viewport instead.
 
-### Domain-feedback wave (v2 plan — police-insider corrections)
+## 9. Not done / next candidates
 
-- ✅ **WP1 — Officer pack:** P01 gained a **Sedmica | Mjesec** schedule (month calendar with per-day
-  detail: shift, role/callSign, partner(s), vehicle, hours) + a **monthly hours summary** (radnih/noćnih
-  sati, godišnji/bolovanje/slobodan days, leave excluded from hour totals). P04 lists **six generated
-  payslips**, any month opens its full platna lista (current month badged as an estimate). P05 dropped the
-  day counters for VAŽEĆI / ISTIČE USKORO badges. P02 dropped *premještaj*, added *bolovanje*.
-  Bugs fixed: hero card used `slots[0]` regardless of the officer's actual slot; cert expiry + store
-  timestamps ran on the real clock (non-deterministic) → now `DEMO_TODAY` / `demoNow()`.
-- ✅ **WP2 — Knjiga dnevnih događaja + komandir:** `KddEntry` type + store slice (`addKddEntry` /
-  `updateKddEntry`, 13 seeded entries across all 4 PS). `src/features/kdd/useScopedKdd.ts` is the
-  **isolation seam** — screens must never read `store.kddEntries` directly. `KddBook.tsx` serves all roles
-  (date filter, full-text search, type chips, station chips when scope > 1 PS, expandable rows, "Novi upis"
-  + "Zaključi upis" when `canWrite`). New **komandir** role (Adnan Softić, `off-0100`, PS Centar) on
-  ChiefShell with `showN05={false}`. Access verified: šef smjene 7 (writes) · komandir 7 (read-only) ·
-  načelnik 9 (2 PS) · komesar 12 (4 PS).
-  **Also fixed:** Odjava did `window.location.href` (hard reload) which wiped the in-session store, so
-  cross-role flows silently lost data — including the spec's signature P02→K03 request round-trip. Now
-  router navigation; a real refresh still resets, as intended.
-- ✅ **WP3 — OKC refocus + bilten loop:** dežurni is now the kanton-wide **Operativno-komunikacijski
-  centar** (scope `up`, 4 stations / 13 units). `UnitDef` gained `psId`; 5 units added for the other
-  stations; D01 is genuinely scoped (was hardcoded PU Centar) and its "ne javlja se" escalation now
-  **writes a KDD entry** (previously it only claimed to). Shared `UnitsMap` extracted → šef smjene got
-  **K05 Mapa patrola** (his 6 units). New **bilten** flow: `Bilten` type + store slice, K02 "Zaključi
-  smjenu" prefills counts from the KDD, OKC **D02 Bilteni** inbox (matrix shift × station, missing = amber
-  "čeka se"), **D03 Jutarnji brifing** (kanton totals + per-station table + open KDD entries, printable),
-  also mounted for the komesar. Second načelnik card (Hodžić) removed as agreed.
-- ✅ **WP4 — Komesar data owner + Ministar resources:** shared domain layer (`overtimeCost.ts`,
-  `readiness.ts`, `workforce.ts`) so screens can't drift. **C03** Kontrola prekovremenih (cost vs budget,
-  top-decile fairness, distribution), **C04** Indeks spremnosti (composite scored against targets, ranked
-  worst-first, drivers shown, drill-down), **C05** Kadrovska projekcija (age pyramid, retirement cliff,
-  hiring need). **M04** Resursi i oprema (fleet per PU, 1 helicopter + 2 special vehicles at kanton level,
-  staffing vs systematization, INTERNO banner). `VehicleKind` gained `helikopter`/`specijalno`;
-  `useScopedWorld` vehicle filter fixed to scope on the whole subtree (kanton assets were invisible).
-  Pension model = age 60 **or** 35 years service (beneficirani staž), which makes the cliff non-empty.
-- ✅ **WP5 — Police-blue palette + white-label:** `@theme` retuned to police blue + gold (token names
-  unchanged → zero class churn); `chartTheme.ts` now reads **CSS variables via getters** with static
-  fallbacks, and the four screens that hardcoded chart hex (N01, N02, K03Prekovremeni, P03) plus the map
-  colors and gate crest were converged onto it. **`src/app/orgConfig.ts`** holds the per-organization
-  config (name, short name, product name, primary/accent colors, crest, feature flags) with
-  localStorage persistence and `applyOrgTheme()` deriving full navy/brass/dark ramps via HSL and setting
-  them on `documentElement` — so the whole app (including charts and map markers) re-themes live.
-  `OrgProvider` wraps the app; wordmark/org names now come from config. **A01 Postavke organizacije**
-  (ultra-admin) offers name fields, 3 presets, 2 colour pickers, crest choice, a live preview, and a
-  disabled feature-toggle section; reachable via a discreet role-picker link using the pre-wired `admin`
-  role. Verified live: applying a preset changes `--color-navy-900`, "Vrati zadano" restores it.
-- ⏳ **Phase 1 remainder (staged with their screens):** populate `equipmentAssigned`; generate rosters for
-  all PS (only PS Centar/Aug today); world-wide `leaveRequests`/`notifications`; aggregate complaints/UoF;
-  PU boundary polygons for the choropleth.
-- ⬜ **Next up:** build-next #7 Komesar *Kontrola prekovremenih (trošak + pravednost)*; then #8 *Indeks
-  spremnosti*, #10 choropleth — see FEATURE-BACKLOG.md.
+- **Phase 8 polish:** mobile QA on officer screens (≤430 px), empty/loading states, Bosnian copy pass,
+  favicon/meta, bundle split.
+- **Full 20-minute dress rehearsal** of §7 end to end on one run.
+- Rosters exist for **2 of 4 stations** (ps-stari-grad, ps-dobrinja have none) — fine today because
+  only Centar/Novi Grad are demoed, but N-screens for other PSs will look empty.
+- `docs/demo-spec.md` is **partly superseded** (role model + demo script) — worth annotating.
+- Per-org **feature toggles** in A01 are rendered but disabled ("u pripremi").
+- Backlog ideas in [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md): primopredaja smjene, komandir odobrenja
+  SLA, helicopter on the OKC map, KDD → bilten auto-counts, HR/training roles.
 
-> **Browser verification is set up** (Playwright via system Chrome). Pattern: `NODE_ENV=production PORT=3100
-> npx tsx server/index.ts` (bg), `npm i --no-save playwright-core`, drive with `channel:'chrome'`; gate key
-> `DEMO-2026`; screenshot the **chart element** (fullPage headless drops animated SVG bars — a screenshot
-> quirk, not an app bug). Ministar + Komesar suites both browser-verified this way.
+## 10. Working agreements with the owner
 
-## Continuity log
-
-- **2026-07-26** — Master-plan session. Ran feature-research (all roles) → `docs/FEATURE-BACKLOG.md`.
-  Completed Phase 0 + Phase 1 seed-foundation core (above). Build green & deterministic. New generator
-  files: `finance.ts`, `targets.ts`. Modified: `types.ts`, `dates.ts`, `performance.ts`, `officers.ts`,
-  `org.ts`, `generator/index.ts`, `useScopedWorld.ts`.
-- **2026-07-25** — Recovered a "lost" prior session. Found the build far ahead of the last commit
-  message (`Phase 2`): all phases 1–7 implemented, tree clean, everything compiles. Created
-  CLAUDE.md + this file, moved the spec into `docs/`.
+- Ship in packages, **verify in a real browser before committing**, then report plainly what was
+  checked. He values the honest "this is template-filled, an LLM does it in production" framing over
+  overclaiming.
+- Commit messages: English, explain *why*, mention what was verified.
+- When his domain input contradicts the code, his input wins — and say so in the commit.
+- Rotate the demo access key (`DEMO-2026`, in `DEPLOY.md`) before sending the real invite email.

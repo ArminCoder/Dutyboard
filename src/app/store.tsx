@@ -2,10 +2,11 @@
 // fast-refresh rule is a false positive since the hook depends on this context.
 /* oxlint-disable react/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { ApprovalStep, Bilten, CourtSummons, DocumentKind, DocumentRequest, DocumentRequestStatus, KddEntry, KddRevision, LeaveRequest, Notification, PoliceReport, ReportStatus } from '../data/types';
+import type { ApprovalStep, Bilten, CourtSummons, DocumentKind, DocumentRequest, DocumentRequestStatus, KddEntry, KddRevision, LeaveRequest, Notification, PoliceReport, ReportStatus, Shift } from '../data/types';
 import { world } from '../data/world';
-import { DEMO_TODAY, addDays, demoNow } from '../data/generator/dates';
+import { DEMO_TODAY, addDays, demoNow, monthNameBs } from '../data/generator/dates';
 import { findDocType, findOffice } from '../data/administration';
+import { generateRosterForMonth } from '../data/generator/shifts';
 
 // --- Phase 4 additions: overtime postings + active shift crisis + shift log ---
 
@@ -96,6 +97,20 @@ interface Store {
   submitDocumentRequest: (draft: DocumentRequestDraft) => DocumentRequest;
   setDocumentRequestStatus: (id: string, status: DocumentRequestStatus) => void;
   toggleDocumentPaid: (id: string) => void;
+
+  generatedRosters: GeneratedRoster[];
+  generateRosterDraft: (ym: string) => void;
+  publishRoster: (ym: string) => void;
+  discardRoster: (ym: string) => void;
+}
+
+/** Raspored koji komandir generiše za budući mjesec: prvo nacrt (pregled), pa objava. */
+export interface GeneratedRoster {
+  ym: string; // "YYYY-MM"
+  status: 'nacrt' | 'objavljen';
+  shifts: Shift[];
+  generatedAt: string;
+  publishedAt?: string;
 }
 
 /** Novi zahtjev građanina — naknada i lokacija se izvode iz kataloga/šaltera. */
@@ -461,6 +476,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [biltens, setBiltens] = useState<Bilten[]>(() => seedBiltens());
   const [academyAttempts, setAcademyAttempts] = useState<AcademyAttempt[]>(() => seedAcademyAttempts());
   const [documentRequests, setDocumentRequests] = useState<DocumentRequest[]>(() => seedDocumentRequests());
+  const [generatedRosters, setGeneratedRosters] = useState<GeneratedRoster[]>([]);
 
   const markNotificationRead = useCallback((id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -739,6 +755,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setDocumentRequests((prev) => prev.map((r) => (r.id === id ? { ...r, paid: !r.paid, updatedAt: demoNow() } : r)));
   }, []);
 
+  const generateRosterDraft = useCallback((ym: string) => {
+    // Seed deterministički iz mjeseca — isti klik daje isti nacrt.
+    const seed = Number(ym.replace('-', '')) || 20260901;
+    const shifts = generateRosterForMonth(seed, world.officers, ym);
+    setGeneratedRosters((prev) => [...prev.filter((r) => r.ym !== ym), { ym, status: 'nacrt', shifts, generatedAt: demoNow() }]);
+  }, []);
+
+  const publishRoster = useCallback((ym: string) => {
+    setGeneratedRosters((prev) => prev.map((r) => (r.ym === ym ? { ...r, status: 'objavljen', publishedAt: demoNow() } : r)));
+    // Policajci se obavještavaju o objavljenom rasporedu (kao seed „raspored za septembar").
+    const [y, m] = ym.split('-').map(Number);
+    const mjesec = monthNameBs(m - 1);
+    const notif: Notification = {
+      id: `notif-raspored-${ym}`,
+      officerId: 'off-0001',
+      kind: 'raspored',
+      severity: 'info',
+      title: `Objavljen raspored za ${mjesec}`,
+      body: `PS Centar · ${mjesec} ${y}. · pregledaj u kalendaru smjena (P01).`,
+      createdAt: demoNow(),
+      read: false,
+    };
+    setNotifications((prev) => [notif, ...prev.filter((n) => n.id !== notif.id)]);
+  }, []);
+
+  const discardRoster = useCallback((ym: string) => {
+    setGeneratedRosters((prev) => prev.filter((r) => r.ym !== ym));
+  }, []);
+
   /** Status patrole postavlja šef smjene kad mu se patrola javi (pauza ima trajanje). */
   const setPatrolStatus = useCallback(
     (patrolId: string, status: ActivePatrolCard['status'], minutes?: number) => {
@@ -803,6 +848,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       submitDocumentRequest,
       setDocumentRequestStatus,
       toggleDocumentPaid,
+      generatedRosters,
+      generateRosterDraft,
+      publishRoster,
+      discardRoster,
     }),
     [
       academyAttempts,
@@ -811,6 +860,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       submitDocumentRequest,
       setDocumentRequestStatus,
       toggleDocumentPaid,
+      generatedRosters,
+      generateRosterDraft,
+      publishRoster,
+      discardRoster,
       kddEntries,
       addKddEntry,
       updateKddEntry,

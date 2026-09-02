@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Layers, Megaphone, AlertTriangle, X, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Layers, Megaphone, AlertTriangle, X, Info, Wand2, Check, Lock, Trash2 } from 'lucide-react';
 import { useScopedWorld } from '../../data/useScopedWorld';
+import { useStore } from '../../app/store';
 import { checkEligibility, seasonWarningForRole, slotUnderfilled } from '../../domain/eligibility';
 import type { Officer, Shift, ShiftSlot } from '../../data/types';
-import { addDays, dayNameBs, dayNameBsShort, formatBs, monthNameBs } from '../../data/generator/dates';
+import { addDays, dayNameBs, dayNameBsShort, demoNow, formatBs, monthNameBs } from '../../data/generator/dates';
 import { Button } from '../../components/Button';
 import { StatusBadge } from '../../components/StatusBadge';
 
@@ -16,20 +17,31 @@ interface SlotFocus {
 
 export function K01Raspored() {
   const world = useScopedWorld();
+  const { generatedRosters, generateRosterDraft, publishRoster, discardRoster } = useStore();
   const [monthYm, setMonthYm] = useState('2026-08');
   const [focus, setFocus] = useState<SlotFocus | null>(null);
-  const [publishToast, setPublishToast] = useState(false);
+  const [publishToast, setPublishToast] = useState<string | null>(null);
+  const [confirmPublish, setConfirmPublish] = useState(false);
+
+  // Izvor rasporeda: „live" (već generisan svijet, npr. avgust), nacrt/objavljeno iz store-a
+  // (komandirov „Generiši raspored"), ili ništa. Store nije scope-an → filtriraj po psId.
+  const scopedPsIds = useMemo(() => new Set(world.orgNodes.filter((n) => n.kind === 'ps').map((n) => n.id)), [world.orgNodes]);
+  const worldMonthShifts = useMemo(() => world.shifts.filter((s) => s.date.startsWith(monthYm)), [world.shifts, monthYm]);
+  const draft = generatedRosters.find((r) => r.ym === monthYm);
+  const draftShifts = useMemo(() => (draft ? draft.shifts.filter((s) => scopedPsIds.has(s.psId)) : []), [draft, scopedPsIds]);
+  const activeShifts = useMemo(() => (worldMonthShifts.length ? worldMonthShifts : draftShifts), [worldMonthShifts, draftShifts]);
+  const rosterState: 'live' | 'nacrt' | 'objavljen' | 'none' = worldMonthShifts.length ? 'live' : draft ? draft.status : 'none';
 
   const monthDays = useMemo(() => enumerateMonth(monthYm), [monthYm]);
   const shiftsByDate = useMemo(() => {
     const map = new Map<string, Shift[]>();
-    for (const s of world.shifts) {
+    for (const s of activeShifts) {
       const arr = map.get(s.date) ?? [];
       arr.push(s);
       map.set(s.date, arr);
     }
     return map;
-  }, [world.shifts]);
+  }, [activeShifts]);
 
   const seasonWarnings = useMemo(() => {
     const anyDate = `${monthYm}-15`;
@@ -50,7 +62,7 @@ export function K01Raspored() {
     setMonthYm(`${ny}-${String(nm).padStart(2, '0')}`);
   };
 
-  const nightAlarmCount = countNightInterventnaAlarms(world.shifts, monthYm);
+  const nightAlarmCount = countNightInterventnaAlarms(activeShifts, monthYm);
 
   return (
     <div className="relative flex h-[calc(100vh-49px)] flex-col lg:h-screen">
@@ -80,18 +92,31 @@ export function K01Raspored() {
             </div>
             <div className="mt-3 h-[2px] w-12 bg-brass-500" />
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" icon={<Layers className="h-4 w-4" />}>Šablon sedmice</Button>
-            <Button
-              variant="primary"
-              icon={<Megaphone className="h-4 w-4" />}
-              onClick={() => {
-                setPublishToast(true);
-                setTimeout(() => setPublishToast(false), 2500);
-              }}
-            >
-              Objavi raspored
-            </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {rosterState === 'none' && (
+              <>
+                <Button variant="secondary" icon={<Layers className="h-4 w-4" />}>Šablon sedmice</Button>
+                <Button variant="primary" icon={<Wand2 className="h-4 w-4" />} onClick={() => generateRosterDraft(monthYm)}>
+                  Generiši raspored
+                </Button>
+              </>
+            )}
+            {rosterState === 'nacrt' && (
+              <>
+                <Button variant="ghost" icon={<Trash2 className="h-4 w-4" />} onClick={() => discardRoster(monthYm)}>Odbaci</Button>
+                <Button variant="secondary" icon={<Wand2 className="h-4 w-4" />} onClick={() => generateRosterDraft(monthYm)}>Generiši ponovo</Button>
+                <Button variant="primary" icon={<Megaphone className="h-4 w-4" />} onClick={() => setConfirmPublish(true)}>Objavi raspored</Button>
+              </>
+            )}
+            {rosterState === 'objavljen' && (
+              <StatusBadge tone="ok" icon={<Check className="h-3.5 w-3.5" />}>Objavljen · policajci obaviješteni</StatusBadge>
+            )}
+            {rosterState === 'live' && (
+              <>
+                <Button variant="secondary" icon={<Layers className="h-4 w-4" />}>Šablon sedmice</Button>
+                <StatusBadge tone="ink">Objavljen raspored</StatusBadge>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -116,6 +141,20 @@ export function K01Raspored() {
         </div>
       )}
 
+      {rosterState === 'nacrt' && (
+        <div className="border-b border-brass-300 bg-brass-100/60 px-6 py-2.5 text-sm text-brass-800">
+          <div className="mx-auto flex max-w-6xl items-center gap-2">
+            <Wand2 className="h-4 w-4 flex-none text-brass-700" />
+            <span className="flex-1">
+              <span className="font-medium">Nacrt rasporeda</span> — pregledajte, pa „Objavi raspored".
+            </span>
+            <span className="hidden items-center gap-1 text-xs text-brass-700 sm:flex">
+              <Lock className="h-3.5 w-3.5" /> smjene u naredna 24 h su zaključane
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 overflow-auto bg-paper-50">
         <div className="mx-auto max-w-6xl px-6 py-6">
           <div className="border border-paper-200 bg-paper-0">
@@ -125,16 +164,26 @@ export function K01Raspored() {
               <div className="section-label">II smjena · 19:00 – 07:00</div>
             </div>
 
-            {monthDays.length === 0 ? (
-              <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
-                <div className="text-sm font-medium text-ink-700">Raspored za ovaj mjesec nije generisan u demou</div>
+            {rosterState === 'none' ? (
+              <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center border border-paper-300 bg-paper-50 text-ink-400">
+                  <Wand2 className="h-5 w-5" />
+                </div>
+                <div className="text-sm font-medium text-ink-700">
+                  Raspored za {monthNameBs(Number(monthYm.slice(5, 7)) - 1)} {monthYm.slice(0, 4)}. nije generisan
+                </div>
                 <div className="mt-1 max-w-md text-xs text-ink-500">
-                  U produkciji komandir koristi Šablon sedmice ili ručno popunjava. Za demo je pun raspored generisan samo za avgust 2026.
+                  Kliknite „Generiši raspored" — sistem rasporedi smjenske grupe za cijeli mjesec, a vi zatim pregledate i objavite.
+                </div>
+                <div className="mt-4">
+                  <Button variant="primary" icon={<Wand2 className="h-4 w-4" />} onClick={() => generateRosterDraft(monthYm)}>
+                    Generiši raspored
+                  </Button>
                 </div>
               </div>
             ) : null}
 
-            {monthDays.map((date) => {
+            {rosterState !== 'none' && monthDays.map((date) => {
               const shifts = shiftsByDate.get(date) ?? [];
               const shiftI = shifts.find((s) => s.kind === 'I');
               const shiftII = shifts.find((s) => s.kind === 'II');
@@ -162,13 +211,64 @@ export function K01Raspored() {
 
       {focus && <SlotDrawer focus={focus} world={world} onClose={() => setFocus(null)} />}
 
+      {confirmPublish && (
+        <ConfirmPublish
+          monthLabel={`${monthNameBs(Number(monthYm.slice(5, 7)) - 1)} ${monthYm.slice(0, 4)}.`}
+          shiftCount={activeShifts.length}
+          onCancel={() => setConfirmPublish(false)}
+          onConfirm={() => {
+            publishRoster(monthYm);
+            setConfirmPublish(false);
+            setPublishToast('Raspored objavljen — svi policajci primili obavještenje.');
+            setTimeout(() => setPublishToast(null), 3000);
+          }}
+        />
+      )}
+
       {publishToast && (
         <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2">
           <div className="border border-brass-500 bg-navy-900 px-4 py-2 text-sm text-paper-50 ">
-            Raspored objavljen — svi policajci primili obavještenje.
+            {publishToast}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ConfirmPublish({
+  monthLabel,
+  shiftCount,
+  onCancel,
+  onConfirm,
+}: {
+  monthLabel: string;
+  shiftCount: number;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <div className="absolute inset-0 bg-navy-900/40" onClick={onCancel} />
+      <div className="relative w-full max-w-md border border-paper-200 bg-paper-0 p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 flex-none items-center justify-center bg-brass-100 text-brass-700">
+            <Megaphone className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="font-heading text-lg text-ink-800">Objaviti raspored za {monthLabel}?</h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
+              Objavom se raspored zaključava i svi policajci dobijaju obavještenje. Buduće smjene se i
+              dalje mogu mijenjati, osim onih koje počinju u naredna 24 h.
+            </p>
+            <div className="mt-2 text-xs text-ink-500">{shiftCount} smjena u rasporedu.</div>
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="ghost" onClick={onCancel}>Odustani</Button>
+          <Button variant="primary" icon={<Check className="h-4 w-4" />} onClick={onConfirm}>Objavi i obavijesti</Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -265,6 +365,8 @@ function SlotDrawer({
   const ineligible = evaluated.filter((e) => !e.result.eligible);
 
   const seasonWarn = role ? seasonWarningForRole(role, focus.shift.date) : null;
+  // Smjene koje počinju u naredna 24 h su zaključane za izmjene.
+  const locked = focus.shift.date <= addDays(demoNow().slice(0, 10), 1);
 
   return (
     <div className="fixed inset-0 z-30 flex" role="dialog" aria-modal="true">
@@ -315,6 +417,13 @@ function SlotDrawer({
               </ul>
             )}
           </Section>
+
+          {locked && (
+            <div className="mb-6 flex items-start gap-2 border border-paper-300 bg-paper-100 px-3 py-2.5 text-xs text-ink-600">
+              <Lock className="mt-0.5 h-3.5 w-3.5 flex-none" />
+              Smjena počinje za manje od 24 h — zaključana je i ne može se mijenjati.
+            </div>
+          )}
 
           <Section eyebrow="Dostupni" right={String(eligible.length)}>
             {eligible.length === 0 ? (

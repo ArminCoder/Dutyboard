@@ -80,7 +80,20 @@ const ROSTER_STATIONS: Array<{ psId: string; puId: string; smjenaPrefix: string;
  * i sektorske patrole (uglavnom pješice). Ukupno ~17 izvršilaca po smjeni.
  */
 export function generateRoster(seed: number, officers: Officer[]): Shift[] {
-  const rand = mulberry32(seed);
+  return buildRoster(mulberry32(seed), officers, AUG_2026_START, AUG_2026_END, true);
+}
+
+/** Raspored za proizvoljni mjesec (ym = "YYYY-MM") — komandirov „Generiši raspored".
+ *  Bez avgustovskih planiranih specifičnosti (nema praznog interventnog slota ni fiksnog Softića). */
+export function generateRosterForMonth(seed: number, officers: Officer[], ym: string): Shift[] {
+  const [y, m] = ym.split('-').map(Number);
+  const start = `${ym}-01`;
+  const end = `${ym}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`;
+  return buildRoster(mulberry32(seed), officers, start, end, false);
+}
+
+/** Zajednička logika — `planted` uključuje avgustovske demo-specifičnosti (alarm 26./27., Softić). */
+function buildRoster(rand: () => number, officers: Officer[], startISO: string, endISO: string, planted: boolean): Shift[] {
   const shifts: Shift[] = [];
   const softić = officers.find((o) => o.name === 'Amar Softić');
 
@@ -90,7 +103,7 @@ export function generateRoster(seed: number, officers: Officer[]): Shift[] {
       byGroup[g] = officers.filter((o) => o.orgNodeId === `${st.smjenaPrefix}${g.toLowerCase()}`);
     }
 
-    for (let date = AUG_2026_START; date <= AUG_2026_END; date = addDays(date, 1)) {
+    for (let date = startISO; date <= endISO; date = addDays(date, 1)) {
       for (const kind of SHIFT_KINDS) {
         const workingGroup = groupWorking(date, kind);
         const pool = [...byGroup[workingGroup]];
@@ -102,7 +115,7 @@ export function generateRoster(seed: number, officers: Officer[]): Shift[] {
         st.autoPlates.forEach((plate, i) => {
           const assigned = pickAssignments(pool, 2, rand);
           // Softić radi u svojoj grupi (B) noćnu u prvoj auto-patroli PS Centar.
-          if (st.psId === 'ps-centar' && i === 0 && softić && workingGroup === 'B' && isNight && !assigned.includes(softić.id)) {
+          if (planted && st.psId === 'ps-centar' && i === 0 && softić && workingGroup === 'B' && isNight && !assigned.includes(softić.id)) {
             assigned[0] = softić.id;
           }
           slots.push({
@@ -115,8 +128,8 @@ export function generateRoster(seed: number, officers: Officer[]): Shift[] {
           });
         });
 
-        // Interventna — namjerno nepopunjena 26./27. noću (alarm u K01).
-        const leaveEmpty = st.psId === 'ps-centar' && isNight && (dayNum === 26 || dayNum === 27);
+        // Interventna — namjerno nepopunjena 26./27. noću (alarm u K01) samo u planiranom avgustu.
+        const leaveEmpty = planted && st.psId === 'ps-centar' && isNight && (dayNum === 26 || dayNum === 27);
         slots.push({
           id: `slot-${st.psId}-${date}-${kind}-interventna`,
           requiredRoleId: `${st.puId}:interventna`,

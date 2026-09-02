@@ -27,7 +27,7 @@ something works in the field, implement that, and update the docs rather than ar
 |---|---|
 | **Policajac** | P01 Smjena (+ ScheduleSection week/month calendar) · P02 Zahtjevi · P03 Statistika · P04 Plata · **P06 Izvještaji** · **P07 Akademija** (edukacija + provjera znanja) · P05 Zaduženja |
 | **Šef smjene** | K06 Moja smjena (read-only) · K02 Aktivna smjena · K04 Knjiga događaja (write) · K05 Mapa patrola · K07 Bilten |
-| **Komandir PS** | PC00 Komandna tabla · PC01 Ljudstvo · K01 Mjesečni raspored · K03 Odobrenja · K03 Prekovremeni · PC02 Naoružanje i oprema · **PC03 Dokumenti** · KDD (read) · N02 · N03 |
+| **Komandir PS** | PC00 Komandna tabla · PC01 Ljudstvo · K01 Mjesečni raspored (**+ „Generiši raspored" → nacrt → objava + notifikacije**) · K03 Odobrenja · K03 Prekovremeni · PC02 Naoružanje i oprema · **PC03 Dokumenti** · KDD (read) · N02 · N03 |
 | **OKC (dežurni)** | D01 Mapa kantona (+ sector zones) · D02 Bilteni smjena · D03 Jutarnji brifing |
 | **Načelnik PU** | N01 · KDD (read) · N02 · N03 · N04 · N05 |
 | **Komesar** | C01 Compstat · C02 Jutarnji brifing · C03 Kontrola prekovremenih · C04 Indeks spremnosti · C05 Kadrovska projekcija · C06 Radno vrijeme · KDD (read, sve stanice) |
@@ -74,6 +74,13 @@ src/app/                RoleContext · CitizenContext · OrgContext (white-label
                         citizenSession · store · routes
 src/data/               + academy.ts (Akademija bank/revenue) · administration.ts (doc catalog/fees)
 ```
+
+**„Generiši raspored":** `generateRoster()` was factored into `buildRoster(rand, officers, start, end,
+planted)`; `generateRosterForMonth(seed, officers, ym)` produces any month with `planted=false` (no
+August-only alarm/Softić). August stays byte-identical (the `planted &&` guards no-op when true). The
+komandir workflow (draft → objava) lives in the store as `generatedRosters` (per-ym `nacrt`/`objavljen`)
+with `generateRosterDraft`/`publishRoster`/`discardRoster`; publish pushes an officer notification.
+K01 shows the store roster for months with no `world.shifts`, filtered to scope by `psId`.
 
 **Two auth layers, two contexts:** internal police roles use `RoleContext` + the access-key gate.
 The **citizen portal is a separate public area**: `CitizenContext` (mock JMB+lozinka, accounts in
@@ -156,8 +163,8 @@ Drive with `chromium.launch({ channel: 'chrome', headless: true })`, gate key `D
 - **Phase 8 polish:** mobile QA on officer screens (≤430 px), empty/loading states, Bosnian copy pass,
   favicon/meta, bundle split.
 - **Full 20-minute dress rehearsal** of §7 end to end on one run.
-- **„Generiši raspored" (planned, Phase 3):** komandir generates a month → review → objavi + officer
-  notifications; parameterize `generateRoster()`, add draft/published store slice, 24h edit-lock.
+- **Rosters for the 2 non-demoed stations are static** — fine for the scripted demo. (Historic note:
+  ps-stari-grad / ps-dobrinja now have generated August rosters too — see §5.)
 - `docs/demo-spec.md` is **partly superseded** (role model + demo script) — worth annotating.
 - Per-org **feature toggles** in A01 are rendered but disabled ("u pripremi").
 - Backlog ideas in [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md): primopredaja smjene, komandir odobrenja

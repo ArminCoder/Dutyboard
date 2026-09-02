@@ -51,6 +51,13 @@ const M04Resursi = lazy(() => import('../features/minister/M04Resursi').then((m)
 const AdminShell = lazy(() => import('../features/admin/AdminShell').then((m) => ({ default: m.AdminShell })));
 const A01Organizacija = lazy(() => import('../features/admin/A01Organizacija').then((m) => ({ default: m.A01Organizacija })));
 const D01Mapa = lazy(() => import('../features/dispatch/D01Mapa').then((m) => ({ default: m.D01Mapa })));
+const PortalShell = lazy(() => import('../features/portal/PortalShell').then((m) => ({ default: m.PortalShell })));
+const PortalHome = lazy(() => import('../features/portal/PortalHome').then((m) => ({ default: m.PortalHome })));
+const PortalLogin = lazy(() => import('../features/portal/PortalLogin').then((m) => ({ default: m.PortalLogin })));
+const PortalRegister = lazy(() => import('../features/portal/PortalRegister').then((m) => ({ default: m.PortalRegister })));
+const PortalNovi = lazy(() => import('../features/portal/PortalNovi').then((m) => ({ default: m.PortalNovi })));
+const AdministracijaShell = lazy(() => import('../features/administracija/AdministracijaShell').then((m) => ({ default: m.AdministracijaShell })));
+const AdminZahtjevi = lazy(() => import('../features/administracija/AdminZahtjevi').then((m) => ({ default: m.AdminZahtjevi })));
 
 type Gate = 'checking' | 'open';
 
@@ -64,6 +71,25 @@ function LazyFallback() {
 
 export function AppRoutes() {
   const [gate, setGate] = useState<Gate>('checking');
+  const loc = useLocation();
+
+  // Portal za građane je javan — nalazi se IZVAN interne kapije (pristupni ključ),
+  // pa mu se pristupa i bez internog ključa (koristi vlastitu CitizenProvider prijavu).
+  if (loc.pathname.startsWith('/portal')) {
+    return (
+      <Suspense fallback={<LazyFallback />}>
+        <Routes>
+          <Route path="/portal" element={<PortalShell />}>
+            <Route index element={<PortalHome />} />
+            <Route path="prijava" element={<PortalLogin />} />
+            <Route path="registracija" element={<PortalRegister />} />
+            <Route path="novi" element={<PortalNovi />} />
+            <Route path="*" element={<Navigate to="/portal" replace />} />
+          </Route>
+        </Routes>
+      </Suspense>
+    );
+  }
 
   if (gate === 'checking') {
     return <GateScreen onAuthenticated={() => setGate('open')} />;
@@ -184,6 +210,17 @@ export function AppRoutes() {
           <Route path="simulacija" element={<M02Simulacija />} />
           <Route path="budzet" element={<M03Budzet />} />
           <Route path="resursi" element={<M04Resursi />} />
+        </Route>
+
+        <Route
+          path="/administracija"
+          element={
+            <RequireRole roles={['administracija']}>
+              <AdministracijaShell />
+            </RequireRole>
+          }
+        >
+          <Route index element={<AdminZahtjevi />} />
         </Route>
 
         <Route

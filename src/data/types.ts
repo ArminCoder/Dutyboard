@@ -121,6 +121,7 @@ export type AccessRole =
   | 'nacelnik'
   | 'komesar'
   | 'ministar'
+  | 'administracija'
   | 'admin';
 
 export const ACCESS_ROLE_LABEL: Record<AccessRole, string> = {
@@ -131,6 +132,7 @@ export const ACCESS_ROLE_LABEL: Record<AccessRole, string> = {
   nacelnik: 'Načelnik PU',
   komesar: 'Policijski komesar',
   ministar: 'Ministar',
+  administracija: 'Administrativna služba',
   admin: 'Administrator',
 };
 
@@ -225,6 +227,52 @@ export interface Notification {
     kind: 'court_confirm' | 'court_log_hours' | 'open_request';
     payload?: Record<string, string | number>;
   };
+}
+
+// --- Administracija: zahtjevi građana za dokumente ---
+// Građanin (portal) podnosi zahtjev; administrativna služba ga obrađuje i objavljuje
+// status + lokaciju preuzimanja. Neki dokumenti nose naknadu (prihod za MUP).
+
+export type DocumentKind =
+  | 'uvjerenje_prebivaliste'
+  | 'uvjerenje_nekaznjavanje'
+  | 'pristup_informacijama'
+  | 'vozacka'
+  | 'licna';
+
+/** Linearni tok statusa (uz 'odbijen' kao sporedni izlaz). */
+export type DocumentRequestStatus =
+  | 'podnesen'
+  | 'u_obradi'
+  | 'spreman'
+  | 'preuzet'
+  | 'odbijen';
+
+export const DOC_REQUEST_STATUS_LABEL: Record<DocumentRequestStatus, string> = {
+  podnesen: 'Podnesen',
+  u_obradi: 'U obradi',
+  spreman: 'Spreman za preuzimanje',
+  preuzet: 'Preuzet',
+  odbijen: 'Odbijen',
+};
+
+export interface DocumentRequest {
+  id: string;
+  /** JMB podnosioca — veže zahtjev za građanski nalog. */
+  citizenId: string;
+  citizenName: string;
+  kind: DocumentKind;
+  /** Stanica/šalter koji obrađuje i gdje se preuzima (scope za administraciju). */
+  psId: string;
+  pickupLocation: string;
+  status: DocumentRequestStatus;
+  feeKM: number;
+  paid: boolean;
+  /** Napomena/svrha koju upisuje građanin. */
+  note?: string;
+  createdAt: string;
+  submittedAt: string;
+  updatedAt?: string;
 }
 
 // --- Knjiga dnevnih događaja (KDD) ---

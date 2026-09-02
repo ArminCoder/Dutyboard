@@ -4,6 +4,8 @@ import { Printer, Wallet, Timer, PiggyBank, Users, Building2, GraduationCap, Tre
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { descendantsOf } from '../../data/generator/org';
 import { ACADEMY, academyRevenue } from '../../data/academy';
+import { documentFeeRevenue } from '../../data/administration';
+import { useStore } from '../../app/store';
 import { Button } from '../../components/Button';
 import { CHART_COLORS, CHART_TICK, CHART_TOOLTIP, CHART_TOOLTIP_LABEL } from '../../components/chartTheme';
 import { LAST_COMPLETE_MONTH } from '../../domain/unitStats';
@@ -17,6 +19,8 @@ const TXT: Record<Tone, string> = { ok: 'text-signal-ok', warn: 'text-signal-war
 
 export function M03Budzet() {
   const w = useScopedWorld();
+  const { documentRequests } = useStore();
+  const docFees = useMemo(() => documentFeeRevenue(documentRequests), [documentRequests]);
 
   const data = useMemo(() => {
     const rate = w.finance.overtimeRateKM;
@@ -72,7 +76,6 @@ export function M03Budzet() {
       totalPersonnelBudget,
       totalHeadcount,
       totalCost,
-      netCost: totalCost - academy.annualKM,
       academy,
       otPct: totalCost > 0 ? +((totalOtActual / totalCost) * 100).toFixed(1) : 0,
       otUtilTotal: totalOtBudget > 0 ? Math.round((totalOtActual / totalOtBudget) * 100) : 0,
@@ -111,51 +114,53 @@ export function M03Budzet() {
         <Kpi icon={<Users className="h-4 w-4" />} label="Trošak po policajcu" value={km(data.perCapita)} foot="godišnje, prosjek" />
       </section>
 
-      {/* Vlastiti prihod — MUP Akademija (pretplata) */}
-      <section className="mb-6 border border-brass-300 bg-brass-100/40">
-        <div className="flex items-center gap-2 border-b border-brass-300 px-5 py-3">
-          <GraduationCap className="h-4 w-4 text-brass-700" />
-          <div className="section-label text-brass-700">Vlastiti prihod — MUP Akademija</div>
-        </div>
-        <div className="grid gap-5 p-5 lg:grid-cols-[1.2fr_1fr]">
-          <div>
-            <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
-              <div>
-                <div className="section-label">Godišnji prihod (KS)</div>
-                <div className="font-mono text-2xl font-medium tabular-nums text-brass-700">{km(data.academy.annualKM)}</div>
-                <div className="mt-0.5 text-[11px] text-ink-500">{km(data.academy.monthlyKM)} mjesečno</div>
-              </div>
-              <div>
-                <div className="section-label">Pretplatnika</div>
-                <div className="font-mono text-2xl font-medium tabular-nums text-ink-800">{data.academy.totalSubs.toLocaleString('bs-BA')}</div>
-                <div className="mt-0.5 text-[11px] text-ink-500">
-                  {data.academy.officerSubs} policajaca · {data.academy.cadetSubs} kadeta
+      {/* Vlastiti prihodi — Akademija (pretplata) + naknade za dokumente građana */}
+      {(() => {
+        const ownRevenue = data.academy.annualKM + docFees.annualProjection;
+        const netCost = data.totalCost - ownRevenue;
+        return (
+          <section className="mb-6 border border-brass-300 bg-brass-100/40">
+            <div className="flex items-center gap-2 border-b border-brass-300 px-5 py-3">
+              <TrendingUp className="h-4 w-4 text-brass-700" />
+              <div className="section-label text-brass-700">Vlastiti prihodi — umanjuju neto trošak</div>
+            </div>
+            <div className="grid gap-0 sm:grid-cols-3">
+              {/* Akademija */}
+              <div className="border-b border-brass-300/60 p-5 sm:border-b-0 sm:border-r">
+                <div className="mb-1.5 flex items-center gap-1.5 text-brass-700">
+                  <GraduationCap className="h-4 w-4" />
+                  <div className="section-label text-brass-700">MUP Akademija</div>
                 </div>
+                <div className="font-mono text-2xl font-medium tabular-nums text-brass-700">{km(data.academy.annualKM)}</div>
+                <div className="mt-0.5 text-[11px] text-ink-500">
+                  {data.academy.totalSubs.toLocaleString('bs-BA')} pretplatnika · {ACADEMY.monthlyKM} KM/mj
+                </div>
+                <div className="mt-1 text-[11px] text-ink-400">FBiH projekcija {km(data.academy.fbihAnnualKM)}</div>
               </div>
-              <div>
+              {/* Naknade za dokumente */}
+              <div className="border-b border-brass-300/60 p-5 sm:border-b-0 sm:border-r">
+                <div className="mb-1.5 flex items-center gap-1.5 text-brass-700">
+                  <Printer className="h-4 w-4" />
+                  <div className="section-label text-brass-700">Naknade za dokumente</div>
+                </div>
+                <div className="font-mono text-2xl font-medium tabular-nums text-brass-700">{km(docFees.annualProjection)}</div>
+                <div className="mt-0.5 text-[11px] text-ink-500">lične karte, vozačke, pristup informacijama</div>
+                <div className="mt-1 text-[11px] text-ink-400">projekcija, godišnje</div>
+              </div>
+              {/* Neto trošak */}
+              <div className="p-5">
                 <div className="section-label">Neto trošak ljudstva</div>
-                <div className="font-mono text-2xl font-medium tabular-nums text-ink-800">{km(data.netCost)}</div>
-                <div className="mt-0.5 text-[11px] text-ink-500">umanjen za prihod akademije</div>
+                <div className="font-mono text-2xl font-medium tabular-nums text-ink-800">{km(netCost)}</div>
+                <div className="mt-0.5 text-[11px] text-ink-500">= {km(data.totalCost)} − {km(ownRevenue)} vlastitih prihoda</div>
               </div>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-ink-600">
-              Zvanična aplikacija (edukacija i provjera znanja za policajce i kadete) po cijeni od{' '}
-              {ACADEMY.monthlyKM} KM/mj po korisniku vraća sredstva u budžet umjesto da ga isključivo troši.
+            <p className="border-t border-brass-300/60 px-5 py-3 text-sm leading-relaxed text-ink-600">
+              Zvanične aplikacije (edukacija za policajce/kadete i portal za dokumente građana) vraćaju
+              sredstva u budžet umjesto da ga isključivo troše — vlastiti prihod od oko {km(ownRevenue)} godišnje.
             </p>
-          </div>
-          <div className="flex flex-col justify-center gap-2 border-l border-brass-300/60 pl-5">
-            <div className="flex items-center gap-2 text-brass-700">
-              <TrendingUp className="h-4 w-4" />
-              <div className="section-label text-brass-700">Projekcija — nivo FBiH</div>
-            </div>
-            <div className="font-mono text-3xl font-medium tabular-nums text-ink-800">{km(data.academy.fbihAnnualKM)}</div>
-            <div className="text-[11px] text-ink-500">
-              ~{data.academy.fbihSubs.toLocaleString('bs-BA')} pretplatnika (procjena ~{ACADEMY.fbihOfficers.toLocaleString('bs-BA')} policajaca
-              u FBiH uz isti obuhvat) · godišnje
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* Per-PU budget table */}
       <section className="mb-6 border border-paper-200 bg-paper-0">

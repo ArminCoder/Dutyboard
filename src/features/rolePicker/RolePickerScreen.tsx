@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Users } from 'lucide-react';
 import { ROLE_CHOICES, sessionFromChoice, type RoleChoice } from '../../app/session';
 import { useRoleActions } from '../../app/RoleContext';
 import { useOrg } from '../../app/OrgContext';
@@ -12,11 +12,13 @@ const HOME_BY_ROLE: Record<RoleChoice['role'], string> = {
   nacelnik: '/nacelnik',
   komesar: '/komesar',
   ministar: '/ministar',
+  administracija: '/administracija',
   admin: '/admin',
 };
 
 const OPERATIVA: RoleChoice['role'][] = ['policajac', 'sefSmjene', 'dezurni'];
 const RUKOVODSTVO: RoleChoice['role'][] = ['komandir', 'nacelnik', 'komesar', 'ministar'];
+const PODRSKA: RoleChoice['role'][] = ['administracija'];
 
 export function RolePickerScreen() {
   const nav = useNavigate();
@@ -30,6 +32,7 @@ export function RolePickerScreen() {
 
   const operativa = ROLE_CHOICES.filter((c) => OPERATIVA.includes(c.role));
   const rukovodstvo = ROLE_CHOICES.filter((c) => RUKOVODSTVO.includes(c.role));
+  const podrska = ROLE_CHOICES.filter((c) => PODRSKA.includes(c.role));
 
   return (
     <div className="min-h-screen bg-paper-50">
@@ -47,6 +50,18 @@ export function RolePickerScreen() {
         <RoleGroup title="Operativa" choices={operativa} onChoose={choose} />
         <div className="my-10 h-px bg-paper-200" />
         <RoleGroup title="Rukovodstvo" choices={rukovodstvo} onChoose={choose} />
+        <div className="my-10 h-px bg-paper-200" />
+        <RoleGroup title="Podrška" choices={podrska} onChoose={choose} />
+
+        <div className="mt-8 flex justify-center">
+          <a
+            href="/portal"
+            className="inline-flex items-center gap-2 border border-navy-700 bg-paper-0 px-4 py-2 text-sm text-navy-900 transition hover:bg-paper-100"
+          >
+            <Users className="h-4 w-4" />
+            Otvori portal za građane
+          </a>
+        </div>
 
         <div className="mt-14 border-t border-paper-200 pt-6">
           <div className="section-label mb-3 text-center text-ink-400">Prilozi za pitanja u toku prezentacije</div>

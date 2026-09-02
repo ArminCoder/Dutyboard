@@ -82,6 +82,16 @@ export const ROLE_CHOICES: RoleChoice[] = [
     displayTitle: 'ministar',
     scopeLabel: 'MUP Demo kantona',
   },
+  {
+    // Administrativna služba — šalteri: obrađuje zahtjeve građana za dokumente.
+    // Scope je cijela Uprava jer se šalteri vode kantonalno.
+    role: 'administracija',
+    officerId: null,
+    scopeNodeId: 'up',
+    displayName: 'Administrativna služba',
+    displayTitle: 'šalter · obrada zahtjeva građana',
+    scopeLabel: 'MUP DK · šalteri',
+  },
 ];
 
 export function sessionFromChoice(choice: RoleChoice): Session {

@@ -2,9 +2,10 @@
 // fast-refresh rule is a false positive since the hook depends on this context.
 /* oxlint-disable react/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { ApprovalStep, Bilten, CourtSummons, KddEntry, KddRevision, LeaveRequest, Notification, PoliceReport, ReportStatus } from '../data/types';
+import type { ApprovalStep, Bilten, CourtSummons, DocumentKind, DocumentRequest, DocumentRequestStatus, KddEntry, KddRevision, LeaveRequest, Notification, PoliceReport, ReportStatus } from '../data/types';
 import { world } from '../data/world';
 import { DEMO_TODAY, addDays, demoNow } from '../data/generator/dates';
+import { findDocType, findOffice } from '../data/administration';
 
 // --- Phase 4 additions: overtime postings + active shift crisis + shift log ---
 
@@ -90,6 +91,20 @@ interface Store {
 
   academyAttempts: AcademyAttempt[];
   recordAcademyAttempt: (input: Omit<AcademyAttempt, 'id' | 'takenAt'>) => AcademyAttempt;
+
+  documentRequests: DocumentRequest[];
+  submitDocumentRequest: (draft: DocumentRequestDraft) => DocumentRequest;
+  setDocumentRequestStatus: (id: string, status: DocumentRequestStatus) => void;
+  toggleDocumentPaid: (id: string) => void;
+}
+
+/** Novi zahtjev građanina — naknada i lokacija se izvode iz kataloga/šaltera. */
+export interface DocumentRequestDraft {
+  citizenId: string;
+  citizenName: string;
+  kind: DocumentKind;
+  psId: string;
+  note?: string;
 }
 
 /** Novi ili izmijenjen dokument; bez `id` je novi. */
@@ -384,6 +399,39 @@ function seedReports(): PoliceReport[] {
   ];
 }
 
+/** Zahtjevi građana — nekoliko za demo nalog (Kenan Hadžić) kroz razne statuse, plus
+ *  zahtjevi drugih građana da red administracije ima obim. Naknada/lokacija iz kataloga. */
+function seedDocumentRequests(): DocumentRequest[] {
+  const DEMO_JMB = '0101990171515';
+  const rows: Array<{ citizenId: string; citizenName: string; kind: DocumentKind; psId: string; status: DocumentRequestStatus; paid: boolean; note?: string; daysAgo: number }> = [
+    { citizenId: DEMO_JMB, citizenName: 'Kenan Hadžić', kind: 'licna', psId: 'ps-centar', status: 'spreman', paid: true, note: 'Zamjena istekle lične karte.', daysAgo: 6 },
+    { citizenId: DEMO_JMB, citizenName: 'Kenan Hadžić', kind: 'uvjerenje_nekaznjavanje', psId: 'ps-centar', status: 'u_obradi', paid: true, note: 'Za novog poslodavca.', daysAgo: 2 },
+    { citizenId: DEMO_JMB, citizenName: 'Kenan Hadžić', kind: 'uvjerenje_prebivaliste', psId: 'ps-centar', status: 'preuzet', paid: true, daysAgo: 20 },
+    { citizenId: '1203988175042', citizenName: 'Amela Suljić', kind: 'vozacka', psId: 'ps-novi-grad', status: 'podnesen', paid: false, daysAgo: 1 },
+    { citizenId: '2508975170033', citizenName: 'Mirza Delić', kind: 'pristup_informacijama', psId: 'ps-stari-grad', status: 'u_obradi', paid: true, note: 'Traženi podaci o javnoj nabavci.', daysAgo: 4 },
+    { citizenId: '0709992176521', citizenName: 'Lejla Kadić', kind: 'licna', psId: 'ps-dobrinja', status: 'podnesen', paid: false, daysAgo: 1 },
+    { citizenId: '1101983170055', citizenName: 'Haris Begović', kind: 'vozacka', psId: 'ps-centar', status: 'spreman', paid: true, daysAgo: 8 },
+  ];
+  return rows.map((r, i) => {
+    const doc = findDocType(r.kind);
+    const submittedAt = `${addDays(DEMO_TODAY, -r.daysAgo)}T09:${String(10 + i).padStart(2, '0')}`;
+    return {
+      id: `doc-seed-${String(i + 1).padStart(3, '0')}`,
+      citizenId: r.citizenId,
+      citizenName: r.citizenName,
+      kind: r.kind,
+      psId: r.psId,
+      pickupLocation: findOffice(r.psId).name,
+      status: r.status,
+      feeKM: doc.feeKM,
+      paid: r.paid,
+      note: r.note,
+      createdAt: submittedAt,
+      submittedAt,
+    };
+  });
+}
+
 /** Raniji položen test — da Akademija nije prazna i da odmah ima jedan certifikat. */
 function seedAcademyAttempts(): AcademyAttempt[] {
   return [
@@ -412,6 +460,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [reports, setReports] = useState<PoliceReport[]>(() => seedReports());
   const [biltens, setBiltens] = useState<Bilten[]>(() => seedBiltens());
   const [academyAttempts, setAcademyAttempts] = useState<AcademyAttempt[]>(() => seedAcademyAttempts());
+  const [documentRequests, setDocumentRequests] = useState<DocumentRequest[]>(() => seedDocumentRequests());
 
   const markNotificationRead = useCallback((id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -662,6 +711,34 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return attempt;
   }, []);
 
+  const submitDocumentRequest = useCallback((draft: DocumentRequestDraft): DocumentRequest => {
+    const doc = findDocType(draft.kind);
+    const req: DocumentRequest = {
+      id: `doc-${Date.now()}`,
+      citizenId: draft.citizenId,
+      citizenName: draft.citizenName,
+      kind: draft.kind,
+      psId: draft.psId,
+      pickupLocation: findOffice(draft.psId).name,
+      status: 'podnesen',
+      feeKM: doc.feeKM,
+      paid: false,
+      note: draft.note,
+      createdAt: demoNow(),
+      submittedAt: demoNow(),
+    };
+    setDocumentRequests((prev) => [req, ...prev]);
+    return req;
+  }, []);
+
+  const setDocumentRequestStatus = useCallback((id: string, status: DocumentRequestStatus) => {
+    setDocumentRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status, updatedAt: demoNow() } : r)));
+  }, []);
+
+  const toggleDocumentPaid = useCallback((id: string) => {
+    setDocumentRequests((prev) => prev.map((r) => (r.id === id ? { ...r, paid: !r.paid, updatedAt: demoNow() } : r)));
+  }, []);
+
   /** Status patrole postavlja šef smjene kad mu se patrola javi (pauza ima trajanje). */
   const setPatrolStatus = useCallback(
     (patrolId: string, status: ActivePatrolCard['status'], minutes?: number) => {
@@ -722,10 +799,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setReportStatus,
       academyAttempts,
       recordAcademyAttempt,
+      documentRequests,
+      submitDocumentRequest,
+      setDocumentRequestStatus,
+      toggleDocumentPaid,
     }),
     [
       academyAttempts,
       recordAcademyAttempt,
+      documentRequests,
+      submitDocumentRequest,
+      setDocumentRequestStatus,
+      toggleDocumentPaid,
       kddEntries,
       addKddEntry,
       updateKddEntry,

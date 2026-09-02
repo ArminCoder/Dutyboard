@@ -4,7 +4,8 @@
 > [spec](demo-spec.md) (original brief — note: parts of it are now superseded, see below).
 > **Keep this file current.**
 
-**Last updated:** after the Akademija module + all-4-station rosters + keyless map fix.
+**Last updated:** after Administracija (citizen portal + admin dash), Akademija, all-4-station
+rosters, keyless map fix.
 **Health:** `npx tsc -b`, `npm run lint`, `npm run build` all clean · world verified deterministic ·
 every package browser-verified before commit.
 
@@ -30,7 +31,9 @@ something works in the field, implement that, and update the docs rather than ar
 | **OKC (dežurni)** | D01 Mapa kantona (+ sector zones) · D02 Bilteni smjena · D03 Jutarnji brifing |
 | **Načelnik PU** | N01 · KDD (read) · N02 · N03 · N04 · N05 |
 | **Komesar** | C01 Compstat · C02 Jutarnji brifing · C03 Kontrola prekovremenih · C04 Indeks spremnosti · C05 Kadrovska projekcija · C06 Radno vrijeme · KDD (read, sve stanice) |
-| **Ministar** | M01 Strateška tabla · M02 Simulacija · M03 Budžet · M04 Resursi i oprema |
+| **Ministar** | M01 Strateška tabla · M02 Simulacija · M03 Budžet (**+ vlastiti prihodi: Akademija + naknade**) · M04 Resursi i oprema |
+| **Administracija** | Zahtjevi građana za dokumente — obrada (podnesen → u obradi → spreman → preuzet), naplata, scope po psId |
+| **Portal građana** | `/portal` — javno, **izvan interne kapije**: registracija/prijava (JMB+lozinka, mock), novi zahtjev (dokument + naknada + lokacija), praćenje statusa i preuzimanja |
 | **Admin (skriven)** | A01 Postavke organizacije (white-label) — reached via a discreet role-picker link |
 
 All roles render through **one shared `components/SidebarShell`** (desktop sidebar; mobile top strip,
@@ -65,8 +68,18 @@ src/features/
   precinctCommander/    K01, K03×2, PC00–PC03          kdd/              KddBook (all roles)
   reports/              P06 Izvještaji                 dispatch/         D01, D02, JutarnjiBilten, UnitsMap, sectors
   chief/ commissioner/ minister/ admin/ gate/ rolePicker/ mockups/
-src/app/                RoleContext · OrgContext (white-label) · session · store · routes
+  portal/               citizen portal (PortalShell, Login, Register, Home, Novi, docUi)
+  administracija/       admin dash (AdministracijaShell, AdminZahtjevi)
+src/app/                RoleContext · CitizenContext · OrgContext (white-label) · session ·
+                        citizenSession · store · routes
+src/data/               + academy.ts (Akademija bank/revenue) · administration.ts (doc catalog/fees)
 ```
+
+**Two auth layers, two contexts:** internal police roles use `RoleContext` + the access-key gate.
+The **citizen portal is a separate public area**: `CitizenContext` (mock JMB+lozinka, accounts in
+localStorage), routed under `/portal/*` **above** the gate check in `routes.tsx` so it needs no
+internal key. The **`administracija`** role is a normal internal role (role picker → `/administracija`)
+that processes the shared `documentRequests` store slice, scoped by `psId` like PC03.
 
 ## 5. Seed facts (deterministic — same every run)
 
@@ -143,9 +156,6 @@ Drive with `chromium.launch({ channel: 'chrome', headless: true })`, gate key `D
 - **Phase 8 polish:** mobile QA on officer screens (≤430 px), empty/loading states, Bosnian copy pass,
   favicon/meta, bundle split.
 - **Full 20-minute dress rehearsal** of §7 end to end on one run.
-- **Administracija (planned, not built):** citizen document portal + police-admin dash. See the
-  approved plan at `~/.claude/plans/pure-mapping-snail.md` (Phase 2). Functional core, client-side mock
-  auth, new `administracija` role, fees → ministar revenue.
 - **„Generiši raspored" (planned, Phase 3):** komandir generates a month → review → objavi + officer
   notifications; parameterize `generateRoster()`, add draft/published store slice, 24h edit-lock.
 - `docs/demo-spec.md` is **partly superseded** (role model + demo script) — worth annotating.

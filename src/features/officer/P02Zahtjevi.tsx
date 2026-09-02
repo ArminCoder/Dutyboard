@@ -314,7 +314,7 @@ function NewRequestDialog({ onClose }: { onClose: () => void }) {
               ? 'Ova vrsta zahtjeva će biti dostupna u sljedećoj fazi. Podnošenje je omogućeno kao mockup.'
               : kind === 'bolovanje'
                 ? 'Bolovanje se prijavljuje odmah i ostaje otvoreno; ljekarsko uvjerenje vidi komandir.'
-                : 'Zahtjev prolazi trostepeni lanac: šef smjene → komandir → načelnik.'}
+                : 'Zahtjev odobrava komandir stanice, zatim načelnik PU.'}
           </div>
         )}
 

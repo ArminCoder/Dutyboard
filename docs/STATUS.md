@@ -167,8 +167,13 @@ Drive with `chromium.launch({ channel: 'chrome', headless: true })`, gate key `D
   on mobile. Empty/loading states + Bosnian copy verified. **Bundle split done:** N01Komandna was eager and
   pulled recharts into `index` (1016 kB); made it lazy + added `manualChunks` (react-vendor,
   charts-vendor). Now index 236 kB (51 kB gz), react-vendor 399/123 gz (eager, cached), charts-vendor
-  449/129 gz (**async** — only chart screens fetch it), no chunk-size warning. **Still open:** full
-  20-min dress rehearsal in one run.
+  449/129 gz (**async** — only chart screens fetch it), no chunk-size warning.
+- **Dress rehearsal: PASS.** Full end-to-end run through all 8 roles in one browser session, switching
+  roles via the in-app Odjava→role-picker (router nav). **0 console/page errors.** Cross-role state
+  persistence confirmed: an officer's tagged request appeared in the komandir's Odobrenja after the
+  role switch (trap #5 — no hard reload). New features exercised inline (Akademija, generiši+objavi
+  raspored, administracija, both revenue lines). Also fixed a stale P02 copy string that still named the
+  šef smjene in the godišnji approval chain (now "komandir → načelnik", per §3).
   - ⚠ Trap: any shared shell flex column that holds arbitrary content needs `min-w-0`, and every wide
     (`min-w-[…]`) table needs an `overflow-auto` wrapper, or it clips on mobile instead of scrolling.
 - **Full 20-minute dress rehearsal** of §7 end to end on one run.

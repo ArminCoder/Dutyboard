@@ -17,7 +17,6 @@ import { ChiefShell } from '../components/ChiefShell';
 import { MinisterShell } from '../features/minister/MinisterShell';
 import { KomesarShell } from '../features/commissioner/KomesarShell';
 import { DispatchShell } from '../features/dispatch/DispatchShell';
-import { N01Komandna } from '../features/chief/N01Komandna';
 import { N04Oprema } from '../features/chief/N04Oprema';
 import { N05Uloge } from '../features/chief/N05Uloge';
 import { X01Pisarnica, X02Tajnost, X03Admin } from '../features/mockups/XScreens';
@@ -27,6 +26,7 @@ import type { AccessRole } from '../data/types';
 // Code-splitting: Recharts i Leaflet heavy chunks se učitavaju lazy.
 const P03Statistika = lazy(() => import('../features/officer/P03Statistika').then((m) => ({ default: m.P03Statistika })));
 const K03Prekovremeni = lazy(() => import('../features/precinctCommander/K03Prekovremeni').then((m) => ({ default: m.K03Prekovremeni })));
+const N01Komandna = lazy(() => import('../features/chief/N01Komandna').then((m) => ({ default: m.N01Komandna })));
 const N02Analitika = lazy(() => import('../features/chief/N02Analitika').then((m) => ({ default: m.N02Analitika })));
 const N03Kadar = lazy(() => import('../features/chief/N03Kadar').then((m) => ({ default: m.N03Kadar })));
 const C01Operativni = lazy(() => import('../features/commissioner/C01Operativni').then((m) => ({ default: m.C01Operativni })));

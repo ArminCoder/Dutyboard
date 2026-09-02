@@ -164,9 +164,11 @@ Drive with `chromium.launch({ channel: 'chrome', headless: true })`, gate key `D
   now **0 horizontal overflow everywhere**. Fixed: `SidebarShell` content column needed `min-w-0`
   (was stretching every screen past the viewport and clipping content); PC01/PC02 komandir tables
   needed `overflow-auto` (were clipping columns). Officer 7-tab nav fits; portal header uses `orgShort`
-  on mobile. Empty/loading states + Bosnian copy verified. **Still open:** bundle split (index chunk
-  ~998 kB / 280 kB gz — Recharts/Leaflet already lazy; vendor split not done), full 20-min dress
-  rehearsal in one run.
+  on mobile. Empty/loading states + Bosnian copy verified. **Bundle split done:** N01Komandna was eager and
+  pulled recharts into `index` (1016 kB); made it lazy + added `manualChunks` (react-vendor,
+  charts-vendor). Now index 236 kB (51 kB gz), react-vendor 399/123 gz (eager, cached), charts-vendor
+  449/129 gz (**async** — only chart screens fetch it), no chunk-size warning. **Still open:** full
+  20-min dress rehearsal in one run.
   - ⚠ Trap: any shared shell flex column that holds arbitrary content needs `min-w-0`, and every wide
     (`min-w-[…]`) table needs an `overflow-auto` wrapper, or it clips on mobile instead of scrolling.
 - **Full 20-minute dress rehearsal** of §7 end to end on one run.

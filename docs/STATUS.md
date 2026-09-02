@@ -160,8 +160,11 @@ Drive with `chromium.launch({ channel: 'chrome', headless: true })`, gate key `D
 
 ## 9. Not done / next candidates
 
-- **Phase 8 polish:** mobile QA on officer screens (≤430 px), empty/loading states, Bosnian copy pass,
-  favicon/meta, bundle split.
+- **Phase 8 polish (mostly done):** mobile QA passed at 390 px on all new surfaces (officer 7-tab
+  bottom nav fits; portal + admin responsive; portal header uses `orgShort` on mobile). Empty/loading
+  states + Bosnian copy verified on new screens. **Still open:** bundle split (index chunk ~998 kB /
+  280 kB gz — Recharts/Leaflet already lazy; vendor split not done), broader mobile sweep of older
+  screens, full 20-min dress rehearsal in one run.
 - **Full 20-minute dress rehearsal** of §7 end to end on one run.
 - **Rosters for the 2 non-demoed stations are static** — fine for the scripted demo. (Historic note:
   ps-stari-grad / ps-dobrinja now have generated August rosters too — see §5.)

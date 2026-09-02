@@ -19,10 +19,13 @@ export function PortalShell() {
     <div className="min-h-screen bg-paper-50">
       <header className="border-b border-paper-200 bg-navy-900">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-          <Link to="/portal" className="flex items-center gap-2.5 text-paper-50">
-            <Landmark className="h-5 w-5 text-brass-400" />
-            <div className="leading-tight">
-              <div className="font-heading text-sm font-medium">{org.orgName}</div>
+          <Link to="/portal" className="flex min-w-0 items-center gap-2.5 text-paper-50">
+            <Landmark className="h-5 w-5 flex-none text-brass-400" />
+            <div className="min-w-0 leading-tight">
+              <div className="truncate font-heading text-sm font-medium">
+                <span className="sm:hidden">{org.orgShort}</span>
+                <span className="hidden sm:inline">{org.orgName}</span>
+              </div>
               <div className="text-[11px] text-paper-300">Portal za građane</div>
             </div>
           </Link>

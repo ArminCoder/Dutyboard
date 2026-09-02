@@ -160,11 +160,15 @@ Drive with `chromium.launch({ channel: 'chrome', headless: true })`, gate key `D
 
 ## 9. Not done / next candidates
 
-- **Phase 8 polish (mostly done):** mobile QA passed at 390 px on all new surfaces (officer 7-tab
-  bottom nav fits; portal + admin responsive; portal header uses `orgShort` on mobile). Empty/loading
-  states + Bosnian copy verified on new screens. **Still open:** bundle split (index chunk ~998 kB /
-  280 kB gz — Recharts/Leaflet already lazy; vendor split not done), broader mobile sweep of older
-  screens, full 20-min dress rehearsal in one run.
+- **Phase 8 polish (mostly done):** full mobile sweep at 390 px across **all 27 screens / 6 roles** —
+  now **0 horizontal overflow everywhere**. Fixed: `SidebarShell` content column needed `min-w-0`
+  (was stretching every screen past the viewport and clipping content); PC01/PC02 komandir tables
+  needed `overflow-auto` (were clipping columns). Officer 7-tab nav fits; portal header uses `orgShort`
+  on mobile. Empty/loading states + Bosnian copy verified. **Still open:** bundle split (index chunk
+  ~998 kB / 280 kB gz — Recharts/Leaflet already lazy; vendor split not done), full 20-min dress
+  rehearsal in one run.
+  - ⚠ Trap: any shared shell flex column that holds arbitrary content needs `min-w-0`, and every wide
+    (`min-w-[…]`) table needs an `overflow-auto` wrapper, or it clips on mobile instead of scrolling.
 - **Full 20-minute dress rehearsal** of §7 end to end on one run.
 - **Rosters for the 2 non-demoed stations are static** — fine for the scripted demo. (Historic note:
   ps-stari-grad / ps-dobrinja now have generated August rosters too — see §5.)

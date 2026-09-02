@@ -95,7 +95,7 @@ export function PC02Oprema() {
               ) : null}
             </div>
           </div>
-          <div className="max-h-[52vh] overflow-y-auto">
+          <div className="max-h-[52vh] overflow-auto">
             <table className="w-full min-w-[520px] text-sm">
               <thead className="sticky top-0 bg-paper-0">
                 <tr className="border-b border-paper-200 text-left text-[10px] uppercase tracking-wider text-ink-400">

@@ -135,7 +135,7 @@ export function PC01Ljudstvo() {
         {rows.length === 0 ? (
           <div className="px-5 py-10 text-center text-sm text-ink-500">Nema rezultata.</div>
         ) : (
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[60vh] overflow-auto">
             <table className="w-full min-w-[760px] text-sm">
               <thead className="sticky top-0 bg-paper-0">
                 <tr className="border-b border-paper-200 text-left text-[10px] uppercase tracking-wider text-ink-400">

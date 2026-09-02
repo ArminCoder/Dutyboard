@@ -116,8 +116,9 @@ export function SidebarShell({
         </div>
       </aside>
 
-      {/* Content column */}
-      <div className="flex min-h-screen flex-1 flex-col lg:ml-64 print:ml-0">
+      {/* Content column — min-w-0 dopušta flex-itemu da se skupi ispod širine sadržaja
+          (bez toga se kolona rasteže na širinu najšireg djeteta i lomi mobilni prikaz). */}
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:ml-64 print:ml-0">
         {/* Mobile header */}
         <header className={`sticky top-0 z-10 flex items-center justify-between border-b ${t.border} ${t.headerBg} px-4 py-3 lg:hidden print:hidden`}>
           <div className="min-w-0">

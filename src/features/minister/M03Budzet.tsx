@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Printer, Wallet, Timer, PiggyBank, Users, Building2 } from 'lucide-react';
+import { Printer, Wallet, Timer, PiggyBank, Users, Building2, GraduationCap, TrendingUp } from 'lucide-react';
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { descendantsOf } from '../../data/generator/org';
+import { ACADEMY, academyRevenue } from '../../data/academy';
 import { Button } from '../../components/Button';
 import { CHART_COLORS, CHART_TICK, CHART_TOOLTIP, CHART_TOOLTIP_LABEL } from '../../components/chartTheme';
 import { LAST_COMPLETE_MONTH } from '../../domain/unitStats';
@@ -59,6 +60,10 @@ export function M03Budzet() {
     // Trošak prekovremenih izražen u ekvivalentu plata — argument za zapošljavanje.
     const equivalentOfficers = Math.round(totalOtActual / loadedPerOfficer);
 
+    // Vlastiti prihod — MUP Akademija (pretplata na edukaciju/provjeru znanja).
+    // Deterministički izveden iz broja policajaca; umanjuje neto trošak ljudstva.
+    const academy = academyRevenue(totalHeadcount);
+
     return {
       rows,
       totalPersonnelActual,
@@ -67,6 +72,8 @@ export function M03Budzet() {
       totalPersonnelBudget,
       totalHeadcount,
       totalCost,
+      netCost: totalCost - academy.annualKM,
+      academy,
       otPct: totalCost > 0 ? +((totalOtActual / totalCost) * 100).toFixed(1) : 0,
       otUtilTotal: totalOtBudget > 0 ? Math.round((totalOtActual / totalOtBudget) * 100) : 0,
       perCapita: totalHeadcount > 0 ? Math.round(totalCost / totalHeadcount) : 0,
@@ -102,6 +109,52 @@ export function M03Budzet() {
         <Kpi icon={<Timer className="h-4 w-4" />} label="Trošak prekovremenih" value={km(data.totalOtActual)} foot={`${data.otPct}% ukupnog troška`} />
         <Kpi icon={<Building2 className="h-4 w-4" />} label="Iskorištenost OT budžeta" value={`${data.otUtilTotal}%`} tone={otTotTone} foot={`${km(data.totalOtActual)} / ${km(data.totalOtBudget)}`} />
         <Kpi icon={<Users className="h-4 w-4" />} label="Trošak po policajcu" value={km(data.perCapita)} foot="godišnje, prosjek" />
+      </section>
+
+      {/* Vlastiti prihod — MUP Akademija (pretplata) */}
+      <section className="mb-6 border border-brass-300 bg-brass-100/40">
+        <div className="flex items-center gap-2 border-b border-brass-300 px-5 py-3">
+          <GraduationCap className="h-4 w-4 text-brass-700" />
+          <div className="section-label text-brass-700">Vlastiti prihod — MUP Akademija</div>
+        </div>
+        <div className="grid gap-5 p-5 lg:grid-cols-[1.2fr_1fr]">
+          <div>
+            <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
+              <div>
+                <div className="section-label">Godišnji prihod (KS)</div>
+                <div className="font-mono text-2xl font-medium tabular-nums text-brass-700">{km(data.academy.annualKM)}</div>
+                <div className="mt-0.5 text-[11px] text-ink-500">{km(data.academy.monthlyKM)} mjesečno</div>
+              </div>
+              <div>
+                <div className="section-label">Pretplatnika</div>
+                <div className="font-mono text-2xl font-medium tabular-nums text-ink-800">{data.academy.totalSubs.toLocaleString('bs-BA')}</div>
+                <div className="mt-0.5 text-[11px] text-ink-500">
+                  {data.academy.officerSubs} policajaca · {data.academy.cadetSubs} kadeta
+                </div>
+              </div>
+              <div>
+                <div className="section-label">Neto trošak ljudstva</div>
+                <div className="font-mono text-2xl font-medium tabular-nums text-ink-800">{km(data.netCost)}</div>
+                <div className="mt-0.5 text-[11px] text-ink-500">umanjen za prihod akademije</div>
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-ink-600">
+              Zvanična aplikacija (edukacija i provjera znanja za policajce i kadete) po cijeni od{' '}
+              {ACADEMY.monthlyKM} KM/mj po korisniku vraća sredstva u budžet umjesto da ga isključivo troši.
+            </p>
+          </div>
+          <div className="flex flex-col justify-center gap-2 border-l border-brass-300/60 pl-5">
+            <div className="flex items-center gap-2 text-brass-700">
+              <TrendingUp className="h-4 w-4" />
+              <div className="section-label text-brass-700">Projekcija — nivo FBiH</div>
+            </div>
+            <div className="font-mono text-3xl font-medium tabular-nums text-ink-800">{km(data.academy.fbihAnnualKM)}</div>
+            <div className="text-[11px] text-ink-500">
+              ~{data.academy.fbihSubs.toLocaleString('bs-BA')} pretplatnika (procjena ~{ACADEMY.fbihOfficers.toLocaleString('bs-BA')} policajaca
+              u FBiH uz isti obuhvat) · godišnje
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Per-PU budget table */}

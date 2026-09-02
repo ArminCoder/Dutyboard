@@ -42,6 +42,7 @@ const C03Prekovremeni = lazy(() => import('../features/commissioner/C03Prekovrem
 const C04Spremnost = lazy(() => import('../features/commissioner/C04Spremnost').then((m) => ({ default: m.C04Spremnost })));
 const C05Kadrovi = lazy(() => import('../features/commissioner/C05Kadrovi').then((m) => ({ default: m.C05Kadrovi })));
 const P06Izvjestaji = lazy(() => import('../features/reports/P06Izvjestaji').then((m) => ({ default: m.P06Izvjestaji })));
+const P07Akademija = lazy(() => import('../features/officer/P07Akademija').then((m) => ({ default: m.P07Akademija })));
 const PC03Dokumenti = lazy(() => import('../features/precinctCommander/PC03Dokumenti').then((m) => ({ default: m.PC03Dokumenti })));
 const PC00Tabla = lazy(() => import('../features/precinctCommander/PC00Tabla').then((m) => ({ default: m.PC00Tabla })));
 const PC01Ljudstvo = lazy(() => import('../features/precinctCommander/PC01Ljudstvo').then((m) => ({ default: m.PC01Ljudstvo })));
@@ -86,6 +87,7 @@ export function AppRoutes() {
           <Route path="statistika" element={<P03Statistika />} />
           <Route path="plata" element={<P04Plata />} />
           <Route path="izvjestaji" element={<P06Izvjestaji />} />
+          <Route path="akademija" element={<P07Akademija />} />
           <Route path="zaduzenja" element={<P05Zaduzenja />} />
         </Route>
 

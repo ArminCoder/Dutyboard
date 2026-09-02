@@ -146,16 +146,19 @@ export function UnitsMap({ units, alertUnitId, showSectors = false, center = SAR
         ))}
       </div>
 
-      <div className="overflow-hidden border border-dark-border">
+      <div className="map-dark overflow-hidden border border-dark-border">
         <MapContainer
           center={center}
           zoom={zoom}
           style={{ height: `${heightVh}vh`, width: '100%', background: cssVar('--color-dark-bg', '#070f1f') }}
           scrollWheelZoom
         >
+          {/* Keyless OSM osnovna karta (bez API ključa). Tamni izgled se postiže
+              CSS filterom nad slojem pločica (.map-dark .leaflet-tile-pane), tako
+              da markeri/sektori ostaju u svojim bojama. */}
           <TileLayer
-            attribution="&copy; OpenStreetMap contributors &copy; CARTO"
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+            attribution="&copy; OpenStreetMap contributors"
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
           {visibleSectors.map((sec) => {

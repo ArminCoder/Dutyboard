@@ -38,6 +38,16 @@ export interface ShiftLogEntry {
   event: string;
 }
 
+/** Jedan pokušaj testa u MUP Akademiji (rezultat provjere znanja). */
+export interface AcademyAttempt {
+  id: string;
+  officerId: string;
+  oblastId: string;
+  correct: number;
+  total: number;
+  takenAt: string;
+}
+
 // Sve mutabilne stvari (obavještenja, zahtjevi, sudski poziv statusi) žive ovdje.
 // Reset na reload je namjeran i prihvatljiv za demo.
 
@@ -77,6 +87,9 @@ interface Store {
   reports: PoliceReport[];
   saveReport: (input: ReportDraft) => PoliceReport;
   setReportStatus: (id: string, status: ReportStatus) => void;
+
+  academyAttempts: AcademyAttempt[];
+  recordAcademyAttempt: (input: Omit<AcademyAttempt, 'id' | 'takenAt'>) => AcademyAttempt;
 }
 
 /** Novi ili izmijenjen dokument; bez `id` je novi. */
@@ -371,6 +384,20 @@ function seedReports(): PoliceReport[] {
   ];
 }
 
+/** Raniji položen test — da Akademija nije prazna i da odmah ima jedan certifikat. */
+function seedAcademyAttempts(): AcademyAttempt[] {
+  return [
+    {
+      id: 'aca-seed-1',
+      officerId: 'off-0001',
+      oblastId: 'jrm',
+      correct: 5,
+      total: 6,
+      takenAt: `${addDays(DEMO_TODAY, -9)}T20:15`,
+    },
+  ];
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>(() => seedNotifications());
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => seedLeaveRequests());
@@ -384,6 +411,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [kddEntries, setKddEntries] = useState<KddEntry[]>(() => seedKdd());
   const [reports, setReports] = useState<PoliceReport[]>(() => seedReports());
   const [biltens, setBiltens] = useState<Bilten[]>(() => seedBiltens());
+  const [academyAttempts, setAcademyAttempts] = useState<AcademyAttempt[]>(() => seedAcademyAttempts());
 
   const markNotificationRead = useCallback((id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -628,6 +656,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const recordAcademyAttempt = useCallback((input: Omit<AcademyAttempt, 'id' | 'takenAt'>): AcademyAttempt => {
+    const attempt: AcademyAttempt = { ...input, id: `aca-${Date.now()}`, takenAt: demoNow() };
+    setAcademyAttempts((prev) => [attempt, ...prev]);
+    return attempt;
+  }, []);
+
   /** Status patrole postavlja šef smjene kad mu se patrola javi (pauza ima trajanje). */
   const setPatrolStatus = useCallback(
     (patrolId: string, status: ActivePatrolCard['status'], minutes?: number) => {
@@ -686,8 +720,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       reports,
       saveReport,
       setReportStatus,
+      academyAttempts,
+      recordAcademyAttempt,
     }),
     [
+      academyAttempts,
+      recordAcademyAttempt,
       kddEntries,
       addKddEntry,
       updateKddEntry,

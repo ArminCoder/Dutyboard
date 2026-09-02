@@ -30,8 +30,10 @@ function daysSince(fromISO: string, toISO: string): number {
 const AUG_2026_START = '2026-08-01';
 const AUG_2026_END = '2026-08-31';
 
-/** Stanice za koje se generiše raspored (demo: dvije, kao što OKC i prikazuje). */
-const ROSTER_STATIONS: Array<{ psId: string; puId: string; smjenaPrefix: string; autoPlates: string[]; motoPlate: string; sektorPlate: string; sektori: number[] }> = [
+/** Stanice za koje se generiše raspored — sve četiri PS. Registracije i sektori su
+ *  lokalni po stanici (vidi trap #7/#8 u STATUS.md): tablice moraju postojati u
+ *  `vehicles.ts`, a sektori se poklapaju po `psId`, ne po broju. */
+const ROSTER_STATIONS: Array<{ psId: string; puId: string; smjenaPrefix: string; autoPlates: string[]; motoPlate?: string; sektorPlate: string; sektori: number[] }> = [
   {
     psId: 'ps-centar',
     puId: 'pu-centar',
@@ -50,6 +52,25 @@ const ROSTER_STATIONS: Array<{ psId: string; puId: string; smjenaPrefix: string;
     motoPlate: 'A-521-M-108',
     sektorPlate: 'A-521-K-204',
     sektori: [2, 4, 6, 8],
+  },
+  {
+    // PS Stari Grad — manje, gusto jezgro (turistička zona, čaršija); manje sektora.
+    psId: 'ps-stari-grad',
+    puId: 'pu-centar',
+    smjenaPrefix: 'ps-stari-grad-smjena-',
+    autoPlates: ['A-411-K-131', 'A-411-K-132', 'A-411-K-133'],
+    motoPlate: 'A-411-M-106',
+    sektorPlate: 'A-411-K-134',
+    sektori: [1, 2, 3, 4],
+  },
+  {
+    // PS Dobrinja — veliko stambeno naselje; više sektora, ali bez motocikla (vidi vehicles.ts).
+    psId: 'ps-dobrinja',
+    puId: 'pu-novi-grad',
+    smjenaPrefix: 'ps-dobrinja-smjena-',
+    autoPlates: ['A-611-K-141', 'A-611-K-142', 'A-611-K-143'],
+    sektorPlate: 'A-611-K-144',
+    sektori: [1, 2, 3, 4, 5],
   },
 ];
 
@@ -140,8 +161,8 @@ export function generateRoster(seed: number, officers: Officer[]): Shift[] {
           });
         }
 
-        // Moto — samo dnevna smjena i po vremenskim uslovima.
-        if (kind === 'I' && chance(rand, 0.8)) {
+        // Moto — samo dnevna smjena i po vremenskim uslovima; preskače stanice bez motocikla.
+        if (st.motoPlate && kind === 'I' && chance(rand, 0.8)) {
           slots.push({
             id: `slot-${st.psId}-${date}-${kind}-moto`,
             requiredRoleId: `${st.puId}:moto`,

@@ -4,8 +4,7 @@
 > [spec](demo-spec.md) (original brief — note: parts of it are now superseded, see below).
 > **Keep this file current.**
 
-**Last updated:** after the "realism pass v3" (police-insider review) · pushed to
-`git@github.com:ArminCoder/Dutyboard.git` on `main`, 21 commits.
+**Last updated:** after the Akademija module + all-4-station rosters + keyless map fix.
 **Health:** `npx tsc -b`, `npm run lint`, `npm run build` all clean · world verified deterministic ·
 every package browser-verified before commit.
 
@@ -25,7 +24,7 @@ something works in the field, implement that, and update the docs rather than ar
 
 | Role | Screens |
 |---|---|
-| **Policajac** | P01 Smjena (+ ScheduleSection week/month calendar) · P02 Zahtjevi · P03 Statistika · P04 Plata · **P06 Izvještaji** · P05 Zaduženja |
+| **Policajac** | P01 Smjena (+ ScheduleSection week/month calendar) · P02 Zahtjevi · P03 Statistika · P04 Plata · **P06 Izvještaji** · **P07 Akademija** (edukacija + provjera znanja) · P05 Zaduženja |
 | **Šef smjene** | K06 Moja smjena (read-only) · K02 Aktivna smjena · K04 Knjiga događaja (write) · K05 Mapa patrola · K07 Bilten |
 | **Komandir PS** | PC00 Komandna tabla · PC01 Ljudstvo · K01 Mjesečni raspored · K03 Odobrenja · K03 Prekovremeni · PC02 Naoružanje i oprema · **PC03 Dokumenti** · KDD (read) · N02 · N03 |
 | **OKC (dežurni)** | D01 Mapa kantona (+ sector zones) · D02 Bilteni smjena · D03 Jutarnji brifing |
@@ -72,7 +71,16 @@ src/app/                RoleContext · OrgContext (white-label) · session · st
 ## 5. Seed facts (deterministic — same every run)
 
 - **308 officers**, establishment 330 · 4 PS (72 each) · 18 per shift group · 36 vehicles ·
-  124 shifts (August 2026, **ps-centar + ps-novi-grad only**) · 7392 performance rows (24 months).
+  **248 shifts (August 2026, all 4 stations)** · 7392 performance rows (24 months).
+  - Rosters now cover **ps-stari-grad** (A-411 fleet, sektori 1–4) and **ps-dobrinja** (A-611 fleet,
+    5 sektora, **no moto** — fleet has none). New stations are appended after Centar/Novi Grad in
+    `ROSTER_STATIONS` so those two rosters stay byte-identical (planted alarm + Softić slot intact).
+- **Akademija (P07):** deterministic question bank in `src/data/academy.ts` (5 oblasti × 6 pitanja),
+  functional timed quiz → rezultat + certifikat; results in store (`academyAttempts`, seeded one 5/6
+  pass for Softić so a certifikat shows). `academyRevenue()` feeds the **ministar Budžet** revenue line
+  (kanton ~35k KM/god, FBiH projection). Pretplata 10 KM/mj (svi policajci + kadeti).
+- **Map:** `UnitsMap.tsx` uses **keyless OSM tiles** + a CSS dark filter on `.map-dark .leaflet-tile-pane`
+  (markers/sektori are SVG overlays, unaffected). Carto `dark_all` needed a key — never reintroduce it.
 - **Stable IDs:** `off-0001` Amar Softić (policajac) · `off-0002` Damir Kovač (šef smjene) ·
   `off-0003` Samir Begić (načelnik) · `off-0004` Edin Hodžić (unused since his card was cut) ·
   `off-komandir-centar` Adnan Softić (komandir — **fixed id on purpose**).
@@ -135,8 +143,11 @@ Drive with `chromium.launch({ channel: 'chrome', headless: true })`, gate key `D
 - **Phase 8 polish:** mobile QA on officer screens (≤430 px), empty/loading states, Bosnian copy pass,
   favicon/meta, bundle split.
 - **Full 20-minute dress rehearsal** of §7 end to end on one run.
-- Rosters exist for **2 of 4 stations** (ps-stari-grad, ps-dobrinja have none) — fine today because
-  only Centar/Novi Grad are demoed, but N-screens for other PSs will look empty.
+- **Administracija (planned, not built):** citizen document portal + police-admin dash. See the
+  approved plan at `~/.claude/plans/pure-mapping-snail.md` (Phase 2). Functional core, client-side mock
+  auth, new `administracija` role, fees → ministar revenue.
+- **„Generiši raspored" (planned, Phase 3):** komandir generates a month → review → objavi + officer
+  notifications; parameterize `generateRoster()`, add draft/published store slice, 24h edit-lock.
 - `docs/demo-spec.md` is **partly superseded** (role model + demo script) — worth annotating.
 - Per-org **feature toggles** in A01 are rendered but disabled ("u pripremi").
 - Backlog ideas in [FEATURE-BACKLOG.md](FEATURE-BACKLOG.md): primopredaja smjene, komandir odobrenja

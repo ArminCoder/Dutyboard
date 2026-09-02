@@ -1,4 +1,4 @@
-import { CalendarDays, ClipboardList, BarChart3, Wallet, Backpack, FileText } from 'lucide-react';
+import { CalendarDays, ClipboardList, BarChart3, Wallet, Backpack, FileText, GraduationCap } from 'lucide-react';
 import { SidebarShell, type ShellNavItem } from '../../components/SidebarShell';
 import { useSoftić } from './useOfficer';
 
@@ -8,6 +8,7 @@ const TABS: ShellNavItem[] = [
   { to: '/policajac/statistika', label: 'Statistika', icon: BarChart3 },
   { to: '/policajac/plata', label: 'Plata', icon: Wallet },
   { to: '/policajac/izvjestaji', label: 'Izvještaji', icon: FileText },
+  { to: '/policajac/akademija', label: 'Akademija', icon: GraduationCap },
   { to: '/policajac/zaduzenja', label: 'Zaduženja', icon: Backpack },
 ];
 

@@ -106,6 +106,12 @@ interface Store {
   generateRosterDraft: (ym: string) => void;
   publishRoster: (ym: string) => void;
   discardRoster: (ym: string) => void;
+
+  /** Izmjene rasporeda za buduće smjene (slotId → raspoređeni policajci).
+   *  Prekriva statički generisani svijet; generisani nacrti se mijenjaju direktno. */
+  shiftSlotOverrides: Record<string, string[]>;
+  assignOfficerToSlot: (shiftId: string, slotId: string, officerId: string) => void;
+  removeOfficerFromSlot: (shiftId: string, slotId: string, officerId: string) => void;
 }
 
 /** Raspored koji komandir generiše za budući mjesec: prvo nacrt (pregled), pa objava. */
@@ -483,6 +489,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [academyAttempts, setAcademyAttempts] = useState<AcademyAttempt[]>(() => seedAcademyAttempts());
   const [documentRequests, setDocumentRequests] = useState<DocumentRequest[]>(() => seedDocumentRequests());
   const [generatedRosters, setGeneratedRosters] = useState<GeneratedRoster[]>([]);
+  const [shiftSlotOverrides, setShiftSlotOverrides] = useState<Record<string, string[]>>({});
 
   const markNotificationRead = useCallback((id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -790,6 +797,43 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setGeneratedRosters((prev) => prev.filter((r) => r.ym !== ym));
   }, []);
 
+  /** Trenutni sastav slota: iz nacrta, iz override-a, ili iz statičkog svijeta. */
+  const staticSlotAssignments = (shiftId: string, slotId: string): string[] =>
+    world.shifts.find((s) => s.id === shiftId)?.slots.find((sl) => sl.id === slotId)?.assignedOfficerIds ?? [];
+
+  const editSlot = useCallback(
+    (shiftId: string, slotId: string, fn: (ids: string[]) => string[]) => {
+      const inGenerated = generatedRosters.some((r) => r.shifts.some((s) => s.id === shiftId));
+      if (inGenerated) {
+        setGeneratedRosters((prev) =>
+          prev.map((r) => ({
+            ...r,
+            shifts: r.shifts.map((s) =>
+              s.id !== shiftId ? s : { ...s, slots: s.slots.map((sl) => (sl.id !== slotId ? sl : { ...sl, assignedOfficerIds: fn(sl.assignedOfficerIds) })) },
+            ),
+          })),
+        );
+      } else {
+        setShiftSlotOverrides((prev) => ({ ...prev, [slotId]: fn(prev[slotId] ?? staticSlotAssignments(shiftId, slotId)) }));
+      }
+    },
+    [generatedRosters],
+  );
+
+  const assignOfficerToSlot = useCallback(
+    (shiftId: string, slotId: string, officerId: string) => {
+      editSlot(shiftId, slotId, (ids) => (ids.includes(officerId) ? ids : [...ids, officerId]));
+    },
+    [editSlot],
+  );
+
+  const removeOfficerFromSlot = useCallback(
+    (shiftId: string, slotId: string, officerId: string) => {
+      editSlot(shiftId, slotId, (ids) => ids.filter((id) => id !== officerId));
+    },
+    [editSlot],
+  );
+
   /** Status patrole postavlja šef smjene kad mu se patrola javi (pauza ima trajanje). */
   const setPatrolStatus = useCallback(
     (patrolId: string, status: ActivePatrolCard['status'], minutes?: number) => {
@@ -876,6 +920,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       generateRosterDraft,
       publishRoster,
       discardRoster,
+      shiftSlotOverrides,
+      assignOfficerToSlot,
+      removeOfficerFromSlot,
     }),
     [
       academyAttempts,
@@ -888,6 +935,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       generateRosterDraft,
       publishRoster,
       discardRoster,
+      shiftSlotOverrides,
+      assignOfficerToSlot,
+      removeOfficerFromSlot,
       kddEntries,
       addKddEntry,
       updateKddEntry,

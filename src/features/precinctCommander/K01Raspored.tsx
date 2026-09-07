@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Layers, Megaphone, AlertTriangle, X, Info, Wand2, Check, Lock, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Layers, Megaphone, AlertTriangle, X, Info, Wand2, Check, Lock, Trash2, UserMinus, UserPlus } from 'lucide-react';
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { useStore } from '../../app/store';
 import { checkEligibility, seasonWarningForRole, slotUnderfilled } from '../../domain/eligibility';
@@ -11,13 +11,13 @@ import { StatusBadge } from '../../components/StatusBadge';
 const MONTHS_BS_LONG = ['januar', 'februar', 'mart', 'april', 'maj', 'juni', 'juli', 'avgust', 'septembar', 'oktobar', 'novembar', 'decembar'];
 
 interface SlotFocus {
-  shift: Shift;
-  slot: ShiftSlot;
+  shiftId: string;
+  slotId: string;
 }
 
 export function K01Raspored() {
   const world = useScopedWorld();
-  const { generatedRosters, generateRosterDraft, publishRoster, discardRoster } = useStore();
+  const { generatedRosters, generateRosterDraft, publishRoster, discardRoster, shiftSlotOverrides, assignOfficerToSlot, removeOfficerFromSlot } = useStore();
   const [monthYm, setMonthYm] = useState('2026-08');
   const [focus, setFocus] = useState<SlotFocus | null>(null);
   const [publishToast, setPublishToast] = useState<string | null>(null);
@@ -26,7 +26,17 @@ export function K01Raspored() {
   // Izvor rasporeda: „live" (već generisan svijet, npr. avgust), nacrt/objavljeno iz store-a
   // (komandirov „Generiši raspored"), ili ništa. Store nije scope-an → filtriraj po psId.
   const scopedPsIds = useMemo(() => new Set(world.orgNodes.filter((n) => n.kind === 'ps').map((n) => n.id)), [world.orgNodes]);
-  const worldMonthShifts = useMemo(() => world.shifts.filter((s) => s.date.startsWith(monthYm)), [world.shifts, monthYm]);
+  const worldMonthShifts = useMemo(
+    () =>
+      world.shifts
+        .filter((s) => s.date.startsWith(monthYm))
+        // Primijeni komandirove izmjene slotova (npr. bolovanje → zamjena) na statički raspored.
+        .map((s) => ({
+          ...s,
+          slots: s.slots.map((sl) => (shiftSlotOverrides[sl.id] ? { ...sl, assignedOfficerIds: shiftSlotOverrides[sl.id] } : sl)),
+        })),
+    [world.shifts, monthYm, shiftSlotOverrides],
+  );
   const draft = generatedRosters.find((r) => r.ym === monthYm);
   const draftShifts = useMemo(() => (draft ? draft.shifts.filter((s) => scopedPsIds.has(s.psId)) : []), [draft, scopedPsIds]);
   const activeShifts = useMemo(() => (worldMonthShifts.length ? worldMonthShifts : draftShifts), [worldMonthShifts, draftShifts]);
@@ -209,7 +219,16 @@ export function K01Raspored() {
         </div>
       </div>
 
-      {focus && <SlotDrawer focus={focus} world={world} onClose={() => setFocus(null)} />}
+      {focus && (
+        <SlotDrawer
+          focus={focus}
+          shifts={activeShifts}
+          world={world}
+          onClose={() => setFocus(null)}
+          onAssign={assignOfficerToSlot}
+          onRemove={removeOfficerFromSlot}
+        />
+      )}
 
       {confirmPublish && (
         <ConfirmPublish
@@ -288,7 +307,7 @@ function ShiftCell({
   return (
     <div className="flex flex-wrap items-start gap-1.5 border-l border-paper-200 px-3 py-3">
       {shift.slots.map((slot) => (
-        <SlotTag key={slot.id} shift={shift} slot={slot} world={world} onClick={() => onSlotClick({ shift, slot })} />
+        <SlotTag key={slot.id} shift={shift} slot={slot} world={world} onClick={() => onSlotClick({ shiftId: shift.id, slotId: slot.id })} />
       ))}
     </div>
   );
@@ -344,29 +363,41 @@ function shortRoleLabel(name: string): string {
 
 function SlotDrawer({
   focus,
+  shifts,
   world,
   onClose,
+  onAssign,
+  onRemove,
 }: {
   focus: SlotFocus;
+  shifts: Shift[];
   world: ReturnType<typeof useScopedWorld>;
   onClose: () => void;
+  onAssign: (shiftId: string, slotId: string, officerId: string) => void;
+  onRemove: (shiftId: string, slotId: string, officerId: string) => void;
 }) {
-  const role = world.operationalRoles.find((r) => r.id === focus.slot.requiredRoleId);
-  const assigned = focus.slot.assignedOfficerIds
+  // Slot se razrješava uživo iz trenutnog rasporeda → izmjene se odmah vide u panelu.
+  const shift = shifts.find((s) => s.id === focus.shiftId);
+  const slot = shift?.slots.find((sl) => sl.id === focus.slotId);
+  if (!shift || !slot) return null;
+
+  const role = world.operationalRoles.find((r) => r.id === slot.requiredRoleId);
+  const assigned = slot.assignedOfficerIds
     .map((id) => world.officers.find((o) => o.id === id))
     .filter(Boolean) as Officer[];
 
-  const others = world.officers.filter((o) => !focus.slot.assignedOfficerIds.includes(o.id));
+  const others = world.officers.filter((o) => !slot.assignedOfficerIds.includes(o.id));
   const evaluated = others.map((o) => ({
     officer: o,
-    result: checkEligibility({ officer: o, slot: focus.slot, shift: focus.shift, world }),
+    result: checkEligibility({ officer: o, slot, shift, world }),
   }));
   const eligible = evaluated.filter((e) => e.result.eligible);
   const ineligible = evaluated.filter((e) => !e.result.eligible);
 
-  const seasonWarn = role ? seasonWarningForRole(role, focus.shift.date) : null;
-  // Smjene koje počinju u naredna 24 h su zaključane za izmjene.
-  const locked = focus.shift.date <= addDays(demoNow().slice(0, 10), 1);
+  const seasonWarn = role ? seasonWarningForRole(role, shift.date) : null;
+  // Prošle smjene i one koje počinju u naredna 24 h su zaključane za izmjene.
+  const locked = shift.date <= addDays(demoNow().slice(0, 10), 1);
+  const full = assigned.length >= slot.capacity;
 
   return (
     <div className="fixed inset-0 z-30 flex" role="dialog" aria-modal="true">
@@ -376,12 +407,12 @@ function SlotDrawer({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="section-label text-brass-600">
-                {focus.shift.kind === 'I' ? 'I smjena · 07:00 – 19:00' : 'II smjena · 19:00 – 07:00'}
+                {shift.kind === 'I' ? 'I smjena · 07:00 – 19:00' : 'II smjena · 19:00 – 07:00'}
               </div>
-              <h2 className="mt-1 font-heading text-2xl text-ink-800">{role?.name ?? focus.slot.requiredRoleId}</h2>
+              <h2 className="mt-1 font-heading text-2xl text-ink-800">{role?.name ?? slot.requiredRoleId}</h2>
               <div className="mt-1 text-xs text-ink-500">
-                {dayNameBs(focus.shift.date)}, {formatBs(focus.shift.date)}
-                {focus.slot.callSign ? ` · ${focus.slot.callSign}` : ''}
+                {dayNameBs(shift.date)}, {formatBs(shift.date)}
+                {slot.callSign ? ` · ${slot.callSign}` : ''}
               </div>
               <div className="mt-3 h-[2px] w-10 bg-brass-500" />
             </div>
@@ -400,7 +431,7 @@ function SlotDrawer({
         <div className="flex-1 overflow-y-auto p-6">
           <Section
             eyebrow="Trenutno raspoređeni"
-            right={`${assigned.length}/${focus.slot.capacity}`}
+            right={`${assigned.length}/${slot.capacity}`}
           >
             {assigned.length === 0 ? (
               <div className="border border-dashed border-paper-300 px-3 py-4 text-center text-xs text-ink-400">
@@ -409,9 +440,21 @@ function SlotDrawer({
             ) : (
               <ul className="divide-y divide-paper-200 border border-paper-200 bg-paper-0">
                 {assigned.map((o) => (
-                  <li key={o.id} className="flex items-center justify-between px-3 py-2.5">
-                    <span className="text-sm font-medium text-ink-800">{o.name}</span>
-                    <span className="text-xs text-ink-500">{o.rank.replace('_', ' ')}</span>
+                  <li key={o.id} className="flex items-center justify-between gap-2 px-3 py-2.5">
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-ink-800">{o.name}</span>
+                      <span className="text-xs text-ink-500">{o.rank.replace('_', ' ')}</span>
+                    </span>
+                    {!locked && (
+                      <button
+                        onClick={() => onRemove(shift.id, slot.id, o.id)}
+                        className="flex-none border border-paper-300 p-1 text-ink-400 transition hover:border-signal-alarm hover:text-signal-alarm"
+                        title="Ukloni iz smjene"
+                        aria-label={`Ukloni ${o.name}`}
+                      >
+                        <UserMinus className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -432,15 +475,27 @@ function SlotDrawer({
               </div>
             ) : (
               <ul className="divide-y divide-signal-ok/20 border border-signal-ok/30">
-                {eligible.slice(0, 12).map(({ officer }) => (
-                  <li
-                    key={officer.id}
-                    className="flex items-center justify-between bg-signal-ok-soft/30 px-3 py-2 transition hover:bg-signal-ok-soft"
-                  >
-                    <span className="text-sm text-ink-800">{officer.name}</span>
-                    <StatusBadge tone="ok" size="sm">dostupan</StatusBadge>
-                  </li>
-                ))}
+                {eligible.slice(0, 12).map(({ officer }) =>
+                  locked ? (
+                    <li key={officer.id} className="flex items-center justify-between bg-signal-ok-soft/30 px-3 py-2">
+                      <span className="text-sm text-ink-800">{officer.name}</span>
+                      <StatusBadge tone="ok" size="sm">dostupan</StatusBadge>
+                    </li>
+                  ) : (
+                    <li key={officer.id}>
+                      <button
+                        onClick={() => onAssign(shift.id, slot.id, officer.id)}
+                        className="flex w-full items-center justify-between bg-signal-ok-soft/30 px-3 py-2 text-left transition hover:bg-signal-ok-soft"
+                        title={full ? 'Slot je popunjen — dodaje se preko kapaciteta' : 'Rasporedi u slot'}
+                      >
+                        <span className="text-sm text-ink-800">{officer.name}</span>
+                        <span className="inline-flex items-center gap-1 border border-signal-ok/40 bg-paper-0 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-signal-ok">
+                          <UserPlus className="h-3 w-3" /> Rasporedi
+                        </span>
+                      </button>
+                    </li>
+                  ),
+                )}
                 {eligible.length > 12 && (
                   <li className="bg-paper-50 px-3 py-2 text-center text-[11px] text-ink-400">
                     +{eligible.length - 12} više
@@ -474,7 +529,9 @@ function SlotDrawer({
 
           <div className="mt-6 flex items-start gap-2 border border-paper-200 bg-paper-100 p-3 text-[11px] text-ink-600">
             <Info className="mt-0.5 h-3.5 w-3.5 flex-none" />
-            Sistem prijavljuje razlog za svakog nedostupnog. U produkciji klik „Rasporedi" gura oficira u slot i logira izmjenu rasporeda.
+            {locked
+              ? 'Sistem prijavljuje razlog za svakog nedostupnog. Ova smjena je zaključana (počinje uskoro ili je prošla).'
+              : 'Klik na „Rasporedi" dodaje policajca u slot, a „ukloni" ga skida (npr. bolovanje). Sistem prijavljuje razlog za svakog nedostupnog.'}
           </div>
         </div>
       </aside>

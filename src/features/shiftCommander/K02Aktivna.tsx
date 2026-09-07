@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Radio, MapPin, AlertTriangle, X, UserMinus, UserPlus, Coffee, Siren } from 'lucide-react';
+import { Radio, MapPin, AlertTriangle, X, UserMinus, UserPlus, Coffee, Siren, Pencil } from 'lucide-react';
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { useStore, type ActivePatrolCard } from '../../app/store';
 import { checkEligibility } from '../../domain/eligibility';
@@ -140,6 +140,7 @@ function PatrolCard({
         <div className="flex flex-col items-end gap-1">
           <StatusBadge status={patrol.status} />
           {patrol.status === 'pauza' && patrol.pauzaDo ? <PauzaCountdown until={patrol.pauzaDo} /> : null}
+          {patrol.status === 'intervencija' && patrol.intervencijaOd ? <IntervencijaTime patrol={patrol} /> : null}
         </div>
       </div>
 
@@ -334,6 +335,53 @@ function PauzaCountdown({ until }: { until: string }) {
     <span className="font-mono text-[10px] tabular-nums text-ink-500">
       još {mins} min · do {until.slice(11, 16)}
     </span>
+  );
+}
+
+/** Vrijeme upućivanja na intervenciju — bez isteka, broji koliko traje; šef smjene ga može urediti. */
+function IntervencijaTime({ patrol }: { patrol: ActivePatrolCard }) {
+  const store = useStore();
+  const [editing, setEditing] = useState(false);
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const int = setInterval(() => tick((n) => n + 1), 1000);
+    return () => clearInterval(int);
+  }, []);
+
+  if (!patrol.intervencijaOd) return null;
+  const hhmm = patrol.intervencijaOd.slice(11, 16);
+
+  if (editing) {
+    const commit = (v: string) => {
+      if (v) store.setInterventionStart(patrol.id, v);
+      setEditing(false);
+    };
+    return (
+      <input
+        type="time"
+        defaultValue={hhmm}
+        autoFocus
+        onBlur={(e) => commit(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commit((e.target as HTMLInputElement).value);
+          if (e.key === 'Escape') setEditing(false);
+        }}
+        className="w-[92px] border border-paper-300 bg-paper-0 px-1 py-0.5 text-[10px] tabular-nums text-ink-700 outline-none focus:border-navy-500"
+        aria-label="Vrijeme upućivanja na intervenciju"
+      />
+    );
+  }
+
+  const mins = Math.max(0, minutesBetween(patrol.intervencijaOd, demoNow()));
+  return (
+    <button
+      onClick={() => setEditing(true)}
+      className="inline-flex items-center gap-1 font-mono text-[10px] tabular-nums text-ink-500 transition hover:text-navy-900"
+      title="Uredi vrijeme upućivanja"
+    >
+      <span>od {hhmm} · {mins} min</span>
+      <Pencil className="h-2.5 w-2.5" />
+    </button>
   );
 }
 

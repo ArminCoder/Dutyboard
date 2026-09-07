@@ -358,7 +358,18 @@ function NewEntryDialog({ onClose }: { onClose: () => void }) {
   const [type, setType] = useState<KddEntryType>('poziv_122');
   const [description, setDescription] = useState('');
   const [patrol, setPatrol] = useState('');
-  const [time, setTime] = useState(demoNow().slice(11, 16));
+  // Default = minutu nakon posljednjeg upisa u ovoj stanici danas, pa novi događaj
+  // uvijek dolazi na vrh (lista je sortirana najnovije prvo). Stabilno u demou —
+  // ne ovisi o stvarnom satu (seedani upisi su u večernjoj II smjeni).
+  const defaultTime = useMemo(() => {
+    const todays = store.kddEntries.filter((e) => e.psId === psId && e.when.startsWith(DEMO_TODAY));
+    if (todays.length === 0) return demoNow().slice(11, 16);
+    const latest = todays.reduce((mx, e) => (e.when > mx ? e.when : mx), todays[0].when).slice(11, 16);
+    const [h, m] = latest.split(':').map(Number);
+    const total = Math.min(23 * 60 + 59, h * 60 + m + 1);
+    return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+  }, [store.kddEntries, psId]);
+  const [time, setTime] = useState(defaultTime);
 
   const submit = () => {
     if (!description.trim()) return;

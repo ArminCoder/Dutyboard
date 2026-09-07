@@ -31,6 +31,8 @@ export interface ActivePatrolCard {
   incompleteReason?: string;
   /** "YYYY-MM-DDTHH:mm" — do kada traje pauza (odbrojavanje u K02). */
   pauzaDo?: string;
+  /** "YYYY-MM-DDTHH:mm" — kada je patrola upućena na intervenciju (bez isteka; ureduje šef smjene). */
+  intervencijaOd?: string;
 }
 
 export interface ShiftLogEntry {
@@ -74,6 +76,8 @@ interface Store {
   markOfficerSick: (patrolId: string, officerId: string, reason: string) => void;
   reassignOfficer: (patrolId: string, newOfficerId: string) => void;
   setPatrolStatus: (patrolId: string, status: ActivePatrolCard['status'], minutes?: number) => void;
+  /** Šef smjene koriguje vrijeme upućivanja na intervenciju (hh:mm na DEMO_TODAY). */
+  setInterventionStart: (patrolId: string, hhmm: string) => void;
 
   kddEntries: KddEntry[];
   addKddEntry: (input: KddDraft) => KddEntry;
@@ -329,6 +333,8 @@ function seedActivePatrols(): ActivePatrolCard[] {
       // Straža je na fiksnom mjestu; ostale patrole su na terenu.
       status: sl.callSign === 'Straža PS' ? ('na_terenu' as const) : i === 1 ? ('pauza' as const) : i === 3 ? ('intervencija' as const) : ('na_terenu' as const),
       location: sl.callSign === 'Straža PS' ? 'ispred stanice' : LOCATIONS[i % LOCATIONS.length],
+      // Seedana intervencija ima vrijeme upućivanja (za odbrojavanje/prikaz u K02).
+      intervencijaOd: i === 3 ? demoNow() : undefined,
     }));
 }
 
@@ -801,7 +807,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                   return `${d}T${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
                 })()
               : undefined;
-          return { ...p, status, pauzaDo };
+          // Intervencija dobija vrijeme upućivanja (default = sada); pri izlasku se briše.
+          const intervencijaOd = status === 'intervencija' ? demoNow() : undefined;
+          return { ...p, status, pauzaDo, intervencijaOd };
         }),
       );
       const text =
@@ -811,6 +819,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             ? `${label}: upućena na intervenciju.`
             : `${label}: ponovo na terenu.`;
       appendLog({ who: 'Šef smjene', event: text });
+    },
+    [appendLog],
+  );
+
+  const setInterventionStart = useCallback(
+    (patrolId: string, hhmm: string) => {
+      let label = '';
+      setActivePatrols((prev) =>
+        prev.map((p) => {
+          if (p.id !== patrolId) return p;
+          label = p.callSign;
+          return { ...p, intervencijaOd: `${DEMO_TODAY}T${hhmm}` };
+        }),
+      );
+      appendLog({ who: 'Šef smjene', event: `${label}: korigovano vrijeme upućivanja na intervenciju (${hhmm}).` });
     },
     [appendLog],
   );
@@ -834,6 +857,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       markOfficerSick,
       reassignOfficer,
       setPatrolStatus,
+      setInterventionStart,
       kddEntries,
       addKddEntry,
       updateKddEntry,
@@ -889,6 +913,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       markOfficerSick,
       reassignOfficer,
       setPatrolStatus,
+      setInterventionStart,
     ],
   );
 

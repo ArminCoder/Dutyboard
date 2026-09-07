@@ -176,7 +176,6 @@ Drive with `chromium.launch({ channel: 'chrome', headless: true })`, gate key `D
   šef smjene in the godišnji approval chain (now "komandir → načelnik", per §3).
   - ⚠ Trap: any shared shell flex column that holds arbitrary content needs `min-w-0`, and every wide
     (`min-w-[…]`) table needs an `overflow-auto` wrapper, or it clips on mobile instead of scrolling.
-- **Full 20-minute dress rehearsal** of §7 end to end on one run.
 - **Rosters for the 2 non-demoed stations are static** — fine for the scripted demo. (Historic note:
   ps-stari-grad / ps-dobrinja now have generated August rosters too — see §5.)
 - `docs/demo-spec.md` is **partly superseded** (role model + demo script) — worth annotating.

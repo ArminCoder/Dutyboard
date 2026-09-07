@@ -22,7 +22,7 @@ export function PortalShell() {
           <Link to="/portal" className="flex min-w-0 items-center gap-2.5 text-paper-50">
             <Landmark className="h-5 w-5 flex-none text-brass-400" />
             <div className="min-w-0 leading-tight">
-              <div className="truncate font-heading text-sm font-medium">
+              <div className="truncate font-heading text-sm font-medium text-paper-50">
                 <span className="sm:hidden">{org.orgShort}</span>
                 <span className="hidden sm:inline">{org.orgName}</span>
               </div>

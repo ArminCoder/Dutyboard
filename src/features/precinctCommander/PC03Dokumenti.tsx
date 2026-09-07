@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
-import { FileText, Printer, Check, Inbox } from 'lucide-react';
+import { FileText, Printer, Check, Inbox, Eye, X } from 'lucide-react';
 import { useStore } from '../../app/store';
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { useSession } from '../../app/RoleContext';
+import { useOrg } from '../../app/OrgContext';
 import {
   REPORT_KIND_LABEL,
   REPORT_STATUS_LABEL,
+  type PoliceReport,
   type ReportStatus,
 } from '../../data/types';
 import { formatBs } from '../../data/generator/dates';
@@ -26,6 +28,7 @@ export function PC03Dokumenti() {
   const session = useSession();
   const [filter, setFilter] = useState<ReportStatus | 'sve'>('sve');
   const [openId, setOpenId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<PoliceReport | null>(null);
 
   const stationIds = useMemo(
     () => new Set(w.orgNodes.filter((n) => n.kind === 'ps').map((n) => n.id)),
@@ -103,11 +106,11 @@ export function PC03Dokumenti() {
                     </pre>
                     <div className="flex flex-wrap gap-2">
                       <button
-                        onClick={() => window.print()}
+                        onClick={() => setPreview(r)}
                         className="inline-flex items-center gap-1.5 border border-paper-300 bg-paper-0 px-3 py-1.5 text-xs text-ink-700 hover:border-brass-500"
                       >
-                        <Printer className="h-3.5 w-3.5" />
-                        Štampaj
+                        <Eye className="h-3.5 w-3.5" />
+                        Pregledaj
                       </button>
                       {r.status === 'za_stampu' ? (
                         <button
@@ -126,6 +129,74 @@ export function PC03Dokumenti() {
           </ul>
         )}
       </section>
+
+      {preview ? (
+        <DocumentPreview
+          report={preview}
+          authorName={officerName(preview.officerId)}
+          onClose={() => setPreview(null)}
+          onPrinted={() => {
+            window.print();
+            if (preview.status === 'za_stampu') store.setReportStatus(preview.id, 'odstampan');
+            setPreview(null);
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+/** Pregled dokumenta prije štampe — komandir može provjeriti sadržaj bez štampanja. */
+function DocumentPreview({
+  report,
+  authorName,
+  onClose,
+  onPrinted,
+}: {
+  report: PoliceReport;
+  authorName: string;
+  onClose: () => void;
+  onPrinted: () => void;
+}) {
+  const { org } = useOrg();
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 p-4 print:hidden" role="dialog" aria-modal="true">
+      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col bg-paper-0">
+        <div className="flex items-center justify-between border-b border-paper-200 px-4 py-2.5">
+          <span className="section-label text-brass-600">Pregled dokumenta</span>
+          <button onClick={onClose} aria-label="Zatvori" className="p-1 text-ink-500 hover:text-ink-800">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* List papira — kako dokument izgleda odštampan */}
+        <div className="overflow-y-auto px-8 py-8">
+          <div className="text-center">
+            <div className="section-label text-brass-600">{org.orgName}</div>
+            <div className="mt-1 text-[11px] uppercase tracking-wider text-ink-400">{REPORT_KIND_LABEL[report.kind]}</div>
+            <div className="mx-auto mt-2 h-px w-16 bg-brass-400" />
+          </div>
+          <div className="mt-5 flex justify-between text-[11px] text-ink-500">
+            <span>Sačinio: <span className="text-ink-700">{authorName}</span></span>
+            <span>{formatBs((report.submittedAt ?? report.createdAt).slice(0, 10))}</span>
+          </div>
+          <h2 className="mt-4 font-heading text-lg text-ink-800">{report.summary}</h2>
+          <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-ink-700">{report.body}</p>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-paper-200 px-4 py-3">
+          <button onClick={onClose} className="px-3 py-1.5 text-xs text-ink-600 hover:bg-paper-100">
+            Zatvori
+          </button>
+          <button
+            onClick={onPrinted}
+            className="inline-flex items-center gap-1.5 bg-navy-900 px-3 py-1.5 text-xs text-paper-50 hover:bg-navy-800"
+          >
+            <Printer className="h-3.5 w-3.5" />
+            Štampaj
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

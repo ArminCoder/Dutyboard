@@ -160,6 +160,25 @@ Drive with `chromium.launch({ channel: 'chrome', headless: true })`, gate key `D
 
 ## 9. Not done / next candidates
 
+> **Owner review progress:** the owner is walking the app role by role and giving live feedback.
+> **He was last reviewing the _komesar_ role — resume the walkthrough there next session.**
+
+**Open feature requests from the owner's review (NOT yet built):**
+- **Named / custom shift types.** "Smjenska grupa A/B/C/D" reads wrong to him — real shifts are
+  _dnevna / noćna_ and there can be others (_8–4_, _vanredni_). Wants the ability to **create and name**
+  shift types, not just the fixed A–D rotation. ⚠ Needs a scope decision (rename the rotation vs. a full
+  shift-type editor) + touches the generator's I/II `ShiftKind` model — clarify before building.
+- **Načelnik personnel-by-function table** (`/nacelnik`). A table of all officers grouped by function:
+  _rukovodstvo_ (komandir, zamjenik komandira, 3–4 pomoćnici — inspectors, 1–4 stars) · _administracija_
+  (office cops: plate checks, ticket routing — NOT the citizen Administracija module) · _šefovi smjena_ ·
+  _sektori_ · _terenski_. ⚠ Needs a functional-position taxonomy that the generator doesn't model yet
+  (officers have rank + operationalRoleIds, not these buckets) — will require deriving/assigning positions.
+
+**Done this session (owner review round):** map API-key fix (keyless OSM) · intervencija start-time on
+K02 (editable) · KDD new-entry sorts to top · removed map sector squares · optional reason on odobrenja ·
+document preview before printing (PC03) · **komandir can edit future shift assignments (K01 add/remove,
+past/≤24h locked)** · portal header contrast fix.
+
 - **Phase 8 polish (mostly done):** full mobile sweep at 390 px across **all 27 screens / 6 roles** —
   now **0 horizontal overflow everywhere**. Fixed: `SidebarShell` content column needed `min-w-0`
   (was stretching every screen past the viewport and clipping content); PC01/PC02 komandir tables

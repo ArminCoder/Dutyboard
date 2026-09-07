@@ -71,6 +71,7 @@ function FilterTab({ active, onClick, label }: { active: boolean; onClick: () =>
 function RequestRow({ req }: { req: LeaveRequest }) {
   const store = useStore();
   const [expanded, setExpanded] = useState(false);
+  const [note, setNote] = useState('');
   const officer = world.officers.find((o) => o.id === req.officerId);
   const step = currentStep(req);
   const canAct = step?.role === 'komandir' && step.status === 'ceka';
@@ -122,27 +123,40 @@ function RequestRow({ req }: { req: LeaveRequest }) {
                 <div className="flex-1">
                   <div className="text-xs font-medium text-ink-700">{roleLabel(s.role)}</div>
                   <div className="text-xs text-ink-500">{s.approverName}</div>
+                  {s.note ? <div className="mt-0.5 text-[11px] italic text-ink-400">„{s.note}"</div> : null}
                 </div>
                 {s.resolvedAt && <div className="text-[11px] text-ink-400">{formatBs(s.resolvedAt.slice(0, 10))}</div>}
               </li>
             ))}
           </ol>
           {canAct && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => store.advanceApproval(req.id, 'odobreno')}
-                className="inline-flex items-center gap-1.5  bg-signal-ok px-4 py-2 text-sm font-medium text-paper-50 transition hover:bg-signal-ok/90"
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                Odobri
-              </button>
-              <button
-                onClick={() => store.advanceApproval(req.id, 'odbijeno', 'Odbačeno na razini komandira stanice.')}
-                className="inline-flex items-center gap-1.5  border border-paper-200 bg-paper-0 px-4 py-2 text-sm text-ink-700 transition hover:border-signal-alarm hover:text-signal-alarm"
-              >
-                <XCircle className="h-4 w-4" />
-                Odbij
-              </button>
+            <div>
+              <label className="mb-3 block">
+                <span className="mb-1 block text-xs font-medium text-ink-600">Napomena (nije obavezno)</span>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  rows={2}
+                  placeholder="Kratko obrazloženje odluke…"
+                  className="w-full resize-none border border-paper-200 bg-paper-0 px-3 py-2 text-sm text-ink-800 outline-none focus:border-navy-500"
+                />
+              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => store.advanceApproval(req.id, 'odobreno', note.trim() || undefined)}
+                  className="inline-flex items-center gap-1.5  bg-signal-ok px-4 py-2 text-sm font-medium text-paper-50 transition hover:bg-signal-ok/90"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  Odobri
+                </button>
+                <button
+                  onClick={() => store.advanceApproval(req.id, 'odbijeno', note.trim() || undefined)}
+                  className="inline-flex items-center gap-1.5  border border-paper-200 bg-paper-0 px-4 py-2 text-sm text-ink-700 transition hover:border-signal-alarm hover:text-signal-alarm"
+                >
+                  <XCircle className="h-4 w-4" />
+                  Odbij
+                </button>
+              </div>
             </div>
           )}
         </div>

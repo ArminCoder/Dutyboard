@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Printer, Users, Timer, HeartPulse, Car, TrendingUp } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useScopedWorld } from '../../data/useScopedWorld';
+import { useOrg } from '../../app/OrgContext';
 import { establishmentUnder } from '../../data/generator/org';
 import { DEMO_TODAY, yearsBetween } from '../../data/generator/dates';
 import { Button } from '../../components/Button';
@@ -10,6 +11,7 @@ import { CHART_COLORS, CHART_TICK, CHART_TOOLTIP, CHART_TOOLTIP_LABEL } from '..
 const MONTHS_BS = ['januar', 'februar', 'mart', 'april', 'maj', 'juni', 'juli', 'avgust', 'septembar', 'oktobar', 'novembar', 'decembar'];
 
 export function M01Strateska() {
+  const { org } = useOrg();
   const w = useScopedWorld();
 
   const stats = useMemo(() => {
@@ -71,7 +73,7 @@ export function M01Strateska() {
       <section className="mb-8 border border-paper-200 bg-paper-0 px-8 py-10 print:border-0 print:px-0">
         <div className="text-center">
           <div className="section-label mb-2 text-brass-600">Bosna i Hercegovina</div>
-          <div className="text-lg text-ink-800">Ministarstvo unutrašnjih poslova · Demo kanton</div>
+          <div className="text-lg text-ink-800">{org.orgName}</div>
           <div className="mx-auto mt-4 h-[2px] w-16 bg-brass-500" />
           <h2 className="mt-6 font-heading text-4xl leading-tight text-ink-800 md:text-5xl">
             Strateški izvještaj

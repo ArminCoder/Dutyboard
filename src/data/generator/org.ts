@@ -1,7 +1,8 @@
 import type { OrgNode } from '../types';
+import { ORG_ROOT_NAME } from '../../app/orgConfig';
 
 // Organizaciona struktura po SPEC-u linija 264:
-// MUP DK
+// MUP (korijen; naziv iz env konfiguracije)
 //   ├─ Uprava policije
 //   │    ├─ PU Centar
 //   │    │    ├─ PS Centar
@@ -18,7 +19,7 @@ const SMJENE = ['A', 'B', 'C', 'D'] as const;
 export function buildOrgTree(): OrgNode[] {
   const nodes: OrgNode[] = [];
 
-  nodes.push({ id: 'mup', kind: 'mup', name: 'MUP Demo kantona', parentId: null });
+  nodes.push({ id: 'mup', kind: 'mup', name: ORG_ROOT_NAME, parentId: null });
   nodes.push({ id: 'up', kind: 'uprava', name: 'Uprava policije', parentId: 'mup' });
 
   // `est` = sistematizovan broj izvršilaca po PS (malo iznad stvarne popune → vidljiva upražnjena mjesta).

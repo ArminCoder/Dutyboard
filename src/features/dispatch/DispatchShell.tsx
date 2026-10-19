@@ -1,7 +1,8 @@
 import { Map as MapIcon, Inbox, Sunrise } from 'lucide-react';
 import { SidebarShell, type ShellNavItem } from '../../components/SidebarShell';
+import { DEFAULT_ORG } from '../../app/orgConfig';
 
-// OKC — Operativno-komunikacijski centar MUP DK (broj 122). Kantonalni scope:
+// OKC — Operativno-komunikacijski centar MUP-a (broj 122). Kantonalni scope:
 // prima pozive, prosljeđuje ih nadležnoj stanici, prikuplja biltene smjena
 // i ujutro pravi brifing za komesara.
 const NAV: ShellNavItem[] = [
@@ -11,5 +12,5 @@ const NAV: ShellNavItem[] = [
 ];
 
 export function DispatchShell() {
-  return <SidebarShell roleTitle="OKC MUP DK" nav={NAV} dark />;
+  return <SidebarShell roleTitle={`OKC ${DEFAULT_ORG.orgShort}`} nav={NAV} dark />;
 }

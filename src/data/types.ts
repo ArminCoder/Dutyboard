@@ -4,7 +4,7 @@
 // dodajemo u kasnijim fazama kad ih koristimo.
 
 export type OrgNodeKind =
-  | 'mup' // MUP DK root
+  | 'mup' // MUP root
   | 'uprava' // Uprava policije
   | 'pu' // Policijska uprava (npr. PU Centar)
   | 'ps' // Policijska stanica (npr. PS Centar)

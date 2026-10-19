@@ -5,6 +5,7 @@ import { UnitsMap } from './UnitsMap';
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { useSession } from '../../app/RoleContext';
 import { useStore } from '../../app/store';
+import { DEFAULT_ORG } from '../../app/orgConfig';
 
 // D01 — živa mapa. Scope određuje koje jedinice se vide:
 // OKC (Uprava) vidi sve stanice, šef smjene samo svoju.
@@ -52,7 +53,7 @@ export function D01Mapa() {
       description: 'Pješačka 1-1 se ne javlja — eskalirano šefu smjene PS Centar.',
       assignedPatrol: 'Pješačka 1-1',
       status: 'otvoren',
-      recordedBy: 'OKC MUP DK',
+      recordedBy: `OKC ${DEFAULT_ORG.orgShort}`,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nonResp?.escalated]);

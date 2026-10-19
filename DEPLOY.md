@@ -76,31 +76,6 @@ curl -X POST -H "content-type: application/json" \
 
 Otvori u incognito → prikazuje se Gate → unesi ključ → E00 birač uloge.
 
-## Email prema MUP-u (skica)
-
-Predmet: `Demo aplikacije za planiranje ljudstva — pristupni podaci`
-
-```
-Poštovani,
-
-kao što smo dogovorili, u prilogu su pristupni podaci za demonstracijsku
-verziju aplikacije "Dutyboard" — prijedlog rješenja za planiranje ljudstva,
-kadrovske analitike i kontrolu resursa MUP-a.
-
-URL:          https://demo.tvojadomena.com
-Ključ:        DEMO-2026
-
-Napomene:
-• Cijela demonstracija sadrži izmišljene podatke — nijedan lični podatak
-  policajca ili službenika nije stvaran.
-• Pristup je zaštićen ključem (server-side provjera, HTTPS, ograničen broj
-  pokušaja). Produkcijska verzija koristi AD/LDAP + 2FA i hosting u BiH.
-• Preporučujemo prezentaciju uživo — 20 minuta kroz šest uloga, uz
-  raspravu o adaptaciji na konkretne procese MUP-a.
-
-Rado ću dogovoriti termin.
-```
-
 ## Preporuke prije prezentacije
 
 - Isprobati cijeli scenarij po `SPEC.md` "Redoslijed demo prezentacije"

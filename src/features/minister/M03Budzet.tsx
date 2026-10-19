@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Printer, Wallet, Timer, PiggyBank, Users, Building2, GraduationCap, TrendingUp } from 'lucide-react';
 import { useScopedWorld } from '../../data/useScopedWorld';
+import { useOrg } from '../../app/OrgContext';
 import { descendantsOf } from '../../data/generator/org';
 import { ACADEMY, academyRevenue } from '../../data/academy';
 import { documentFeeRevenue } from '../../data/administration';
@@ -18,6 +19,7 @@ const DOT: Record<Tone, string> = { ok: 'bg-signal-ok', warn: 'bg-signal-warn', 
 const TXT: Record<Tone, string> = { ok: 'text-signal-ok', warn: 'text-signal-warn', alarm: 'text-signal-alarm' };
 
 export function M03Budzet() {
+  const { org } = useOrg();
   const w = useScopedWorld();
   const { documentRequests } = useStore();
   const docFees = useMemo(() => documentFeeRevenue(documentRequests), [documentRequests]);
@@ -102,7 +104,7 @@ export function M03Budzet() {
 
       {/* Cover (print) */}
       <div className="mb-6 hidden text-center print:block">
-        <div className="section-label text-brass-600">Ministarstvo unutrašnjih poslova · Demo kanton</div>
+        <div className="section-label text-brass-600">{org.orgName}</div>
         <h1 className="mt-2 font-heading text-3xl text-ink-800">Trošak ljudstva — {LAST_COMPLETE_MONTH.slice(0, 4)}.</h1>
         <div className="mx-auto mt-3 h-[2px] w-16 bg-brass-500" />
       </div>

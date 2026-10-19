@@ -1,6 +1,7 @@
 import type { Officer, OrgNode, ReportKind } from '../data/types';
 import { REPORT_KIND_LABEL } from '../data/types';
 import { DEMO_TODAY, dayNameBs, demoNow, formatBs } from '../data/generator/dates';
+import { ORG_REGION } from '../app/orgConfig';
 
 /**
  * Sastavljanje dokumenta iz kratkog opisa.
@@ -27,7 +28,7 @@ function header(ctx: ComposeCtx): string {
   return [
     'BOSNA I HERCEGOVINA',
     'Federacija Bosne i Hercegovine',
-    'Demo kanton',
+    ORG_REGION,
     'MINISTARSTVO UNUTRAŠNJIH POSLOVA',
     'Uprava policije',
     st.toUpperCase(),

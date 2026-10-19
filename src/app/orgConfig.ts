@@ -22,10 +22,19 @@ export interface OrgConfig {
   features: Record<string, boolean>;
 }
 
+// Nazivi dolaze iz env konfiguracije (VITE_ORG_*), da isti kod radi za bilo koju
+// organizaciju. Podrazumijevane vrijednosti su izmišljene (demo).
+const env = import.meta.env;
+
+/** Naziv korijena organizacione strukture (npr. "MUP Demo kantona"). */
+export const ORG_ROOT_NAME: string = env.VITE_ORG_ROOT_NAME || 'MUP Demo kantona';
+/** Kanton / regija za zaglavlja službenih dokumenata. */
+export const ORG_REGION: string = env.VITE_ORG_REGION || 'Demo kanton';
+
 export const DEFAULT_ORG: OrgConfig = {
-  orgName: 'Ministarstvo unutrašnjih poslova · Demo kanton',
-  orgShort: 'MUP DK',
-  productName: 'Dutyboard',
+  orgName: env.VITE_ORG_NAME || 'Ministarstvo unutrašnjih poslova · Demo kanton',
+  orgShort: env.VITE_ORG_SHORT || 'MUP DK',
+  productName: env.VITE_PRODUCT_NAME || 'Dutyboard',
   colors: { primary: '#132241', accent: '#bf9a5c' },
   logo: 'stit',
   features: { kdd: true, bilten: true, mapa: true, simulacija: true, plata: true },

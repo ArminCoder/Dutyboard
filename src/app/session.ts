@@ -1,4 +1,5 @@
 import type { AccessRole } from '../data/types';
+import { DEFAULT_ORG, ORG_ROOT_NAME } from './orgConfig';
 
 // "Session" — koja uloga je trenutno prijavljena i pod kojim identitetom.
 // Za demo nema pravih lozinki; birač uloge (E00) postavlja identitet.
@@ -55,8 +56,8 @@ export const ROLE_CHOICES: RoleChoice[] = [
     officerId: null,
     scopeNodeId: 'up',
     displayName: 'Operativno-komunikacijski centar',
-    displayTitle: 'OKC MUP DK · dežurni operativac',
-    scopeLabel: 'MUP DK · sve stanice',
+    displayTitle: `OKC ${DEFAULT_ORG.orgShort} · dežurni operativac`,
+    scopeLabel: `${DEFAULT_ORG.orgShort} · sve stanice`,
   },
   {
     role: 'nacelnik',
@@ -70,7 +71,7 @@ export const ROLE_CHOICES: RoleChoice[] = [
     role: 'komesar',
     officerId: null,
     scopeNodeId: 'up',
-    displayName: 'Uprava policije MUP DK',
+    displayName: `Uprava policije ${DEFAULT_ORG.orgShort}`,
     displayTitle: 'policijski komesar',
     scopeLabel: 'Uprava policije',
   },
@@ -80,7 +81,7 @@ export const ROLE_CHOICES: RoleChoice[] = [
     scopeNodeId: 'mup',
     displayName: 'Kabinet ministra',
     displayTitle: 'ministar',
-    scopeLabel: 'MUP Demo kantona',
+    scopeLabel: ORG_ROOT_NAME,
   },
   {
     // Administrativna služba — šalteri: obrađuje zahtjeve građana za dokumente.
@@ -90,7 +91,7 @@ export const ROLE_CHOICES: RoleChoice[] = [
     scopeNodeId: 'up',
     displayName: 'Administrativna služba',
     displayTitle: 'šalter · obrada zahtjeva građana',
-    scopeLabel: 'MUP DK · šalteri',
+    scopeLabel: `${DEFAULT_ORG.orgShort} · šalteri`,
   },
 ];
 

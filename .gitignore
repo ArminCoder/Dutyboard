@@ -28,3 +28,6 @@ dist-ssr
 
 # Tenant profiles name real organisations — keep them off the public repo
 tenants.json
+
+# Outreach drafts (contain live access keys)
+outreach/

@@ -3,6 +3,7 @@ import { UNITS } from '../dispatch/routes';
 import { UnitsMap } from '../dispatch/UnitsMap';
 import { useScopedWorld } from '../../data/useScopedWorld';
 import { useSession } from '../../app/RoleContext';
+import { shiftToTenant } from '../../app/tenant';
 
 // K05 — mapa patrola vlastite stanice. Ista komponenta kao OKC mapa, uži scope.
 
@@ -26,7 +27,7 @@ export function K05Mapa() {
       </div>
 
       <div className="px-6 py-5">
-        <UnitsMap units={units} zoom={13} center={[43.858, 18.418]} heightVh={64} />
+        <UnitsMap units={units} zoom={13} center={shiftToTenant([43.858, 18.418])} heightVh={64} />
         <p className="mt-2 text-[11px] text-dark-muted">
           Prati se jedinica/vozilo — u svrhu sigurnosti policajaca. Ne pojedinac.
         </p>

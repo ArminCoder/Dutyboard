@@ -3,6 +3,7 @@ import { ChevronRight, Users } from 'lucide-react';
 import { ROLE_CHOICES, sessionFromChoice, type RoleChoice } from '../../app/session';
 import { useRoleActions } from '../../app/RoleContext';
 import { useOrg } from '../../app/OrgContext';
+import { OrgCrest, crestInitials } from '../../components/OrgCrest';
 
 const HOME_BY_ROLE: Record<RoleChoice['role'], string> = {
   policajac: '/policajac',
@@ -38,6 +39,7 @@ export function RolePickerScreen() {
     <div className="min-h-screen bg-paper-50">
       <div className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <header className="mb-12 text-center">
+          <OrgCrest variant={org.logo} initials={crestInitials(org.orgShort)} className="mx-auto mb-4 h-12 w-12" />
           <div className="section-label mb-3 text-brass-600">{org.orgName}</div>
           <h1 className="font-heading text-4xl leading-tight text-ink-800 md:text-5xl">Odaberi ulogu</h1>
           <div className="mx-auto mt-5 h-[2px] w-16 bg-brass-500" />

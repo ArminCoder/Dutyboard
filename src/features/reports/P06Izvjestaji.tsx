@@ -12,6 +12,7 @@ import {
   type ReportStatus,
 } from '../../data/types';
 import { formatBs } from '../../data/generator/dates';
+import { street } from '../../app/places';
 
 // P06 — pisanje dokumenata. Policajac unese kratak opis, sistem sastavi dokument
 // po obrascu, on ga doradi, preda i naruči štampu u stanici.
@@ -226,7 +227,7 @@ function ComposeDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="npr. u ul. Ferhadija"
+            placeholder={`npr. u ul. ${street(0)}`}
             className="w-full border border-paper-200 bg-paper-50 px-3 py-2 text-sm text-ink-800"
           />
         </label>

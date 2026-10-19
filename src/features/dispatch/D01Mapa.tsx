@@ -6,6 +6,7 @@ import { useScopedWorld } from '../../data/useScopedWorld';
 import { useSession } from '../../app/RoleContext';
 import { useStore } from '../../app/store';
 import { DEFAULT_ORG } from '../../app/orgConfig';
+import { PLACE, street } from '../../app/places';
 
 // D01 — živa mapa. Scope određuje koje jedinice se vide:
 // OKC (Uprava) vidi sve stanice, šef smjene samo svoju.
@@ -50,7 +51,7 @@ export function D01Mapa() {
     store.addKddEntry({
       psId: 'ps-centar',
       type: 'dogadjaj',
-      description: 'Pješačka 1-1 se ne javlja — eskalirano šefu smjene PS Centar.',
+      description: `Pješačka 1-1 se ne javlja — eskalirano šefu smjene ${PLACE.psCentar}.`,
       assignedPatrol: 'Pješačka 1-1',
       status: 'otvoren',
       recordedBy: `OKC ${DEFAULT_ORG.orgShort}`,
@@ -146,7 +147,7 @@ export function D01Mapa() {
                     <div className="border border-signal-alarm/40 bg-signal-alarm/10 px-3 py-2 text-xs text-signal-alarm">
                       <div className="font-semibold uppercase tracking-wider">Eskalirano šefu smjene</div>
                       <div className="mt-0.5 normal-case">
-                        Lokacija patrole poslata PS Centar; upis kreiran u knjizi događaja.
+                        Lokacija patrole poslata {PLACE.psCentar}; upis kreiran u knjizi događaja.
                       </div>
                     </div>
                     <button
@@ -162,7 +163,7 @@ export function D01Mapa() {
                       <div className="font-mono text-sm tabular-nums">
                         Bez odgovora {Math.max(secondsSinceNoResp / 60, 0.1).toFixed(1)} min
                       </div>
-                      <div className="mt-0.5">Pješačka 1-1 · zadnja lokacija: Baščaršija</div>
+                      <div className="mt-0.5">Pješačka 1-1 · zadnja lokacija: {street(3)}</div>
                     </div>
                     {!nonResp.provjera ? (
                       <button

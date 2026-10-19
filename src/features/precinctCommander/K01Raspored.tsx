@@ -7,6 +7,7 @@ import type { Officer, Shift, ShiftSlot } from '../../data/types';
 import { addDays, dayNameBs, dayNameBsShort, demoNow, formatBs, monthNameBs } from '../../data/generator/dates';
 import { Button } from '../../components/Button';
 import { StatusBadge } from '../../components/StatusBadge';
+import { PLACE } from '../../app/places';
 
 const MONTHS_BS_LONG = ['januar', 'februar', 'mart', 'april', 'maj', 'juni', 'juli', 'avgust', 'septembar', 'oktobar', 'novembar', 'decembar'];
 
@@ -79,7 +80,7 @@ export function K01Raspored() {
       <header className="border-b border-paper-200 bg-paper-0 px-6 py-5">
         <div className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-3">
           <div>
-            <div className="section-label mb-1 text-brass-600">Mjesečni raspored · PS Centar</div>
+            <div className="section-label mb-1 text-brass-600">Mjesečni raspored · {PLACE.psCentar}</div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => stepMonth(-1)}

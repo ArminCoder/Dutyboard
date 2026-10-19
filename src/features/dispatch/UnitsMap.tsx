@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { Filter } from 'lucide-react';
 import type { UnitDef } from './routes';
 import { cssVar } from '../../components/chartTheme';
+import { getTenant } from '../../app/tenant';
 
 // Zajednička mapa jedinica — koristi je OKC (cijeli kanton) i šef smjene (svoja stanica).
 
@@ -33,7 +34,7 @@ export function kindColor(kind: UnitKind): string {
   }
 }
 
-const SARAJEVO_CENTER: [number, number] = [43.852, 18.395];
+const MAP_CENTER: [number, number] = getTenant().mapCenter;
 
 function positionOnLine(line: Array<[number, number]>, t: number): [number, number] {
   const n = line.length;
@@ -57,7 +58,7 @@ interface Props {
   heightVh?: number;
 }
 
-export function UnitsMap({ units, alertUnitId, center = SARAJEVO_CENTER, zoom = 12, heightVh = 62 }: Props) {
+export function UnitsMap({ units, alertUnitId, center = MAP_CENTER, zoom = 12, heightVh = 62 }: Props) {
   const [now, setNow] = useState(Date.now());
   const [filter, setFilter] = useState<Set<UnitKind>>(new Set(ALL_KINDS));
 

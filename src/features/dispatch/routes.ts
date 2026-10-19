@@ -1,5 +1,9 @@
 // Aproksimirane polilinije po stvarnim ulicama Sarajeva. Koordinate [lat, lng].
 // SPEC linija 350: hardcode 8 plausible routes, approximate coordinates OK.
+// Za druge organizacije cijeli skup se pomjera u grad tenanta (shiftToTenant).
+
+import { PLACE } from '../../app/places';
+import { shiftToTenant } from '../../app/tenant';
 
 export interface UnitDef {
   id: string;
@@ -12,7 +16,7 @@ export interface UnitDef {
   loopSeconds: number;
 }
 
-export const UNITS: UnitDef[] = [
+const BASE_UNITS: UnitDef[] = [
   {
     id: 'u-1',
     psId: 'ps-centar',
@@ -188,7 +192,7 @@ export const UNITS: UnitDef[] = [
   {
     id: 'u-14',
     psId: 'ps-centar',
-    callSign: 'Straža PS Centar',
+    callSign: `Straža ${PLACE.psCentar}`,
     kind: 'straza',
     officers: ['Kadrić E.'],
     loopSeconds: 600,
@@ -199,7 +203,7 @@ export const UNITS: UnitDef[] = [
   {
     id: 'u-15',
     psId: 'ps-novi-grad',
-    callSign: 'Straža PS Novi Grad',
+    callSign: `Straža ${PLACE.psNoviGrad}`,
     kind: 'straza',
     officers: ['Mujić H.'],
     loopSeconds: 600,
@@ -269,3 +273,5 @@ export const UNITS: UnitDef[] = [
     ],
   },
 ];
+
+export const UNITS: UnitDef[] = BASE_UNITS.map((u) => ({ ...u, polyline: u.polyline.map(shiftToTenant) }));

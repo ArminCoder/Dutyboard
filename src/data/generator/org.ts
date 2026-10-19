@@ -1,5 +1,6 @@
 import type { OrgNode } from '../types';
 import { ORG_ROOT_NAME } from '../../app/orgConfig';
+import { PLACE } from '../../app/places';
 
 // Organizaciona struktura po SPEC-u linija 264:
 // MUP (korijen; naziv iz env konfiguracije)
@@ -24,13 +25,13 @@ export function buildOrgTree(): OrgNode[] {
 
   // `est` = sistematizovan broj izvršilaca po PS (malo iznad stvarne popune → vidljiva upražnjena mjesta).
   const pus = [
-    { id: 'pu-centar', name: 'PU Centar', pss: [
-      { id: 'ps-centar', name: 'PS Centar', est: 80 },
-      { id: 'ps-stari-grad', name: 'PS Stari Grad', est: 78 },
+    { id: 'pu-centar', name: PLACE.puCentar, pss: [
+      { id: 'ps-centar', name: PLACE.psCentar, est: 80 },
+      { id: 'ps-stari-grad', name: PLACE.psStariGrad, est: 78 },
     ] },
-    { id: 'pu-novi-grad', name: 'PU Novi Grad', pss: [
-      { id: 'ps-novi-grad', name: 'PS Novi Grad', est: 84 },
-      { id: 'ps-dobrinja', name: 'PS Dobrinja', est: 74 },
+    { id: 'pu-novi-grad', name: PLACE.puNoviGrad, pss: [
+      { id: 'ps-novi-grad', name: PLACE.psNoviGrad, est: 84 },
+      { id: 'ps-dobrinja', name: PLACE.psDobrinja, est: 74 },
     ] },
   ];
 

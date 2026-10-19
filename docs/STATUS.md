@@ -82,6 +82,15 @@ komandir workflow (draft → objava) lives in the store as `generatedRosters` (p
 with `generateRosterDraft`/`publishRoster`/`discardRoster`; publish pushes an officer notification.
 K01 shows the store roster for months with no `world.shifts`, filtered to scope by `psId`.
 
+**Tenants (per access key branding):** each `ACCESS_KEYS` label can have a profile in the
+gitignored `tenants.json` (`server/tenants.ts`; shape in `tenants.example.json`): org name/short,
+root/region, city, map centre, PU/PS display names, street list. `/api/session` returns it;
+`src/main.tsx` sets it (`app/tenant.ts`) **before** dynamic-importing `bootstrap.tsx`, so every
+load-time constant (generator org tree, `ORG_ROOT_NAME`, `PLACE` from `app/places.ts`) sees the
+tenant. Internal ids (`ps-centar`, …) never change — only display names. Patrol polylines are drawn
+around Sarajevo and shifted to the tenant city (`shiftToTenant`). Gate login does a full reload so
+the new tenant boots. No tenant → fictional "Demo kanton" defaults.
+
 **Two auth layers, two contexts:** internal police roles use `RoleContext` + the access-key gate.
 The **citizen portal is a separate public area**: `CitizenContext` (mock JMB+lozinka, accounts in
 localStorage), routed under `/portal/*` **above** the gate check in `routes.tsx` so it needs no
@@ -130,6 +139,9 @@ that processes the shared `documentRequests` store slice, scoped by `psId` like 
 7. **Roster ↔ fleet coupling.** Vehicle plates referenced by the roster must exist in
    `generator/vehicles.ts` (plate numbering is station-local for exactly this reason).
 8. **Sector numbers repeat across stations** — match coverage by `psId`, not by number alone.
+9. **Never hardcode a place name in UI text.** Use `PLACE.psCentar` / `street(i)` / `TENANT.city`
+   from `app/places.ts`, or the TK/ZDK demos show Sarajevo names. Anything that reads the tenant
+   must be imported from the app tree (after `setTenant`), never from `main.tsx`.
 
 ## 7. Demo flow (current — replaces the spec's script)
 

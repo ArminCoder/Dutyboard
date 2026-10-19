@@ -5,6 +5,7 @@ import { useStore, type ActivePatrolCard } from '../../app/store';
 import { checkEligibility } from '../../domain/eligibility';
 import { world } from '../../data/world';
 import { DEMO_TODAY, demoNow } from '../../data/generator/dates';
+import { PLACE } from '../../app/places';
 
 export function K02Aktivna() {
   const store = useStore();
@@ -17,7 +18,7 @@ export function K02Aktivna() {
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="text-xs uppercase tracking-wider text-ink-400">Aktivna smjena · II · 19:00 – 07:00</div>
-          <h1 className="mt-0.5 text-lg font-heading font-medium text-ink-800">PS Centar — trenutno na terenu</h1>
+          <h1 className="mt-0.5 text-lg font-heading font-medium text-ink-800">{PLACE.psCentar} — trenutno na terenu</h1>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 rounded-full bg-signal-ok/15 px-3 py-1 text-xs font-medium text-signal-ok">

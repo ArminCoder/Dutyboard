@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Check, RotateCcw, Building2, Palette, ToggleLeft } from 'lucide-react';
 import { useOrg } from '../../app/OrgContext';
 import { ORG_PRESETS, type LogoVariant, type OrgConfig } from '../../app/orgConfig';
+import { OrgCrest, crestInitials } from '../../components/OrgCrest';
 
 // A01 — postavke organizacije (ultra-admin). Ista aplikacija se isporučuje
 // različitim upravama; ovdje se podešava naziv, boje i znak, uživo.
@@ -207,7 +208,7 @@ export function A01Organizacija() {
                 className="mb-3 flex items-center gap-3 p-3"
                 style={{ background: draft.colors.primary, color: '#fff' }}
               >
-                <OrgCrest variant={draft.logo} className="h-7 w-7" color={draft.colors.accent} />
+                <OrgCrest variant={draft.logo} className="h-7 w-7" color={draft.colors.accent} initials={crestInitials(draft.orgShort)} />
                 <div className="min-w-0 leading-tight">
                   <div className="truncate text-[10px] uppercase leading-[1.4] tracking-wider opacity-70">
                     {draft.productName}
@@ -247,42 +248,5 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="mb-1 block text-xs font-medium text-ink-600">{label}</span>
       {children}
     </label>
-  );
-}
-
-export function OrgCrest({
-  variant,
-  className,
-  color,
-}: {
-  variant: LogoVariant;
-  className?: string;
-  color?: string;
-}) {
-  if (variant === 'bez') return null;
-  const stroke = color ?? 'var(--color-brass-500)';
-  if (variant === 'zvijezda') {
-    return (
-      <svg viewBox="0 0 24 24" className={className} aria-hidden>
-        <path
-          d="M12 2.5 L14.6 9.2 L21.5 9.6 L16.2 14 L18 20.7 L12 16.9 L6 20.7 L7.8 14 L2.5 9.6 L9.4 9.2 Z"
-          fill="none"
-          stroke={stroke}
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden>
-      <path
-        d="M12 2.5 L20 5.2 V12 C20 17 16.5 20.4 12 21.8 C7.5 20.4 4 17 4 12 V5.2 Z"
-        fill="none"
-        stroke={stroke}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

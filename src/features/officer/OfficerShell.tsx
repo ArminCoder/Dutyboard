@@ -1,6 +1,7 @@
 import { CalendarDays, ClipboardList, BarChart3, Wallet, Backpack, FileText, GraduationCap } from 'lucide-react';
 import { SidebarShell, type ShellNavItem } from '../../components/SidebarShell';
 import { useSoftić } from './useOfficer';
+import { PLACE } from '../../app/places';
 
 const TABS: ShellNavItem[] = [
   { to: '/policajac', end: true, label: 'Smjena', icon: CalendarDays },
@@ -17,7 +18,7 @@ export function OfficerShell() {
   return (
     <SidebarShell
       roleTitle={officer.name}
-      subtitle="policajac · PS Centar · Smjena B"
+      subtitle={`policajac · ${PLACE.psCentar} · Smjena B`}
       nav={TABS}
       mobileNav="bottom"
       contentClassName="mx-auto w-full max-w-2xl"

@@ -2,6 +2,8 @@
 // različitim policijskim upravama — naziv, boje i znak se podešavaju ovdje,
 // bez ikakvih izmjena u kodu.
 
+import { getTenant } from './tenant';
+
 export type LogoVariant = 'stit' | 'zvijezda' | 'bez';
 
 export interface OrgConfig {
@@ -22,20 +24,20 @@ export interface OrgConfig {
   features: Record<string, boolean>;
 }
 
-// Nazivi dolaze iz env konfiguracije (VITE_ORG_*), da isti kod radi za bilo koju
-// organizaciju. Podrazumijevane vrijednosti su izmišljene (demo).
-const env = import.meta.env;
+// Nazivi dolaze od aktivnog tenanta (pristupni ključ → profil na serveru), a bez
+// njega iz env konfiguracije (VITE_ORG_*). Podrazumijevane vrijednosti su izmišljene.
+const tenant = getTenant();
 
 /** Naziv korijena organizacione strukture (npr. "MUP Demo kantona"). */
-export const ORG_ROOT_NAME: string = env.VITE_ORG_ROOT_NAME || 'MUP Demo kantona';
+export const ORG_ROOT_NAME: string = tenant.rootName;
 /** Kanton / regija za zaglavlja službenih dokumenata. */
-export const ORG_REGION: string = env.VITE_ORG_REGION || 'Demo kanton';
+export const ORG_REGION: string = tenant.region;
 
 export const DEFAULT_ORG: OrgConfig = {
-  orgName: env.VITE_ORG_NAME || 'Ministarstvo unutrašnjih poslova · Demo kanton',
-  orgShort: env.VITE_ORG_SHORT || 'MUP DK',
-  productName: env.VITE_PRODUCT_NAME || 'Dutyboard',
-  colors: { primary: '#132241', accent: '#bf9a5c' },
+  orgName: tenant.orgName,
+  orgShort: tenant.orgShort,
+  productName: import.meta.env.VITE_PRODUCT_NAME || 'Dutyboard',
+  colors: { ...tenant.colors },
   logo: 'stit',
   features: { kdd: true, bilten: true, mapa: true, simulacija: true, plata: true },
 };
@@ -46,7 +48,8 @@ export const ORG_PRESETS: Array<{ label: string; primary: string; accent: string
   { label: 'Bordo · zlatna', primary: '#3a1220', accent: '#c0a062' },
 ];
 
-const STORAGE_KEY = 'dutyboard.orgConfig';
+// Po tenantu — izmjene u A01 za jednu organizaciju ne smiju procuriti u drugu.
+const STORAGE_KEY = `dutyboard.orgConfig${tenant.label ? `.${tenant.label}` : ''}`;
 
 export function loadOrgConfig(): OrgConfig {
   try {

@@ -7,6 +7,7 @@ import { world } from '../data/world';
 import { DEMO_TODAY, addDays, demoNow, monthNameBs } from '../data/generator/dates';
 import { findDocType, findOffice } from '../data/administration';
 import { generateRosterForMonth } from '../data/generator/shifts';
+import { PLACE, bare, street } from './places';
 
 // --- Phase 4 additions: overtime postings + active shift crisis + shift log ---
 
@@ -188,7 +189,7 @@ function seedNotifications(): Notification[] {
       kind: 'raspored',
       severity: 'info',
       title: 'Objavljen raspored za septembar',
-      body: 'PS Centar · 4 smjenske grupe · pregledaj u P01.',
+      body: `${PLACE.psCentar} · 4 smjenske grupe · pregledaj u P01.`,
       createdAt: yestIso,
       read: false,
     },
@@ -199,7 +200,7 @@ function seedNotifications(): Notification[] {
       kind: 'prekovremeni_nalog',
       severity: 'warn',
       title: 'Nalog za prekovremeni rad — subota, 06.09.',
-      body: 'Interventna, 19:00–07:00. Nalog izdao komandir PS Centar. Sati se evidentiraju u obračun.',
+      body: `Interventna, 19:00–07:00. Nalog izdao komandir ${PLACE.psCentar}. Sati se evidentiraju u obračun.`,
       createdAt: yestIso,
       read: false,
     },
@@ -327,7 +328,7 @@ function seedActivePatrols(): ActivePatrolCard[] {
   );
   if (!shift) return [];
 
-  const LOCATIONS = ['Ferhadija', 'Titova', 'Marijin dvor', 'Baščaršija', 'Skenderija', 'Koševo', 'Mejtaš', 'Bistrik'];
+  const LOCATIONS = [0, 1, 2, 3, 4, 5, 6, 7].map(street);
 
   return shift.slots
     .filter((sl) => sl.assignedOfficerIds.length > 0)
@@ -353,20 +354,20 @@ function seedKdd(): KddEntry[] {
   const rows: Array<Omit<KddEntry, 'id'>> = [
     // --- PS Centar, tekuća II smjena ---
     { psId: 'ps-centar', when: `${d}T19:05`, type: 'dogadjaj', description: 'Primopredaja smjene izvršena. Stanje ljudstva i vozila uredno.', status: 'zakljucen', outcome: 'Bez primjedbi.', recordedBy: kovac },
-    { psId: 'ps-centar', when: `${d}T19:42`, type: 'poziv_122', description: 'Prijava buke iz ugostiteljskog objekta, Ferhadija.', assignedPatrol: 'Pješačka 1-1', status: 'zakljucen', outcome: 'Upozorenje vlasniku, buka prekinuta.', recordedBy: kovac },
-    { psId: 'ps-centar', when: `${d}T20:15`, type: 'intervencija', description: 'Saobraćajna nezgoda bez povrijeđenih, Titova ulica.', assignedPatrol: 'Auto-patrola 2-1 · Interventna', status: 'zakljucen', outcome: 'Uviđaj izvršen, sačinjena službena zabilješka.', recordedBy: kovac },
-    { psId: 'ps-centar', when: `${d}T21:03`, type: 'poziv_122', description: 'Prijava sumnjivog lica u haustoru, Mis Irbina.', assignedPatrol: 'Pješačka 1-2', status: 'zakljucen', outcome: 'Provjera identiteta, lice udaljeno.', recordedBy: kovac },
-    { psId: 'ps-centar', when: `${d}T21:48`, type: 'intervencija', description: 'Narušavanje javnog reda i mira ispred lokala, Baščaršija.', assignedPatrol: 'Auto-patrola 2-2', status: 'u_toku', recordedBy: kovac },
-    { psId: 'ps-centar', when: `${d}T22:20`, type: 'dogadjaj', description: 'Kontrola saobraćaja — punkt Marijin dvor.', assignedPatrol: 'Moto 4-1', status: 'otvoren', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T19:42`, type: 'poziv_122', description: `Prijava buke iz ugostiteljskog objekta, ${street(0)}.`, assignedPatrol: 'Pješačka 1-1', status: 'zakljucen', outcome: 'Upozorenje vlasniku, buka prekinuta.', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T20:15`, type: 'intervencija', description: `Saobraćajna nezgoda bez povrijeđenih, ${street(1)}.`, assignedPatrol: 'Auto-patrola 2-1 · Interventna', status: 'zakljucen', outcome: 'Uviđaj izvršen, sačinjena službena zabilješka.', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T21:03`, type: 'poziv_122', description: `Prijava sumnjivog lica u haustoru, ${street(8)}.`, assignedPatrol: 'Pješačka 1-2', status: 'zakljucen', outcome: 'Provjera identiteta, lice udaljeno.', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T21:48`, type: 'intervencija', description: `Narušavanje javnog reda i mira ispred lokala, ${street(3)}.`, assignedPatrol: 'Auto-patrola 2-2', status: 'u_toku', recordedBy: kovac },
+    { psId: 'ps-centar', when: `${d}T22:20`, type: 'dogadjaj', description: `Kontrola saobraćaja — punkt ${street(2)}.`, assignedPatrol: 'Moto 4-1', status: 'otvoren', recordedBy: kovac },
     { psId: 'ps-centar', when: `${d}T22:35`, type: 'poziv_122', description: 'Prijava krađe mobilnog telefona, prijavilac upućen u stanicu.', status: 'otvoren', recordedBy: kovac },
     // --- PS Centar, prethodna smjena ---
-    { psId: 'ps-centar', when: `${y}T14:10`, type: 'intervencija', description: 'Porodična svađa, bez fizičkog nasilja, Koševo.', assignedPatrol: 'Auto-patrola 2-1 · Interventna', status: 'zakljucen', outcome: 'Strane smirene, upućene na medijaciju.', recordedBy: 'Mirza Delić' },
+    { psId: 'ps-centar', when: `${y}T14:10`, type: 'intervencija', description: `Porodična svađa, bez fizičkog nasilja, ${street(5)}.`, assignedPatrol: 'Auto-patrola 2-1 · Interventna', status: 'zakljucen', outcome: 'Strane smirene, upućene na medijaciju.', recordedBy: 'Mirza Delić' },
     // --- ostale stanice ---
-    { psId: 'ps-stari-grad', when: `${d}T20:05`, type: 'poziv_122', description: 'Prijava parkiranja na pješačkoj zoni, Kovači.', assignedPatrol: 'Pješačka 3-1', status: 'zakljucen', outcome: 'Izdat prekršajni nalog.', recordedBy: 'Haris Bešlija' },
-    { psId: 'ps-stari-grad', when: `${d}T22:00`, type: 'dogadjaj', description: 'Osiguranje kulturne manifestacije, Vijećnica.', assignedPatrol: 'Pješačka 3-2', status: 'u_toku', recordedBy: 'Haris Bešlija' },
-    { psId: 'ps-novi-grad', when: `${d}T19:30`, type: 'intervencija', description: 'Provala u poslovni prostor, Alipašino Polje.', assignedPatrol: 'Auto-patrola 5-1', status: 'u_toku', recordedBy: 'Senad Karić' },
-    { psId: 'ps-novi-grad', when: `${d}T21:15`, type: 'poziv_122', description: 'Prijava nesavjesne vožnje, Bulevar Meše Selimovića.', assignedPatrol: 'Auto-patrola 5-2', status: 'zakljucen', outcome: 'Vozilo zaustavljeno, izdat prekršajni nalog.', recordedBy: 'Senad Karić' },
-    { psId: 'ps-dobrinja', when: `${d}T20:40`, type: 'dogadjaj', description: 'Redovna patrolna aktivnost u naselju Dobrinja C5.', assignedPatrol: 'Auto-patrola 6-1', status: 'zakljucen', outcome: 'Bez posebnih zapažanja.', recordedBy: 'Amir Šehić' },
+    { psId: 'ps-stari-grad', when: `${d}T20:05`, type: 'poziv_122', description: `Prijava parkiranja na pješačkoj zoni, ${street(9)}.`, assignedPatrol: 'Pješačka 3-1', status: 'zakljucen', outcome: 'Izdat prekršajni nalog.', recordedBy: 'Haris Bešlija' },
+    { psId: 'ps-stari-grad', when: `${d}T22:00`, type: 'dogadjaj', description: `Osiguranje kulturne manifestacije, ${street(11)}.`, assignedPatrol: 'Pješačka 3-2', status: 'u_toku', recordedBy: 'Haris Bešlija' },
+    { psId: 'ps-novi-grad', when: `${d}T19:30`, type: 'intervencija', description: `Provala u poslovni prostor, ${street(12)}.`, assignedPatrol: 'Auto-patrola 5-1', status: 'u_toku', recordedBy: 'Senad Karić' },
+    { psId: 'ps-novi-grad', when: `${d}T21:15`, type: 'poziv_122', description: `Prijava nesavjesne vožnje, ${street(10)}.`, assignedPatrol: 'Auto-patrola 5-2', status: 'zakljucen', outcome: 'Vozilo zaustavljeno, izdat prekršajni nalog.', recordedBy: 'Senad Karić' },
+    { psId: 'ps-dobrinja', when: `${d}T20:40`, type: 'dogadjaj', description: `Redovna patrolna aktivnost u naselju ${bare(PLACE.psDobrinja)}.`, assignedPatrol: 'Auto-patrola 6-1', status: 'zakljucen', outcome: 'Bez posebnih zapažanja.', recordedBy: 'Amir Šehić' },
   ];
 
   return rows.map((r, i) => ({ ...r, id: `kdd-seed-${String(i + 1).padStart(3, '0')}` }));
@@ -385,7 +386,7 @@ function seedBiltens(): Bilten[] {
     {
       psId: 'ps-stari-grad', shiftDate: y, shiftKind: 'II',
       counts: { dogadjaji: 6, intervencije: 2, prekrsajniNalozi: 11 },
-      note: 'Pojačan promet u zoni Baščaršije zbog manifestacije.',
+      note: `Pojačan promet u zoni ${street(3)} zbog manifestacije.`,
       submittedBy: 'Haris Bešlija', submittedAt: `${DEMO_TODAY}T07:05`,
     },
     {
@@ -407,7 +408,7 @@ function seedReports(): PoliceReport[] {
       psId: 'ps-centar',
       kind: 'sluzbena_zabiljeska',
       summary: 'Zatečeno oštećenje stakla na izlogu, vlasnik obaviješten telefonom.',
-      body: 'Sačinjena službena zabilješka o oštećenju izloga u ul. Ferhadija.',
+      body: `Sačinjena službena zabilješka o oštećenju izloga u ul. ${street(0)}.`,
       status: 'odstampan',
       createdAt: `${addDays(DEMO_TODAY, -6)}T21:10`,
       submittedAt: `${addDays(DEMO_TODAY, -6)}T22:05`,
@@ -786,7 +787,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       kind: 'raspored',
       severity: 'info',
       title: `Objavljen raspored za ${mjesec}`,
-      body: `PS Centar · ${mjesec} ${y}. · pregledaj u kalendaru smjena (P01).`,
+      body: `${PLACE.psCentar} · ${mjesec} ${y}. · pregledaj u kalendaru smjena (P01).`,
       createdAt: demoNow(),
       read: false,
     };

@@ -7,6 +7,7 @@
 // Iznosi i uputstva su ilustrativni (demo). Sadržaj je statičan i deterministički.
 
 import type { DocumentKind, DocumentRequest } from './types';
+import { PLACE, TENANT, bare, street } from '../app/places';
 
 export interface DocType {
   kind: DocumentKind;
@@ -88,10 +89,10 @@ export interface DocOffice {
 }
 
 export const DOC_OFFICES: DocOffice[] = [
-  { psId: 'ps-centar', name: 'Šalter sala PU Centar', address: 'Titova 12, Sarajevo' },
-  { psId: 'ps-stari-grad', name: 'Šalter PS Stari Grad', address: 'Zelenih beretki 2' },
-  { psId: 'ps-novi-grad', name: 'CIPS Novi Grad', address: 'Bulevar Meše Selimovića 4' },
-  { psId: 'ps-dobrinja', name: 'Šalter PS Dobrinja', address: 'Trg Zlatnih ljiljana bb' },
+  { psId: 'ps-centar', name: `Šalter sala ${PLACE.puCentar}`, address: `${street(1)} 12, ${TENANT.city}` },
+  { psId: 'ps-stari-grad', name: `Šalter ${PLACE.psStariGrad}`, address: `${street(9)} 2` },
+  { psId: 'ps-novi-grad', name: `CIPS ${bare(PLACE.psNoviGrad)}`, address: `${street(10)} 4` },
+  { psId: 'ps-dobrinja', name: `Šalter ${PLACE.psDobrinja}`, address: `${street(12)} bb` },
 ];
 
 export function findOffice(psId: string): DocOffice {

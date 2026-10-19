@@ -1,0 +1,21 @@
+{
+  "primjer": {
+    "orgName": "Ministarstvo unutrašnjih poslova · Primjer kanton",
+    "orgShort": "MUP PK",
+    "rootName": "MUP Primjer kantona",
+    "region": "Primjer kanton",
+    "city": "Primjer Grad",
+    "cityLocative": "Primjer Gradu",
+    "mapCenter": [44.538, 18.676],
+    "places": {
+      "puCentar": "PU Prva",
+      "psCentar": "PS Prva",
+      "psStariGrad": "PS Druga",
+      "puNoviGrad": "PU Druga",
+      "psNoviGrad": "PS Treća",
+      "psDobrinja": "PS Četvrta"
+    },
+    "streets": ["Glavna ulica", "Trg slobode", "Gradski bulevar", "Ulica mira", "Stari grad", "Tržnica", "Gradski park", "Stadion", "Ulica cvijeća", "Pješačka zona", "Obilaznica"],
+    "colors": { "primary": "#132241", "accent": "#bf9a5c" }
+  }
+}

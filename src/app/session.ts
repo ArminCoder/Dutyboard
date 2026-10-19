@@ -1,5 +1,6 @@
 import type { AccessRole } from '../data/types';
 import { DEFAULT_ORG, ORG_ROOT_NAME } from './orgConfig';
+import { PLACE } from './places';
 
 // "Session" — koja uloga je trenutno prijavljena i pod kojim identitetom.
 // Za demo nema pravih lozinki; birač uloge (E00) postavlja identitet.
@@ -30,24 +31,24 @@ export const ROLE_CHOICES: RoleChoice[] = [
     officerId: 'off-0001', // Amar Softić
     scopeNodeId: 'ps-centar-smjena-b',
     displayName: 'Amar Softić',
-    displayTitle: 'policajac, PS Centar, II smjena',
-    scopeLabel: 'PS Centar · Smjena B',
+    displayTitle: `policajac, ${PLACE.psCentar}, II smjena`,
+    scopeLabel: `${PLACE.psCentar} · Smjena B`,
   },
   {
     role: 'sefSmjene',
     officerId: 'off-0002', // Damir Kovač
     scopeNodeId: 'ps-centar',
     displayName: 'Damir Kovač',
-    displayTitle: 'stariji narednik, PS Centar',
-    scopeLabel: 'PS Centar',
+    displayTitle: `stariji narednik, ${PLACE.psCentar}`,
+    scopeLabel: PLACE.psCentar,
   },
   {
     role: 'komandir',
     officerId: 'off-komandir-centar', // Adnan Softić — komandir PS Centar
     scopeNodeId: 'ps-centar',
     displayName: 'Adnan Softić',
-    displayTitle: 'inspektor, komandir PS Centar',
-    scopeLabel: 'PS Centar',
+    displayTitle: `inspektor, komandir ${PLACE.psCentar}`,
+    scopeLabel: PLACE.psCentar,
   },
   {
     // OKC je kantonalni — na broj 122 se javlja ovdje, pa se poziv prosljeđuje
@@ -64,8 +65,8 @@ export const ROLE_CHOICES: RoleChoice[] = [
     officerId: 'off-0003', // Samir Begić
     scopeNodeId: 'pu-centar',
     displayName: 'Samir Begić',
-    displayTitle: 'načelnik PU Centar',
-    scopeLabel: 'PU Centar',
+    displayTitle: `načelnik ${PLACE.puCentar}`,
+    scopeLabel: PLACE.puCentar,
   },
   {
     role: 'komesar',

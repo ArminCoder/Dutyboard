@@ -1,25 +1,18 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { OrgProvider } from './app/OrgContext';
-import { RoleProvider } from './app/RoleContext';
-import { CitizenProvider } from './app/CitizenContext';
-import { StoreProvider } from './app/store';
-import { AppRoutes } from './app/routes';
+import { setTenant } from './app/tenant';
 import './index.css';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <OrgProvider>
-      <RoleProvider>
-        <CitizenProvider>
-          <StoreProvider>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </StoreProvider>
-        </CitizenProvider>
-      </RoleProvider>
-    </OrgProvider>
-  </StrictMode>,
-);
+// Tenant (organizacija iz pristupnog ključa) mora biti postavljen PRIJE nego što
+// se učita ostatak aplikacije — nazivi, generator svijeta i karta ga čitaju pri
+// učitavanju modula. Zato se aplikacija uvozi dinamički tek nakon sesije.
+async function boot() {
+  try {
+    const res = await fetch('/api/session', { credentials: 'include' });
+    const data = (await res.json()) as { authenticated?: boolean; label?: string; tenant?: Parameters<typeof setTenant>[1] };
+    if (data.authenticated) setTenant(data.label ?? null, data.tenant);
+  } catch {
+    // bez servera — ostaje izmišljena demo organizacija
+  }
+  await import('./bootstrap');
+}
+
+void boot();

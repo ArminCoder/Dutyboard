@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FileText, ShieldAlert, Users, Lock, Eye, Filter, Printer, CheckCircle2, Clock } from 'lucide-react';
 import { world } from '../../data/world';
 import { descendantsOf } from '../../data/generator/org';
+import { PLACE } from '../../app/places';
 
 // X01 — Zahtjevi / e-pisarnica (životni ciklus zahtjeva za premještaj)
 export function X01Pisarnica() {
@@ -9,16 +10,16 @@ export function X01Pisarnica() {
     id: 'zh-2026-0742',
     kind: 'Premještaj (interno)',
     officer: 'Amar Softić',
-    from: 'PS Centar',
-    to: 'PS Novi Grad',
+    from: PLACE.psCentar,
+    to: PLACE.psNoviGrad,
     submitted: '02.08.2026.',
     lastAction: '18.08.2026.',
     status: 'u_toku' as const,
     chain: [
       { step: 'Podnesen', when: '02.08.2026.', by: 'Amar Softić', done: true },
       { step: 'Šef smjene — proslijedio', when: '03.08.2026.', by: 'Damir Kovač', done: true },
-      { step: 'Komandir PS Centar — proslijedio', when: '08.08.2026.', by: 'Nedžad Klepo', done: true },
-      { step: 'Načelnik PU Centar — u razmatranju', when: '—', by: 'Samir Begić', done: false },
+      { step: `Komandir ${PLACE.psCentar} — proslijedio`, when: '08.08.2026.', by: 'Nedžad Klepo', done: true },
+      { step: `Načelnik ${PLACE.puCentar} — u razmatranju`, when: '—', by: 'Samir Begić', done: false },
       { step: 'Uprava policije — čeka', when: '—', by: '—', done: false },
     ],
   };
@@ -132,11 +133,11 @@ export function X02Tajnost() {
         {showAccessLog && (
           <ul className="space-y-1 text-xs">
             <li className="flex items-center justify-between  bg-paper-50 px-3 py-2">
-              <span className="text-ink-800">Samir Begić (načelnik PU Centar)</span>
+              <span className="text-ink-800">Samir Begić (načelnik {PLACE.puCentar})</span>
               <span className="text-[10px] text-ink-500">24.08.2026. 09:14</span>
             </li>
             <li className="flex items-center justify-between  bg-paper-50 px-3 py-2">
-              <span className="text-ink-800">Nedžad Klepo (komandir PS Centar)</span>
+              <span className="text-ink-800">Nedžad Klepo (komandir {PLACE.psCentar})</span>
               <span className="text-[10px] text-ink-500">22.08.2026. 15:03</span>
             </li>
             <li className="flex items-center justify-between  bg-signal-alarm/5 px-3 py-2">
@@ -185,7 +186,7 @@ export function X03Admin() {
             <ul className="divide-y divide-paper-200 text-xs">
               <AuditRow when="24.08.2026. 10:14" who="Samir Begić" what="Pregledao dosje: Amar Softić" />
               <AuditRow when="24.08.2026. 09:58" who="Damir Kovač" what="Odobrio zahtjev za slobodan dan (LR-0001)" />
-              <AuditRow when="24.08.2026. 08:22" who="Sistem" what="Objavljen raspored PS Centar — septembar 2026" />
+              <AuditRow when="24.08.2026. 08:22" who="Sistem" what={`Objavljen raspored ${PLACE.psCentar} — septembar 2026`} />
               <AuditRow when="23.08.2026. 22:47" who="Nepoznat korisnik" what="Pokušaj pristupa dokumentu POVJERLJIVO — odbačen" tone="alarm" />
               <AuditRow when="23.08.2026. 19:15" who="Edin Hodžić" what="Pregledao dosje: Suad Muminović" />
               <AuditRow when="23.08.2026. 14:03" who="Nedžad Klepo" what="Izmijenio raspored 26.08. II smjena" />

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGate } from './useGate';
 import { Button } from '../../components/Button';
 import { useOrg } from '../../app/OrgContext';
+import { OrgCrest, crestInitials } from '../../components/OrgCrest';
 
 interface Props {
   onAuthenticated: () => void;
@@ -36,7 +37,7 @@ export function GateScreen({ onAuthenticated }: Props) {
       <div className="relative w-full max-w-md">
         {/* Header nad karticom */}
         <div className="mb-6 text-center">
-          <Crest />
+          <OrgCrest variant={org.logo} initials={crestInitials(org.orgShort)} className="mx-auto h-14 w-14" />
           <div className="section-label mt-4 text-brass-300">{org.orgName}</div>
           <h1 className="mt-2 font-heading text-3xl font-medium text-paper-50">{org.productName}</h1>
           <div className="mt-1 text-sm text-paper-300">Sistem za upravljanje ljudstvom</div>
@@ -54,7 +55,8 @@ export function GateScreen({ onAuthenticated }: Props) {
             onSubmit={async (e) => {
               e.preventDefault();
               const ok = await gate.submit(key.trim());
-              if (ok) onAuthenticated();
+              // Puni reload: main.tsx tek tada učitava organizaciju vezanu za ključ.
+              if (ok) window.location.reload();
             }}
           >
             <label className="block">
@@ -106,28 +108,6 @@ export function GateScreen({ onAuthenticated }: Props) {
         </div>
       </div>
     </div>
-  );
-}
-
-function Crest() {
-  return (
-    <svg width="56" height="56" viewBox="0 0 56 56" className="mx-auto" aria-hidden>
-      <path
-        d="M28 6 L46 12 V28 C46 39 38 47 28 50 C18 47 10 39 10 28 V12 Z"
-        fill="none"
-        stroke="var(--color-brass-500)"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M20 28 L26 34 L37 22"
-        fill="none"
-        stroke="var(--color-brass-300)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 

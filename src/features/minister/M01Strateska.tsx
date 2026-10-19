@@ -7,6 +7,7 @@ import { establishmentUnder } from '../../data/generator/org';
 import { DEMO_TODAY, yearsBetween } from '../../data/generator/dates';
 import { Button } from '../../components/Button';
 import { CHART_COLORS, CHART_TICK, CHART_TOOLTIP, CHART_TOOLTIP_LABEL } from '../../components/chartTheme';
+import { TENANT } from '../../app/places';
 
 const MONTHS_BS = ['januar', 'februar', 'mart', 'april', 'maj', 'juni', 'juli', 'avgust', 'septembar', 'oktobar', 'novembar', 'decembar'];
 
@@ -160,7 +161,7 @@ export function M01Strateska() {
         <div className="mt-16 grid grid-cols-2 gap-16">
           <div>
             <div className="mb-1 h-px bg-navy-800" />
-            <div className="text-xs text-ink-500">Sarajevo, {dateStamp}</div>
+            <div className="text-xs text-ink-500">{TENANT.city}, {dateStamp}</div>
           </div>
           <div>
             <div className="mb-1 h-px bg-navy-800" />

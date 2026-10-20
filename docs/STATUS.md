@@ -142,6 +142,10 @@ that processes the shared `documentRequests` store slice, scoped by `psId` like 
 9. **Never hardcode a place name in UI text.** Use `PLACE.psCentar` / `street(i)` / `TENANT.city`
    from `app/places.ts`, or the TK/ZDK demos show Sarajevo names. Anything that reads the tenant
    must be imported from the app tree (after `setTenant`), never from `main.tsx`.
+10. **Officer screens run inside an iframe on desktop.** `OfficerShell` (≥900 px) renders the
+    mobile app into `components/PhoneFrame` via a React portal into an iframe (own 390 px
+    viewport, same React tree/store). In officer screens, `window`/`document` mean the *parent*
+    page — avoid them; `fixed` and `sm:`/`lg:` already behave like on a phone.
 
 ## 7. Demo flow (current — replaces the spec's script)
 

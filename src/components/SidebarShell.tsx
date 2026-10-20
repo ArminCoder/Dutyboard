@@ -1,7 +1,7 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import type { ReactNode } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { LogOut } from 'lucide-react';
+import { LogOut, MoreHorizontal, X } from 'lucide-react';
 import { useRoleActions, useSession } from '../app/RoleContext';
 import { useOrg } from '../app/OrgContext';
 import { OrgCrest, crestInitials } from './OrgCrest';
@@ -158,24 +158,71 @@ export function SidebarShell({
         </main>
 
         {/* Mobile bottom tabs (policajac) */}
-        {mobileNav === 'bottom' ? (
-          <nav className={`fixed bottom-0 left-0 z-20 flex w-full items-stretch border-t ${t.border} ${t.headerBg} lg:hidden print:hidden`}>
-            {nav.map(({ to, end, label, icon: Icon }) => (
+        {mobileNav === 'bottom' ? <BottomTabs nav={nav} border={t.border} bg={t.headerBg} /> : null}
+      </div>
+    </div>
+  );
+}
+
+// Telefon podnosi najviše 5 tabova — ostatak ide pod „Više" (donji list, kao u mobilnim aplikacijama).
+const MAX_TABS = 5;
+
+function BottomTabs({ nav, border, bg }: { nav: ShellNavItem[]; border: string; bg: string }) {
+  const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  const overflow = nav.length > MAX_TABS;
+  const primary = overflow ? nav.slice(0, MAX_TABS - 1) : nav;
+  const more = overflow ? nav.slice(MAX_TABS - 1) : [];
+  const moreActive = more.some((n) => pathname === n.to || pathname.startsWith(`${n.to}/`));
+
+  // Zatvori list kad se promijeni ekran.
+  useEffect(() => setOpen(false), [pathname]);
+
+  const tabClass = (active: boolean) =>
+    `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] transition ${active ? 'text-ink-800' : 'text-ink-400 hover:text-navy-900'}`;
+
+  return (
+    <>
+      {open ? (
+        <div className="fixed inset-0 z-30 flex items-end bg-black/40 lg:hidden print:hidden" onClick={() => setOpen(false)}>
+          <div className="w-full bg-paper-0 pb-6 pt-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-2">
+              <span className="section-label text-ink-500">Više</span>
+              <button onClick={() => setOpen(false)} className="p-1 text-ink-400 hover:text-navy-900" aria-label="Zatvori">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {more.map(({ to, end, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
                 end={end}
                 className={({ isActive }) =>
-                  `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] transition ${isActive ? 'text-ink-800' : 'text-ink-400 hover:text-navy-900'}`
+                  `flex items-center gap-3 px-5 py-3.5 text-sm transition ${isActive ? 'bg-paper-100 text-ink-800' : 'text-ink-700 hover:bg-paper-50'}`
                 }
               >
-                <Icon className="h-5 w-5" />
-                <span>{label}</span>
+                <Icon className="h-5 w-5 text-ink-500" />
+                {label}
               </NavLink>
             ))}
-          </nav>
+          </div>
+        </div>
+      ) : null}
+
+      <nav className={`fixed bottom-0 left-0 z-20 flex w-full items-stretch border-t ${border} ${bg} lg:hidden print:hidden`}>
+        {primary.map(({ to, end, label, icon: Icon }) => (
+          <NavLink key={to} to={to} end={end} className={({ isActive }) => tabClass(isActive)}>
+            <Icon className="h-5 w-5" />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+        {overflow ? (
+          <button onClick={() => setOpen((o) => !o)} className={tabClass(moreActive || open)}>
+            <MoreHorizontal className="h-5 w-5" />
+            <span>Više</span>
+          </button>
         ) : null}
-      </div>
-    </div>
+      </nav>
+    </>
   );
 }

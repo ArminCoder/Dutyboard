@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Users } from 'lucide-react';
+import { Check, ChevronRight, Users } from 'lucide-react';
 import { ROLE_CHOICES, sessionFromChoice, type RoleChoice } from '../../app/session';
 import { useRoleActions } from '../../app/RoleContext';
 import { useOrg } from '../../app/OrgContext';
 import { OrgCrest, crestInitials } from '../../components/OrgCrest';
+import { loadSeen, markSeen } from '../../app/seenRoles';
 
 const HOME_BY_ROLE: Record<RoleChoice['role'], string> = {
   policajac: '/policajac',
@@ -26,7 +27,12 @@ export function RolePickerScreen() {
   const { setSession } = useRoleActions();
   const { org } = useOrg();
 
+  // Pročitano pri svakom povratku na birač — uloga se označi čim se otvori.
+  const seen = loadSeen();
+  const seenCount = ROLE_CHOICES.filter((c) => seen.has(c.role)).length;
+
   const choose = (choice: RoleChoice) => {
+    markSeen(choice.role);
     setSession(sessionFromChoice(choice));
     nav(HOME_BY_ROLE[choice.role]);
   };
@@ -47,21 +53,28 @@ export function RolePickerScreen() {
             Svaki nivo vidi samo ono što mu pripada — ista aplikacija kroz šest pari očiju.
             Svi podaci u demonstraciji su izmišljeni.
           </p>
+          {seenCount > 0 ? (
+            <p className="mt-3 text-xs text-ink-400">
+              Pregledano {seenCount} od {ROLE_CHOICES.length} uloga
+            </p>
+          ) : null}
         </header>
 
-        <RoleGroup title="Operativa" choices={operativa} onChoose={choose} />
+        <RoleGroup title="Operativa" choices={operativa} seen={seen} onChoose={choose} />
         <div className="my-10 h-px bg-paper-200" />
-        <RoleGroup title="Rukovodstvo" choices={rukovodstvo} onChoose={choose} />
+        <RoleGroup title="Rukovodstvo" choices={rukovodstvo} seen={seen} onChoose={choose} />
         <div className="my-10 h-px bg-paper-200" />
-        <RoleGroup title="Podrška" choices={podrska} onChoose={choose} />
+        <RoleGroup title="Podrška" choices={podrska} seen={seen} onChoose={choose} />
 
         <div className="mt-8 flex justify-center">
           <a
             href="/portal"
+            onClick={() => markSeen('portal')}
             className="inline-flex items-center gap-2 border border-navy-700 bg-paper-0 px-4 py-2 text-sm text-navy-900 transition hover:bg-paper-100"
           >
             <Users className="h-4 w-4" />
             Otvori portal za građane
+            {seen.has('portal') ? <SeenMark /> : null}
           </a>
         </div>
 
@@ -100,10 +113,12 @@ export function RolePickerScreen() {
 function RoleGroup({
   title,
   choices,
+  seen,
   onChoose,
 }: {
   title: string;
   choices: RoleChoice[];
+  seen: Set<string>;
   onChoose: (c: RoleChoice) => void;
 }) {
   return (
@@ -114,14 +129,14 @@ function RoleGroup({
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {choices.map((c, i) => (
-          <RoleCard key={`${c.role}-${i}`} choice={c} onClick={() => onChoose(c)} />
+          <RoleCard key={`${c.role}-${i}`} choice={c} seen={seen.has(c.role)} onClick={() => onChoose(c)} />
         ))}
       </div>
     </section>
   );
 }
 
-function RoleCard({ choice, onClick }: { choice: RoleChoice; onClick: () => void }) {
+function RoleCard({ choice, seen, onClick }: { choice: RoleChoice; seen: boolean; onClick: () => void }) {
   const initials = choice.displayName
     .split(/\s+/)
     .filter((s) => s[0]?.match(/[A-ZŠĐČĆŽ]/i))
@@ -144,12 +159,25 @@ function RoleCard({ choice, onClick }: { choice: RoleChoice; onClick: () => void
       <div className="min-w-0 flex-1">
         <div className="font-heading text-base font-medium text-ink-800">{choice.displayName}</div>
         <div className="mt-0.5 text-xs text-ink-500">{choice.displayTitle}</div>
-        <div className="mt-2 inline-flex items-center gap-1 border border-brass-300 bg-brass-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brass-700">
-          {choice.scopeLabel}
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="inline-flex items-center gap-1 border border-brass-300 bg-brass-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brass-700">
+            {choice.scopeLabel}
+          </span>
+          {seen ? <SeenMark /> : null}
         </div>
       </div>
 
       <ChevronRight className="h-4 w-4 flex-none text-paper-300 transition group-hover:translate-x-0.5 group-hover:text-brass-500" />
     </button>
+  );
+}
+
+/** Tiha oznaka „već pogledano" — zelena (ok), ne crvena; nije alarm. */
+function SeenMark() {
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-signal-ok">
+      <Check className="h-3 w-3" />
+      Pogledano
+    </span>
   );
 }

@@ -117,10 +117,11 @@ export function UnitsMap({ units, alertUnitId, center = MAP_CENTER, zoom = 12, h
         >
           {/* Keyless OSM osnovna karta (bez API ključa). Tamni izgled se postiže
               CSS filterom nad slojem pločica (.map-dark .leaflet-tile-pane), tako
-              da markeri ostaju u svojim bojama. */}
+              da markeri ostaju u svojim bojama. OSM odbija pločice bez Referer-a —
+              server ne smije slati Referrer-Policy: no-referrer (vidi DEPLOY.md). */}
           <TileLayer
             attribution="&copy; OpenStreetMap contributors"
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
           {positions.map(({ unit, pos }) => {

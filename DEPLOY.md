@@ -75,7 +75,8 @@ demo.tvojadomena.com {
     header {
         X-Frame-Options DENY
         X-Content-Type-Options nosniff
-        Referrer-Policy no-referrer
+        # ne no-referrer — OSM blokira pločice karte bez Referer-a (403 "Access blocked")
+        Referrer-Policy strict-origin-when-cross-origin
     }
 }
 ```

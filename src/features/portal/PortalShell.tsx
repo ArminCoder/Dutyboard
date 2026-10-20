@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, Link } from 'react-router-dom';
-import { Landmark, LogOut } from 'lucide-react';
+import { ArrowLeft, Landmark, LogOut } from 'lucide-react';
 import { useOptionalCitizen, useCitizenActions } from '../../app/CitizenContext';
 import { useOrg } from '../../app/OrgContext';
 
@@ -17,6 +17,15 @@ export function PortalShell() {
 
   return (
     <div className="min-h-screen bg-paper-50">
+      {/* Portal je dio iste demonstracije — jasan put nazad na izbor uloge. */}
+      <div className="border-b border-paper-200 bg-paper-100">
+        <div className="mx-auto max-w-4xl px-4 py-1.5">
+          <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-ink-600 transition hover:text-navy-900">
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Nazad na demo — izbor uloge
+          </Link>
+        </div>
+      </div>
       <header className="border-b border-paper-200 bg-navy-900">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <Link to="/portal" className="flex min-w-0 items-center gap-2.5 text-paper-50">

@@ -5,6 +5,7 @@ import { useRoleActions } from '../../app/RoleContext';
 import { useOrg } from '../../app/OrgContext';
 import { OrgCrest, crestInitials } from '../../components/OrgCrest';
 import { loadSeen, markSeen } from '../../app/seenRoles';
+import { getTenant } from '../../app/tenant';
 
 const HOME_BY_ROLE: Record<RoleChoice['role'], string> = {
   policajac: '/policajac',
@@ -21,6 +22,9 @@ const HOME_BY_ROLE: Record<RoleChoice['role'], string> = {
 const OPERATIVA: RoleChoice['role'][] = ['policajac', 'sefSmjene', 'dezurni'];
 const RUKOVODSTVO: RoleChoice['role'][] = ['komandir', 'nacelnik', 'komesar', 'ministar'];
 const PODRSKA: RoleChoice['role'][] = ['administracija'];
+
+// Ključ bez tenant profila (DEMO-2026) = prezentacija koju vodi Armin.
+const presenterExtras = getTenant().label === null || getTenant().label === 'demo';
 
 export function RolePickerScreen() {
   const nav = useNavigate();
@@ -78,29 +82,33 @@ export function RolePickerScreen() {
           </a>
         </div>
 
-        <div className="mt-14 border-t border-paper-200 pt-6">
-          <div className="section-label mb-3 text-center text-ink-400">Prilozi za pitanja u toku prezentacije</div>
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-            <a href="/mockup/pisarnica" className="border border-paper-300 bg-paper-0 px-3 py-1.5 text-ink-600 hover:border-brass-500 hover:text-navy-900">
-              X01 · e-Pisarnica
-            </a>
-            <a href="/mockup/tajnost" className="border border-paper-300 bg-paper-0 px-3 py-1.5 text-ink-600 hover:border-brass-500 hover:text-navy-900">
-              X02 · Stepen tajnosti
-            </a>
-            <a href="/mockup/admin" className="border border-paper-300 bg-paper-0 px-3 py-1.5 text-ink-600 hover:border-brass-500 hover:text-navy-900">
-              X03 · Administracija i audit
-            </a>
-            <button
-              onClick={() => {
-                setSession({ role: 'admin', identityOfficerId: null, scopeNodeId: 'mup', scopeLabel: 'Administracija' });
-                nav('/admin');
-              }}
-              className="border border-paper-300 bg-paper-0 px-3 py-1.5 text-ink-600 hover:border-brass-500 hover:text-navy-900"
-            >
-              A01 · Postavke organizacije
-            </button>
+        {/* Prilozi za usmenu prezentaciju (mockupi, white-label) — samo uz generički
+            demo ključ; ministarstva sa vlastitim ključem ovo ne vide. */}
+        {presenterExtras ? (
+          <div className="mt-14 border-t border-paper-200 pt-6">
+            <div className="section-label mb-3 text-center text-ink-400">Prilozi za pitanja u toku prezentacije</div>
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
+              <a href="/mockup/pisarnica" className="border border-paper-300 bg-paper-0 px-3 py-1.5 text-ink-600 hover:border-brass-500 hover:text-navy-900">
+                X01 · e-Pisarnica
+              </a>
+              <a href="/mockup/tajnost" className="border border-paper-300 bg-paper-0 px-3 py-1.5 text-ink-600 hover:border-brass-500 hover:text-navy-900">
+                X02 · Stepen tajnosti
+              </a>
+              <a href="/mockup/admin" className="border border-paper-300 bg-paper-0 px-3 py-1.5 text-ink-600 hover:border-brass-500 hover:text-navy-900">
+                X03 · Administracija i audit
+              </a>
+              <button
+                onClick={() => {
+                  setSession({ role: 'admin', identityOfficerId: null, scopeNodeId: 'mup', scopeLabel: 'Administracija' });
+                  nav('/admin');
+                }}
+                className="border border-paper-300 bg-paper-0 px-3 py-1.5 text-ink-600 hover:border-brass-500 hover:text-navy-900"
+              >
+                A01 · Postavke organizacije
+              </button>
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <p className="mt-8 text-center text-xs text-ink-400">
           U demonstraciji nema lozinke — produkcija koristi AD/LDAP + 2FA.

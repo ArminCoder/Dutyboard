@@ -30,7 +30,22 @@ docker logs dutyboard 2>&1 | grep "pristup odobren"
 Opozvan ključ (uklonjen iz `ACCESS_KEYS`) ostaje važeći do isteka kolačića (7 dana) — za trenutni
 opoziv promijeni i `SESSION_SECRET`.
 
-## Droplet + Docker + Caddy
+## Trenutni deploy — dutyboard.online
+
+Droplet `web-main` (46.101.207.209, 1 GB RAM + 2 GB swap), bez Dockera (build ne stane u RAM):
+nginx (`/etc/nginx/sites-available/dutyboard.online`, certbot TLS) → systemd servis `dutyboard`
+(`node … tsx server/index.ts`, port 3000). Tajne: `/opt/dutyboard/.env` + `tenants.json` (chmod 600);
+`TENANTS_FILE=/opt/dutyboard/tenants.json`. Domena na Porkbunu, auto-renew isključen.
+
+Update:
+
+```bash
+ssh web-main 'cd /opt/dutyboard && git pull && npm ci && npm run build && systemctl restart dutyboard'
+```
+
+Ko je otvorio demo: `ssh web-main 'journalctl -u dutyboard | grep "pristup odobren"'`
+
+## Alternativa: Droplet + Docker + Caddy
 
 ```bash
 # 1. Kloniraj repo

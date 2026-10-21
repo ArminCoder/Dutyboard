@@ -55,7 +55,7 @@ export function RolePickerScreen() {
           <div className="mx-auto mt-5 h-[2px] w-16 bg-brass-500" />
           <p className="mx-auto mt-5 max-w-xl text-sm text-ink-500">
             Svaki nivo vidi samo ono što mu pripada — ista aplikacija kroz šest pari očiju.
-            Svi podaci u demonstraciji su izmišljeni.
+            Svi podaci u demonstraciji su izmišljeni, a prikazane su samo dvije uprave i četiri stanice.
           </p>
           {seenCount > 0 ? (
             <p className="mt-3 text-xs text-ink-400">
@@ -111,7 +111,7 @@ export function RolePickerScreen() {
         ) : null}
 
         <p className="mt-8 text-center text-xs text-ink-400">
-          U demonstraciji nema lozinke — produkcija koristi AD/LDAP + 2FA.
+          U demonstraciji nema lozinke — u produkciji je predviđena prijava preko AD/LDAP i 2FA.
         </p>
       </div>
     </div>

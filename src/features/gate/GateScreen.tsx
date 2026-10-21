@@ -102,7 +102,7 @@ export function GateScreen({ onAuthenticated }: Props) {
         <div className="mt-6 text-center">
           <div className="section-label text-brass-300">Napomena</div>
           <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-paper-300">
-            Produkcijski sistem koristi AD/LDAP autentifikaciju sa 2FA i hosting u BiH.
+            U produkciji je predviđena prijava preko AD/LDAP sa 2FA i hosting u BiH.
             Ova demonstracija je izolovano okruženje sa isključivo izmišljenim podacima.
           </p>
         </div>

@@ -91,7 +91,7 @@ function PhoneStage({ officerName, children }: { officerName: string; children: 
         <div className="mt-8 section-label text-brass-300">Probajte</div>
         <ul className="mt-3 space-y-3 text-sm text-paper-200">
           <Try title="Smjena">raspored za mjesec i ko je s vama u patroli</Try>
-          <Try title="Zahtjevi">podnesite zahtjev za godišnji — zatim ga kao komandir odobrite</Try>
+          <Try title="Zahtjevi">podnesite zahtjev za slobodan dan — zatim ga kao komandir odobrite</Try>
           <Try title="Plata">obračun s prekovremenim i noćnim satima</Try>
           <Try title="Izvještaji">službena zabilješka napisana s telefona</Try>
         </ul>

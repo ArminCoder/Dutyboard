@@ -39,7 +39,7 @@ export const ROLE_CHOICES: RoleChoice[] = [
     officerId: 'off-0002', // Damir Kovač
     scopeNodeId: 'ps-centar',
     displayName: 'Damir Kovač',
-    displayTitle: `stariji narednik, ${PLACE.psCentar}`,
+    displayTitle: `stariji narednik, šef smjene, ${PLACE.psCentar}`,
     scopeLabel: PLACE.psCentar,
   },
   {
